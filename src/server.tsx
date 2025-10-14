@@ -2,7 +2,7 @@ import entry from "../public/index.html";
 import { getTopics, getTopicPosts, getPost, getTopic } from "./lib/topics";
 
 Bun.serve({
-  port: 3000,
+  port: process.env.PORT || 3000,
 
   development:
     process.env.NODE_ENV !== "production"
