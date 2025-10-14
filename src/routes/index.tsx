@@ -1,5 +1,5 @@
 import { CoffeeCup } from "@/components/blocks/coffee-cup";
-import { ExternalLink } from "@/components/external-link";
+import { ExternalLink as XLink } from "@/components/external-link";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { createFileRoute, Link } from "@tanstack/react-router";
@@ -7,6 +7,10 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 export const Route = createFileRoute("/")({
   component: Home,
 });
+const bunjsHref = "https://bun.com/docs/bundler/fullstack";
+const tsrHref =
+  "https://tanstack.com/router/latest/docs/framework/react/installation/with-router-cli";
+const cfdHref = "https://github.com/coffee-fueled-dev/very-coffee";
 
 function Home() {
   return (
@@ -46,15 +50,10 @@ function Home() {
         <div className="p-6">
           <p className="text-xs">
             Btw, this site is built entirely with{" "}
-            <ExternalLink href="https://bun.com/docs/bundler/fullstack">
-              Bunjs
-            </ExternalLink>{" "}
-            and{" "}
-            <ExternalLink href="https://tanstack.com/router/latest/docs/framework/react/installation/with-router-cli">
-              Tanstack Router
-            </ExternalLink>
-            . It's quick and super tiny. If you're curious how that works, you
-            can check out the source code here.
+            <XLink href={bunjsHref}>Bunjs</XLink> and{" "}
+            <XLink href={tsrHref}>Tanstack Router</XLink>. It's quick and super
+            tiny. If you're curious how that works, you can check out the source
+            code <XLink href={cfdHref}>here</XLink>.
           </p>
         </div>
       </div>
