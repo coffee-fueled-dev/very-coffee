@@ -23,13 +23,11 @@ Bun.serve({
       async GET(req) {
         const { topic } = req.params;
 
-        // Get topic metadata and content
         const topicData = await getTopic(topic);
         if (!topicData) {
           return new Response("Topic not found", { status: 404 });
         }
 
-        // Get posts for this topic
         const posts = await getTopicPosts(topic);
 
         return Response.json({

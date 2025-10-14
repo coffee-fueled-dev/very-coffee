@@ -33,12 +33,14 @@ export const TopicDetail = ({ meta, content, posts }: TopicDetailProps) => {
       )}
 
       {/* Posts List */}
-      <div className="flex flex-col gap-4">
-        <h2 className="scroll-m-20 text-2xl font-semibold tracking-tight">
-          Posts
-        </h2>
-        <PostList posts={posts} />
-      </div>
+      {posts.length > 0 && (
+        <div className="flex flex-col gap-4">
+          <h2 className="scroll-m-20 text-2xl font-semibold tracking-tight">
+            Posts
+          </h2>
+          <PostList posts={posts} />
+        </div>
+      )}
     </section>
   );
 };

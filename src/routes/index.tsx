@@ -42,14 +42,6 @@ function Home() {
                 TKN
               </Button>
             </Link>
-            <Link
-              to="/topics/$topic/$post"
-              params={{ topic: "tkn", post: "project-proposal" }}
-            >
-              <Button size="sm" variant="secondary">
-                Proposal
-              </Button>
-            </Link>
           </span>
         </div>
         <p className="text-xs">

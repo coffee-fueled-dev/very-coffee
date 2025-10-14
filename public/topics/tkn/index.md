@@ -1,20 +1,19 @@
 ---
-name: TKN
-description: A marketplace for ML training data created from user interactions with web apps
+name: tkn
+description: An online algorithm that incrementally discovers and compresses recurring symbol patterns in a data stream, building its own token vocabulary without any prior linguistic or statistical model.
 ---
 
 ## Overview
 
-TKN is a project focused on creating a marketplace for machine learning training data derived from user interactions with web applications. The goal is to enable:
+I've been working on the tkn project for a few years as of writing this. It started in the basement of my friend's house watching a [Two Minute Papers](https://www.youtube.com/channel/UCbfYPyITQ-7l4upoX8nvctg) video on Youtube in (I think) 2022 about GPT3.
 
-- **Event Capture**: JavaScript SDK and analytics connectors for capturing user behavior
-- **Data Compression**: Converting event sequences into symbolic tokens and Markov graphs
-- **MCP Integration**: Runtime Model Context Protocol server for agent interaction
-- **Privacy-First**: Anonymized data sharing with differential privacy guarantees
+That video made me think a lot about how computers can learn to reason about the world. The first, and most intuitive analogy I could think of was imagining a child learning to read. I imagined how the letters look foreign at first, and then gradually the child learns words by more seamlessly combining the letters they associate with each other. Eventually, a word just "looks" like a cohesive entity rather than an ensemble of characters.
 
-## Key Features
+From that thought, I imagined an algorithm that would imitate a child learning to read and thought of the core loop of the tkn algorithm.
+The constraints I put on the problem were:
 
-- 🔒 **Privacy-Preserving**: All data is anonymized with k-anonymity and differential privacy
-- 🌐 **Universal Interface**: Works with any web application through standard event capture
-- 🤖 **Agent-Ready**: MCP server endpoints for browser agents and AI copilots
-- 💰 **Revenue Sharing**: Contributors receive 70% of data licensing revenue
+- It must ingest one character at a time
+- It must learn the concept of a word without first being told anything about language
+- It must be able to reproduce the original text
+
+I'm not a trained programmer, so I often think through things like this and discover concepts before knowing what they're called. In this case, I later learned what I imaginined belongs to the Lemple-Ziv family of algorithms, but with the added feature of maintaining token order as a graph of markov chains.
