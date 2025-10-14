@@ -37,13 +37,18 @@ const RootLayout = () => (
       </NavigationMenu>
     </header>
     <div className="min-h-dvh flex flex-col">
-      <main className="pt-20 mx-6 flex-1 min-h-dvh">
+      <main className="py-20 mx-6 flex-1 min-h-dvh">
         <Outlet />
       </main>
       <footer className="p-6 flex-0 border-t">
         <section className="flex justify-between items-center">
           <CoffeeCup size="xs" />
-          <pre>Coffee Fueled Dev | {new Date(Date.now()).getFullYear()}</pre>
+          <div className="flex flex-col justify-end text-right">
+            <pre>Coffee Fueled Dev</pre>
+            <pre className="text-muted-foreground">
+              {new Date(Date.now()).getFullYear()}
+            </pre>
+          </div>
         </section>
       </footer>
     </div>
