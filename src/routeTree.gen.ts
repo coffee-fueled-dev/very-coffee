@@ -12,9 +12,9 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as TopicsRouteImport } from './routes/topics'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TopicsIndexRouteImport } from './routes/topics.index'
-import { Route as TopicsTknRouteImport } from './routes/topics.tkn'
-import { Route as TopicsTknIndexRouteImport } from './routes/topics.tkn.index'
-import { Route as TopicsTknProjectProposalRouteImport } from './routes/topics.tkn.project-proposal'
+import { Route as TopicsTopicRouteImport } from './routes/topics.$topic'
+import { Route as TopicsTopicIndexRouteImport } from './routes/topics.$topic.index'
+import { Route as TopicsTopicPostRouteImport } from './routes/topics.$topic.$post'
 
 const TopicsRoute = TopicsRouteImport.update({
   id: '/topics',
@@ -31,65 +31,64 @@ const TopicsIndexRoute = TopicsIndexRouteImport.update({
   path: '/',
   getParentRoute: () => TopicsRoute,
 } as any)
-const TopicsTknRoute = TopicsTknRouteImport.update({
-  id: '/tkn',
-  path: '/tkn',
+const TopicsTopicRoute = TopicsTopicRouteImport.update({
+  id: '/$topic',
+  path: '/$topic',
   getParentRoute: () => TopicsRoute,
 } as any)
-const TopicsTknIndexRoute = TopicsTknIndexRouteImport.update({
+const TopicsTopicIndexRoute = TopicsTopicIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => TopicsTknRoute,
+  getParentRoute: () => TopicsTopicRoute,
 } as any)
-const TopicsTknProjectProposalRoute =
-  TopicsTknProjectProposalRouteImport.update({
-    id: '/project-proposal',
-    path: '/project-proposal',
-    getParentRoute: () => TopicsTknRoute,
-  } as any)
+const TopicsTopicPostRoute = TopicsTopicPostRouteImport.update({
+  id: '/$post',
+  path: '/$post',
+  getParentRoute: () => TopicsTopicRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/topics': typeof TopicsRouteWithChildren
-  '/topics/tkn': typeof TopicsTknRouteWithChildren
+  '/topics/$topic': typeof TopicsTopicRouteWithChildren
   '/topics/': typeof TopicsIndexRoute
-  '/topics/tkn/project-proposal': typeof TopicsTknProjectProposalRoute
-  '/topics/tkn/': typeof TopicsTknIndexRoute
+  '/topics/$topic/$post': typeof TopicsTopicPostRoute
+  '/topics/$topic/': typeof TopicsTopicIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/topics': typeof TopicsIndexRoute
-  '/topics/tkn/project-proposal': typeof TopicsTknProjectProposalRoute
-  '/topics/tkn': typeof TopicsTknIndexRoute
+  '/topics/$topic/$post': typeof TopicsTopicPostRoute
+  '/topics/$topic': typeof TopicsTopicIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/topics': typeof TopicsRouteWithChildren
-  '/topics/tkn': typeof TopicsTknRouteWithChildren
+  '/topics/$topic': typeof TopicsTopicRouteWithChildren
   '/topics/': typeof TopicsIndexRoute
-  '/topics/tkn/project-proposal': typeof TopicsTknProjectProposalRoute
-  '/topics/tkn/': typeof TopicsTknIndexRoute
+  '/topics/$topic/$post': typeof TopicsTopicPostRoute
+  '/topics/$topic/': typeof TopicsTopicIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/topics'
-    | '/topics/tkn'
+    | '/topics/$topic'
     | '/topics/'
-    | '/topics/tkn/project-proposal'
-    | '/topics/tkn/'
+    | '/topics/$topic/$post'
+    | '/topics/$topic/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/topics' | '/topics/tkn/project-proposal' | '/topics/tkn'
+  to: '/' | '/topics' | '/topics/$topic/$post' | '/topics/$topic'
   id:
     | '__root__'
     | '/'
     | '/topics'
-    | '/topics/tkn'
+    | '/topics/$topic'
     | '/topics/'
-    | '/topics/tkn/project-proposal'
-    | '/topics/tkn/'
+    | '/topics/$topic/$post'
+    | '/topics/$topic/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -120,51 +119,51 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TopicsIndexRouteImport
       parentRoute: typeof TopicsRoute
     }
-    '/topics/tkn': {
-      id: '/topics/tkn'
-      path: '/tkn'
-      fullPath: '/topics/tkn'
-      preLoaderRoute: typeof TopicsTknRouteImport
+    '/topics/$topic': {
+      id: '/topics/$topic'
+      path: '/$topic'
+      fullPath: '/topics/$topic'
+      preLoaderRoute: typeof TopicsTopicRouteImport
       parentRoute: typeof TopicsRoute
     }
-    '/topics/tkn/': {
-      id: '/topics/tkn/'
+    '/topics/$topic/': {
+      id: '/topics/$topic/'
       path: '/'
-      fullPath: '/topics/tkn/'
-      preLoaderRoute: typeof TopicsTknIndexRouteImport
-      parentRoute: typeof TopicsTknRoute
+      fullPath: '/topics/$topic/'
+      preLoaderRoute: typeof TopicsTopicIndexRouteImport
+      parentRoute: typeof TopicsTopicRoute
     }
-    '/topics/tkn/project-proposal': {
-      id: '/topics/tkn/project-proposal'
-      path: '/project-proposal'
-      fullPath: '/topics/tkn/project-proposal'
-      preLoaderRoute: typeof TopicsTknProjectProposalRouteImport
-      parentRoute: typeof TopicsTknRoute
+    '/topics/$topic/$post': {
+      id: '/topics/$topic/$post'
+      path: '/$post'
+      fullPath: '/topics/$topic/$post'
+      preLoaderRoute: typeof TopicsTopicPostRouteImport
+      parentRoute: typeof TopicsTopicRoute
     }
   }
 }
 
-interface TopicsTknRouteChildren {
-  TopicsTknProjectProposalRoute: typeof TopicsTknProjectProposalRoute
-  TopicsTknIndexRoute: typeof TopicsTknIndexRoute
+interface TopicsTopicRouteChildren {
+  TopicsTopicPostRoute: typeof TopicsTopicPostRoute
+  TopicsTopicIndexRoute: typeof TopicsTopicIndexRoute
 }
 
-const TopicsTknRouteChildren: TopicsTknRouteChildren = {
-  TopicsTknProjectProposalRoute: TopicsTknProjectProposalRoute,
-  TopicsTknIndexRoute: TopicsTknIndexRoute,
+const TopicsTopicRouteChildren: TopicsTopicRouteChildren = {
+  TopicsTopicPostRoute: TopicsTopicPostRoute,
+  TopicsTopicIndexRoute: TopicsTopicIndexRoute,
 }
 
-const TopicsTknRouteWithChildren = TopicsTknRoute._addFileChildren(
-  TopicsTknRouteChildren,
+const TopicsTopicRouteWithChildren = TopicsTopicRoute._addFileChildren(
+  TopicsTopicRouteChildren,
 )
 
 interface TopicsRouteChildren {
-  TopicsTknRoute: typeof TopicsTknRouteWithChildren
+  TopicsTopicRoute: typeof TopicsTopicRouteWithChildren
   TopicsIndexRoute: typeof TopicsIndexRoute
 }
 
 const TopicsRouteChildren: TopicsRouteChildren = {
-  TopicsTknRoute: TopicsTknRouteWithChildren,
+  TopicsTopicRoute: TopicsTopicRouteWithChildren,
   TopicsIndexRoute: TopicsIndexRoute,
 }
 

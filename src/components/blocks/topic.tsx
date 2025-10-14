@@ -8,12 +8,11 @@ import {
   ItemMedia,
   ItemTitle,
 } from "@/components/ui/item";
-import { Link } from "@tanstack/react-router";
-import type { FileRouteTypes } from "@/routeTree.gen";
+import { Link, type LinkComponentProps } from "@tanstack/react-router";
 import { Badge } from "../ui/badge";
 
 export interface Topic {
-  route: FileRouteTypes["to"];
+  link: Omit<LinkComponentProps, "children">;
   title: string;
   description: string;
   posts: number;
@@ -27,9 +26,9 @@ export const TopicList = ({ topics }: { topics: Topic[] }) => (
   </div>
 );
 
-export const TopicItem = ({ title, description, posts, route }: Topic) => (
+export const TopicItem = ({ title, description, posts, link }: Topic) => (
   <Item variant="outline" size="sm" asChild>
-    <Link to={route}>
+    <Link {...link}>
       <ItemMedia>
         <Badge variant="secondary">
           {posts} {posts === 1 ? "post" : "posts"}

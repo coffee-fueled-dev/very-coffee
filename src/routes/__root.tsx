@@ -16,6 +16,7 @@ import {
 import { Link } from "@tanstack/react-router";
 
 import { CoffeeCup } from "@/components/blocks/coffee-cup";
+import { Button } from "@/components/ui/button";
 
 const RootLayout = () => (
   <>
@@ -49,7 +50,19 @@ const RootLayout = () => (
   </>
 );
 
+const NotFound = () => (
+  <div className="flex flex-col items-center justify-center min-h-[50vh] gap-4">
+    <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
+      404
+    </h1>
+    <p className="text-xl text-muted-foreground">Page not found</p>
+    <Link to="/">
+      <Button variant="link">Go back home</Button>
+    </Link>
+  </div>
+);
+
 export const Route = createRootRoute({
   component: RootLayout,
-  notFoundComponent: () => <>404</>,
+  notFoundComponent: NotFound,
 });

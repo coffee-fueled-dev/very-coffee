@@ -1,7 +1,6 @@
 import { ChevronRightIcon } from "lucide-react";
-import { Link } from "@tanstack/react-router";
-import type { FileRouteTypes } from "@/routeTree.gen";
-import type { PostMeta } from "@/plugins/post";
+import { Link, type LinkComponentProps } from "@tanstack/react-router";
+import type { PostMeta } from "@/lib/post";
 import MarkdownPreview from "@uiw/react-markdown-preview";
 import {
   Item,
@@ -15,36 +14,40 @@ import { Badge } from "../ui/badge";
 import { CopyButton } from "./copy-button";
 
 export interface Post {
-  route: FileRouteTypes["to"];
+  link: Omit<LinkComponentProps, "children">;
   meta: PostMeta;
 }
 
 export const PostList = ({ posts }: { posts: Post[] }) => (
   <div className="flex flex-col gap-4">
     {posts.map((post) => (
-      <PostItem {...post} key={post.meta.name} />
+      <PostItem {...post} key={post.meta.name + post.meta.lastModified} />
     ))}
   </div>
 );
 
-export const PostItem = ({ route, meta }: Post) => (
+export const PostItem = ({ link, meta }: Post) => (
   <Item variant="outline" size="sm" asChild>
-    <Link to={route}>
-      <ItemMedia className="flex flex-col items-start gap-1">
+    <Link {...link}>
+      <ItemMedia className="flex flex-col items-start gap-2">
         <Badge variant="default">{meta.author}</Badge>
-        <Badge variant="secondary">{meta.lastModified}</Badge>
-        {meta.tags && (
-          <div className="flex flex-wrap gap-1">
-            {meta.tags.map((tag) => (
-              <Badge key={tag} variant="outline">
-                {tag}
-              </Badge>
-            ))}
-          </div>
-        )}
+        <Badge variant="outline">{meta.lastModified}</Badge>
       </ItemMedia>
       <ItemContent>
-        <ItemTitle>{meta.title}</ItemTitle>
+        <span className="flex gap-2">
+          <ItemTitle>{meta.title}</ItemTitle>
+          <span>
+            {meta.tags && (
+              <div className="flex flex-wrap gap-1">
+                {meta.tags.map((tag) => (
+                  <Badge key={tag} variant="secondary">
+                    {tag}
+                  </Badge>
+                ))}
+              </div>
+            )}
+          </span>
+        </span>
         {meta.summary && <ItemDescription>{meta.summary}</ItemDescription>}
       </ItemContent>
       <ItemActions>
@@ -73,10 +76,10 @@ export const Post = ({
       )}
       <div className="flex gap-1 items-center justify-center flex-wrap">
         <Badge variant="default">{meta.author}</Badge>
-        <Badge variant="secondary">{meta.lastModified}</Badge>
+        <Badge variant="outline">{meta.lastModified}</Badge>
         {meta.tags &&
           meta.tags.map((tag) => (
-            <Badge key={tag} variant="outline">
+            <Badge key={tag} variant="secondary">
               {tag}
             </Badge>
           ))}
