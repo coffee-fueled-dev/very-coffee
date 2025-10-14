@@ -1,5 +1,8 @@
 import { ChevronRightIcon } from "lucide-react";
-
+import { Link } from "@tanstack/react-router";
+import type { FileRouteTypes } from "@/routeTree.gen";
+import type { PostMeta } from "@/plugins/post";
+import MarkdownPreview from "@uiw/react-markdown-preview";
 import {
   Item,
   ItemActions,
@@ -8,15 +11,12 @@ import {
   ItemMedia,
   ItemTitle,
 } from "@/components/ui/item";
-import { Link } from "@tanstack/react-router";
-import type { FileRouteTypes } from "@/routeTree.gen";
 import { Badge } from "../ui/badge";
-import MarkdownPreview from "@uiw/react-markdown-preview";
 import { CopyButton } from "./copy-button";
 
 export interface Post {
   route: FileRouteTypes["to"];
-  meta: FileMetadata;
+  meta: PostMeta;
 }
 
 export const PostList = ({ posts }: { posts: Post[] }) => (
@@ -33,6 +33,15 @@ export const PostItem = ({ route, meta }: Post) => (
       <ItemMedia className="flex flex-col items-start gap-1">
         <Badge variant="default">{meta.author}</Badge>
         <Badge variant="secondary">{meta.lastModified}</Badge>
+        {meta.tags && (
+          <div className="flex flex-wrap gap-1">
+            {meta.tags.map((tag) => (
+              <Badge key={tag} variant="outline">
+                {tag}
+              </Badge>
+            ))}
+          </div>
+        )}
       </ItemMedia>
       <ItemContent>
         <ItemTitle>{meta.title}</ItemTitle>
@@ -47,31 +56,38 @@ export const PostItem = ({ route, meta }: Post) => (
 
 export const Post = ({
   content,
-  title,
-  lastModified,
-  author,
+  meta,
 }: {
   content: string;
-  title: string;
-  lastModified: string;
-  author: string;
+  meta: PostMeta;
 }) => {
   return (
     <section className="flex flex-col gap-2 p-6">
       <h1 className="scroll-m-20 text-center text-4xl font-extrabold tracking-tight text-balance">
-        {title}
+        {meta.title}
       </h1>
-      <span className="flex gap-1 items-center">
-        <Badge variant="default">{author}</Badge>
-        <Badge variant="secondary">{lastModified}</Badge>
-      </span>
+      {meta.summary && (
+        <p className="text-center text-muted-foreground text-lg">
+          {meta.summary}
+        </p>
+      )}
+      <div className="flex gap-1 items-center justify-center flex-wrap">
+        <Badge variant="default">{meta.author}</Badge>
+        <Badge variant="secondary">{meta.lastModified}</Badge>
+        {meta.tags &&
+          meta.tags.map((tag) => (
+            <Badge key={tag} variant="outline">
+              {tag}
+            </Badge>
+          ))}
+      </div>
       <div>
         <CopyButton content={content} label="Copy as markdown" />
       </div>
       <div>
         <MarkdownPreview
           style={{
-            backgroundColor: "transparent",
+            backgroundColor: "white",
             color: "inherit",
           }}
           source={content}

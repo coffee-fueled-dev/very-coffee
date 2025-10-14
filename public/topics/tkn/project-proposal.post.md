@@ -2,6 +2,7 @@
 title: TKN Project Proposal
 author: Zach Garrett
 summary: Outlining a project concept for a marketplace for ML training data created from user interactions with web apps.
+tags: [nlp, ml, tokenization]
 ---
 
 # **Project Proposal: TKN**

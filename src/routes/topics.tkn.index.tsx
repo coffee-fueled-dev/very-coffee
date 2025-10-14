@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PostList } from "@/components/blocks/post";
 
-import { meta } from "../../public/posts/tkn/project-proposal.md";
+import { meta } from "@/topics/tkn/project-proposal.post.md";
 
 export const Route = createFileRoute("/topics/tkn/")({
   component: () => (

@@ -1,2 +1,2 @@
 [serve.static]
-plugins = ["bun-plugin-tailwind", "./src/plugins/markdown.ts"]
+plugins = ["bun-plugin-tailwind", "./src/plugins/post.ts"]

@@ -1,13 +1,7 @@
-declare type FileMetadata = {
-  name: string;
-  title: string;
-  lastModified: string;
-  size: string;
-  path?: string;
-} & Record<string, string | undefined>;
+declare module "*.post.md" {
+  import type { PostMeta } from "./post";
 
-declare module "*.md" {
   export const content: string;
-  export const meta: FileMetadata;
+  export const meta: PostMeta;
   export default { content, meta };
 }

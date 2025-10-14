@@ -9,8 +9,7 @@ const coffeeASCII = (steamKey: 0 | 1) =>
   " _ .---.\n" +
   "( |`---'|\n" +
   " \\|     |\n" +
-  " : .___, :\n" +
-  "  '-----'\n";
+  "   .___,\n";
 
 export const CoffeeCup = ({
   size = "sm",
