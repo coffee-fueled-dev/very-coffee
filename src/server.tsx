@@ -1,7 +1,7 @@
 import entry from "../public/index.html";
 import { getTopics, getTopicPosts, getPost, getTopic } from "./lib/topics";
 
-Bun.serve({
+const server = Bun.serve({
   port: process.env.PORT || 3000,
 
   development:
@@ -49,3 +49,5 @@ Bun.serve({
     "/*": entry,
   },
 });
+
+console.log(`Server is running on ${server.url}`);
