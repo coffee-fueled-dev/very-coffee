@@ -5,7 +5,8 @@
   "scripts": {
     "generate-routes": "tsr generate",
     "watch-routes": "tsr watch",
-    "dev": "bun --watch src/server.tsx"
+    "dev": "bun --watch src/server.tsx",
+    "start": "bun src/server.tsx"
   },
   "devDependencies": {
     "@tanstack/router-cli": "^1.132.51",
