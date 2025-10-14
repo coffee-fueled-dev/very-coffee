@@ -1,8 +1,9 @@
 import { readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { z } from "zod";
-import { parsePostFile, parseYaml } from "./post";
+import { parsePostFile } from "./post";
 import type { PostMeta } from "./post";
+import { extractFrontmatter } from "./markdown";
 
 const TOPICS_DIR = join(process.cwd(), "public/topics");
 
@@ -10,7 +11,7 @@ const TOPICS_DIR = join(process.cwd(), "public/topics");
 // Schema & Types
 // ============================================================================
 
-const TopicFrontmatterSchema = z.object({
+export const TopicFrontmatterSchema = z.object({
   name: z.string().min(1, "Topic name is required"),
   description: z.string().min(1, "Topic description is required"),
 });
@@ -32,57 +33,6 @@ export interface TopicInfo {
 // Utilities
 // ============================================================================
 
-function extractTopicFrontmatter(text: string): TopicFrontmatter {
-  const match = text.match(/^---\n([\s\S]+?)\n---/);
-
-  if (!match) {
-    throw new Error(
-      "Topic index must have front matter with required fields: name, description"
-    );
-  }
-
-  const yaml = match[1];
-  const parsed = parseYaml(yaml);
-
-  try {
-    return TopicFrontmatterSchema.parse(parsed);
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      const issues = error.issues
-        .map((i) => `${i.path.join(".")}: ${i.message}`)
-        .join(", ");
-      throw new Error(`Invalid topic metadata: ${issues}`);
-    }
-    throw error;
-  }
-}
-
-async function parseTopicIndex(
-  topicPath: string,
-  slug: string
-): Promise<TopicMeta | null> {
-  try {
-    const indexPath = join(topicPath, "index.md");
-    const file = Bun.file(indexPath);
-    const exists = await file.exists();
-
-    if (!exists) {
-      return null;
-    }
-
-    const content = await file.text();
-    const frontmatter = extractTopicFrontmatter(content);
-
-    return {
-      ...frontmatter,
-      slug,
-    };
-  } catch (error) {
-    console.error(`Error parsing topic index for "${slug}":`, error);
-    return null;
-  }
-}
-
 export async function getTopic(
   slug: string
 ): Promise<{ meta: TopicMeta; content: string } | null> {
@@ -97,12 +47,10 @@ export async function getTopic(
     }
 
     const text = await file.text();
-
-    // Extract frontmatter and body
-    const match = text.match(/^---\n([\s\S]+?)\n---/);
-    const body = match ? text.slice(match[0].length).trimStart() : text;
-
-    const frontmatter = extractTopicFrontmatter(text);
+    const { frontmatter, body } = extractFrontmatter(
+      text,
+      TopicFrontmatterSchema
+    );
 
     return {
       meta: {
@@ -138,14 +86,13 @@ export async function getTopics(): Promise<TopicInfo[]> {
           file.endsWith(".post.md")
         );
 
-        // Try to parse topic index.md
-        const topicMeta = await parseTopicIndex(topicPath, entry);
+        const topic = await getTopic(entry);
 
         topics.push({
           slug: entry,
-          name: topicMeta?.name || slugToTitle(entry),
+          name: topic?.meta.name || slugToTitle(entry),
           description:
-            topicMeta?.description || `Posts about ${slugToTitle(entry)}`,
+            topic?.meta.description || `Posts about ${slugToTitle(entry)}`,
           postCount: posts.length,
         });
       }

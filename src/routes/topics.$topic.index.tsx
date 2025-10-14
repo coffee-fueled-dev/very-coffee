@@ -1,5 +1,5 @@
 import { createFileRoute, notFound, rootRouteId } from "@tanstack/react-router";
-import { TopicDetail } from "@/components/blocks/topic-detail";
+import { Topic } from "@/components/blocks/topic";
 import type { Post } from "@/components/blocks/post";
 import type { PostMeta } from "@/lib/post";
 import type { TopicMeta } from "@/lib/topics";
@@ -40,7 +40,5 @@ function TopicPostsPage() {
     meta: post.meta,
   }));
 
-  return (
-    <TopicDetail meta={data.meta} content={data.content} posts={postItems} />
-  );
+  return <Topic meta={data.meta} content={data.content} posts={postItems} />;
 }

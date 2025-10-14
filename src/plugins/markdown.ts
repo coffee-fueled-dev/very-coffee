@@ -1,20 +1,31 @@
-import { extractFrontmatter, formatSize } from "@/lib/markdown";
-import { PostFrontmatterSchema, type PostMeta } from "@/lib/post";
+import { extractFrontmatter, formatSize, type FileMeta } from "@/lib/markdown";
 import path from "node:path";
+import z from "zod";
+
+const GenericFrontmatterSchema = z.record(
+  z.string(),
+  z.union([z.string(), z.array(z.string()), z.unknown()])
+);
 
 export default {
-  name: "post",
+  name: "markdown",
   setup(build) {
-    build.onLoad({ filter: /\.post\.md$/ }, async (args) => {
+    build.onLoad({ filter: /\.md$/, namespace: "file" }, async (args) => {
       const file = Bun.file(args.path);
       const raw = await file.text();
 
-      const { frontmatter, body } = extractFrontmatter(
-        raw,
-        PostFrontmatterSchema
-      );
+      let frontmatter: Record<string, unknown> = {};
+      let body = raw;
 
-      const meta: PostMeta = {
+      try {
+        const result = extractFrontmatter(raw, GenericFrontmatterSchema);
+        frontmatter = result.frontmatter;
+        body = result.body;
+      } catch {
+        body = raw;
+      }
+
+      const meta = {
         ...frontmatter,
         name: path.basename(file.name ?? ""),
         size: formatSize(file.size),

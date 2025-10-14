@@ -87,10 +87,10 @@ export const Post = ({
       <div>
         <CopyButton content={content} label="Copy as markdown" />
       </div>
-      <div>
+      <div className="prose prose-neutral dark:prose-invert max-w-none">
         <MarkdownPreview
           style={{
-            backgroundColor: "white",
+            backgroundColor: "transparent",
             color: "inherit",
           }}
           source={content}

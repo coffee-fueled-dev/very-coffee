@@ -1,6 +1,9 @@
 import { TopicList, type Topic } from "@/components/blocks/topic";
 import { createFileRoute } from "@tanstack/react-router";
 
+import { content as topicOverview } from "@/topics/index.md";
+import MarkdownPreview from "@uiw/react-markdown-preview";
+
 interface TopicInfo {
   slug: string;
   name: string;
@@ -30,5 +33,18 @@ function TopicsPage() {
     },
   }));
 
-  return <TopicList topics={topics} />;
+  return (
+    <div className="flex flex-col gap-6">
+      <div className="prose prose-neutral dark:prose-invert max-w-none">
+        <MarkdownPreview
+          style={{
+            backgroundColor: "transparent",
+            color: "inherit",
+          }}
+          source={topicOverview}
+        />
+      </div>
+      <TopicList topics={topics} />
+    </div>
+  );
 }
