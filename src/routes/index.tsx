@@ -1,0 +1,63 @@
+import { CoffeeCup } from "@/components/blocks/coffee-cup";
+import { ExternalLink } from "@/components/external-link";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { createFileRoute, Link } from "@tanstack/react-router";
+
+export const Route = createFileRoute("/")({
+  component: Home,
+});
+
+function Home() {
+  return (
+    <div className="flex-1 flex flex-col justify-center items-center gap-4">
+      <CoffeeCup />
+      <div className="max-w-lg text-center space-y-4">
+        <h4 className="scroll-m-20 text-xl font-semibold tracking-tight">
+          Hey there, I'm Zach
+        </h4>
+        <Separator />
+        <p className="leading-7 [&:not(:first-child)]:mt-6">
+          I'm a software engineer, design engineer, and Olympic athlete
+          (archery, team USA). I work on coding projects in my free time. I've
+          noticed that the mere idea of sharing those projects leads to an
+          explosion of complexity, where user accounts, domains, databases and
+          the like become requirements. I made this site as a way to force
+          myself to keep things simple, to share my thoughts about various
+          things, and to use this sick domain name I've been sitting on. Feel
+          free to read my stuff, and check out demos as I add them.
+        </p>
+        <Separator />
+        <p className="leading-7 [&:not(:first-child)]:mt-6">
+          These are the things I've been most interested in lately:
+        </p>
+        <span className="space-x-2">
+          <Link to="/topics/tkn">
+            <Button size="sm" variant="secondary">
+              TKN
+            </Button>
+          </Link>
+          <Link to="/topics/tkn/project-proposal">
+            <Button size="sm" variant="secondary">
+              Proposal
+            </Button>
+          </Link>
+        </span>
+        <div className="p-6">
+          <p className="text-xs">
+            Btw, this site is built entirely with{" "}
+            <ExternalLink href="https://bun.com/docs/bundler/fullstack">
+              Bunjs
+            </ExternalLink>{" "}
+            and{" "}
+            <ExternalLink href="https://tanstack.com/router/latest/docs/framework/react/installation/with-router-cli">
+              Tanstack Router
+            </ExternalLink>
+            . It's quick and super tiny. If you're curious how that works, you
+            can check out the source code here.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
