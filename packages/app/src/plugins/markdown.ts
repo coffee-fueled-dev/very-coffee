@@ -1,11 +1,10 @@
-import { extractFrontmatter, formatSize, type FileMeta } from "@/lib/markdown";
-import path from "node:path";
-import z from "zod";
-
-const GenericFrontmatterSchema = z.record(
-  z.string(),
-  z.union([z.string(), z.array(z.string()), z.unknown()])
-);
+import {
+  getMarkdownFileFileData,
+  MarkdownFileModel,
+  parseMarkdownFile,
+  type MarkdownFile,
+  type MarkdownFileFrontmatter,
+} from "@/lib/markdown";
 
 export default {
   name: "markdown",
@@ -14,31 +13,30 @@ export default {
       const file = Bun.file(args.path);
       const raw = await file.text();
 
-      let frontmatter: Record<string, unknown> = {};
-      let body = raw;
+      let frontmatter: MarkdownFileFrontmatter = {};
+      let content = raw;
 
       try {
-        const result = extractFrontmatter(raw, GenericFrontmatterSchema);
+        const result = parseMarkdownFile(
+          raw,
+          MarkdownFileModel.shape.frontmatter
+        );
         frontmatter = result.frontmatter;
-        body = result.body;
+        content = result.content;
       } catch {
-        body = raw;
+        content = raw;
       }
 
-      const meta = {
-        ...frontmatter,
-        name: path.basename(file.name ?? ""),
-        size: formatSize(file.size),
-        lastModified: new Date(file.lastModified).toLocaleString(),
-        path: file.name,
-      };
+      const fileData = await getMarkdownFileFileData(file);
+
+      const markdownFile = MarkdownFileModel.parse({
+        frontmatter,
+        content,
+        fileData,
+      } satisfies MarkdownFile);
 
       return {
-        contents: `
-          export const content = ${JSON.stringify(body)};
-          export const meta = ${JSON.stringify(meta)};
-          export default { content, meta };
-        `,
+        contents: `export default ${JSON.stringify(markdownFile)};`,
         loader: "js",
       };
     });

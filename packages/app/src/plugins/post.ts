@@ -1,33 +1,28 @@
-import { extractFrontmatter, formatSize } from "@/lib/markdown";
-import { PostFrontmatterSchema, type PostMeta } from "@/lib/post";
-import path from "node:path";
+import { getMarkdownFileFileData, parseMarkdownFile } from "@/lib/markdown";
+import { PostModel, type Post } from "@/lib/post";
 
 export default {
   name: "post",
   setup(build) {
     build.onLoad({ filter: /\.post\.md$/ }, async (args) => {
       const file = Bun.file(args.path);
-      const raw = await file.text();
+      const fileContent = await file.text();
 
-      const { frontmatter, body } = extractFrontmatter(
-        raw,
-        PostFrontmatterSchema
+      const { frontmatter, content } = parseMarkdownFile(
+        fileContent,
+        PostModel.shape.frontmatter
       );
 
-      const meta: PostMeta = {
-        ...frontmatter,
-        name: path.basename(file.name ?? ""),
-        size: formatSize(file.size),
-        lastModified: new Date(file.lastModified).toLocaleString(),
-        path: file.name,
-      };
+      const fileData = await getMarkdownFileFileData(file);
+
+      const post = PostModel.parse({
+        frontmatter,
+        fileData,
+        content,
+      } satisfies Post);
 
       return {
-        contents: `
-          export const content = ${JSON.stringify(body)};
-          export const meta = ${JSON.stringify(meta)};
-          export default { content, meta };
-        `,
+        contents: `export default ${JSON.stringify(post)};`,
         loader: "js",
       };
     });

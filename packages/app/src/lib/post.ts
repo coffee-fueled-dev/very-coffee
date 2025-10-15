@@ -1,45 +1,50 @@
-import path from "node:path";
 import { z } from "zod";
-import { formatSize, extractFrontmatter, type FileMeta } from "./markdown";
+import {
+  getFrontmatter,
+  getMarkdownFileFileData,
+  parseMarkdownFile,
+} from "./markdown";
 
-// ============================================================================
-// Schema & Types
-// ============================================================================
-
-export const PostFrontmatterSchema = z.object({
-  title: z.string().min(1, "Post title is required"),
-  summary: z.string().min(1, "Post summary is required"),
-  author: z.string().min(1, "Post author is required"),
-  tags: z.array(z.string()).optional(),
+export const PostModel = z.object({
+  frontmatter: z.object({
+    title: z.string().min(1, "Post title is required"),
+    summary: z.string().min(1, "Post summary is required"),
+    author: z.string().min(1, "Post author is required"),
+    tags: z.array(z.string()).optional(),
+  }),
+  fileData: z.object({
+    name: z.string(),
+    size: z.string(),
+    lastModified: z.string(),
+    path: z.string().optional(),
+  }),
+  content: z.string(),
 });
 
-export type PostFrontmatter = z.infer<typeof PostFrontmatterSchema>;
+export type Post = z.infer<typeof PostModel>;
+export type PostFileData = z.infer<typeof PostModel.shape.fileData>;
+export type PostFrontmatter = z.infer<typeof PostModel.shape.frontmatter>;
 
-export type PostMeta = PostFrontmatter & FileMeta;
-
-export async function parsePostFile(filePath: string): Promise<{
-  content: string;
-  meta: PostMeta;
-}> {
+export async function getPost(filePath: string): Promise<Post> {
   const file = Bun.file(filePath);
   const fileContent = await file.text();
-  const stat = await file.stat();
 
-  const { frontmatter, body } = extractFrontmatter(
+  const { frontmatter, content } = parseMarkdownFile(
     fileContent,
-    PostFrontmatterSchema
+    PostModel.shape.frontmatter
   );
 
-  const meta: PostMeta = {
-    ...frontmatter,
-    name: path.basename(filePath),
-    size: formatSize(stat.size),
-    lastModified: new Date(stat.mtime).toLocaleDateString(),
-    path: filePath,
-  };
+  const fileData = await getMarkdownFileFileData(file);
 
-  return {
-    content: body,
-    meta,
-  };
+  return PostModel.parse({
+    frontmatter,
+    fileData,
+    content,
+  } satisfies Post);
+}
+
+export async function getPostFrontmatter(
+  file: Bun.BunFile
+): Promise<PostFrontmatter> {
+  return getFrontmatter(file, PostModel.shape.frontmatter);
 }

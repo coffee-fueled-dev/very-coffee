@@ -1,20 +1,11 @@
-import { createFileRoute, notFound, rootRouteId } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  notFound,
+  rootRouteId,
+  type LinkComponentProps,
+} from "@tanstack/react-router";
 import { Topic } from "@/components/blocks/topic";
-import type { Post } from "@/components/blocks/post";
-import type { PostMeta } from "@/lib/post";
-import type { TopicMeta } from "@/lib/topics";
-
-interface PostData {
-  slug: string;
-  topic: string;
-  meta: PostMeta;
-}
-
-interface TopicData {
-  meta: TopicMeta;
-  content: string;
-  posts: PostData[];
-}
+import type { Topic as TopicData } from "@/lib/topics";
 
 export const Route = createFileRoute("/topics/$topic/")({
   loader: async ({ params }): Promise<TopicData> => {
@@ -30,15 +21,16 @@ export const Route = createFileRoute("/topics/$topic/")({
 });
 
 function TopicPostsPage() {
-  const data = Route.useLoaderData();
+  const topic = Route.useLoaderData();
 
-  const postItems: Post[] = data.posts.map((post) => ({
-    link: {
+  const postLinks: Record<string, Omit<LinkComponentProps, "children">> = {};
+  topic.posts.forEach((post) => {
+    const slug = post.fileData.name.replace(".post.md", "");
+    postLinks[post.fileData.name] = {
       to: "/topics/$topic/$post",
-      params: { topic: post.topic, post: post.slug },
-    },
-    meta: post.meta,
-  }));
+      params: { topic: topic.slug, post: slug },
+    };
+  });
 
-  return <Topic meta={data.meta} content={data.content} posts={postItems} />;
+  return <Topic topic={topic} postLinks={postLinks} />;
 }

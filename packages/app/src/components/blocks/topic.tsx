@@ -12,35 +12,33 @@ import { Link, type LinkComponentProps } from "@tanstack/react-router";
 import { Badge } from "../ui/badge";
 
 import { PostList, type Post } from "./post";
-import type { TopicMeta } from "@/lib/topics";
+import type { Topic as TopicData, TopicPreview } from "@/lib/topics";
 import MarkdownPreview from "@uiw/react-markdown-preview";
 
 export interface Topic {
   link: Omit<LinkComponentProps, "children">;
-  title: string;
-  description: string;
-  posts: number;
+  preview: TopicPreview;
 }
 
 export const TopicList = ({ topics }: { topics: Topic[] }) => (
   <div className="flex flex-col gap-4">
     {topics.map((topic) => (
-      <TopicItem {...topic} key={topic.title} />
+      <TopicItem {...topic} key={topic.preview.slug} />
     ))}
   </div>
 );
 
-export const TopicItem = ({ title, description, posts, link }: Topic) => (
+export const TopicItem = ({ preview, link }: Topic) => (
   <Item variant="outline" size="sm" asChild>
     <Link {...link}>
       <ItemMedia>
         <Badge variant="secondary">
-          {posts} {posts === 1 ? "post" : "posts"}
+          {preview.posts} {preview.posts === 1 ? "post" : "posts"}
         </Badge>
       </ItemMedia>
       <ItemContent>
-        <ItemTitle>{title}</ItemTitle>
-        <ItemDescription>{description}</ItemDescription>
+        <ItemTitle>{preview.name}</ItemTitle>
+        <ItemDescription>{preview.description}</ItemDescription>
       </ItemContent>
       <ItemActions>
         <ChevronRightIcon className="size-4" />
@@ -49,32 +47,37 @@ export const TopicItem = ({ title, description, posts, link }: Topic) => (
   </Item>
 );
 
-export interface TopicDetailProps {
-  meta: TopicMeta;
-  content: string;
-  posts: Post[];
+export interface TopicProps {
+  topic: TopicData;
+  postLinks: Record<string, Omit<LinkComponentProps, "children">>;
 }
 
-export const Topic = ({ meta, content, posts }: TopicDetailProps) => {
+export const Topic = ({ topic, postLinks }: TopicProps) => {
+  const posts: Post[] = topic.posts.map((post) => ({
+    link: postLinks[post.fileData.name] || {},
+    frontmatter: post.frontmatter,
+    fileData: post.fileData,
+  }));
+
   return (
     <section className="flex flex-col gap-6">
       {/* Topic Header */}
       <div className="flex flex-col gap-2">
         <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
-          {meta.name}
+          {topic.name}
         </h1>
-        <p className="text-xl text-muted-foreground">{meta.description}</p>
+        <p className="text-xl text-muted-foreground">{topic.description}</p>
       </div>
 
       {/* Topic Content */}
-      {content && (
+      {topic.content && (
         <div className="prose prose-neutral dark:prose-invert max-w-none">
           <MarkdownPreview
             style={{
               backgroundColor: "transparent",
               color: "inherit",
             }}
-            source={content}
+            source={topic.content}
           />
         </div>
       )}

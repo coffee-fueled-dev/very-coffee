@@ -1,17 +1,11 @@
 declare module "*.post.md" {
-  import type { PostMeta } from "@/lib/post";
-
-  export const content: string;
-  export const meta: PostMeta;
-  export default { content, meta };
+  import type { Post } from "@/lib/post";
+  const data: Post;
+  export default data;
 }
 
 declare module "*.md" {
-  import type { FileMeta } from "@/lib/markdown";
-
-  export const content: string;
-  export const meta: FileMeta & Record<string, unknown>;
-
-  const data: { content: string; meta: FileMeta & Record<string, unknown> };
+  import type { MarkdownFile } from "@/lib/markdown";
+  const data: MarkdownFile;
   export default data;
 }

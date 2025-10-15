@@ -1,5 +1,7 @@
 import entry from "../public/index.html";
-import { getTopics, getTopicPosts, getPost, getTopic } from "./lib/topics";
+import { getTopic, getTopicPreviews } from "./lib/topics";
+import { getPost } from "./lib/post";
+import { join } from "node:path";
 
 const server = Bun.serve({
   port: process.env.PORT || 3000,
@@ -15,7 +17,7 @@ const server = Bun.serve({
   routes: {
     "/api/topics": {
       async GET() {
-        const topics = await getTopics();
+        const topics = await getTopicPreviews();
         return Response.json(topics);
       },
     },
@@ -28,18 +30,19 @@ const server = Bun.serve({
           return new Response("Topic not found", { status: 404 });
         }
 
-        const posts = await getTopicPosts(topic);
-
-        return Response.json({
-          ...topicData,
-          posts,
-        });
+        return Response.json(topicData);
       },
     },
     "/api/topics/:topic/:slug": {
       async GET(req) {
         const { topic, slug } = req.params;
-        const post = await getPost(topic, slug);
+        const postPath = join(
+          process.cwd(),
+          "public/topics",
+          topic,
+          `${slug}.post.md`
+        );
+        const post = await getPost(postPath);
         if (!post) {
           return new Response("Post not found", { status: 404 });
         }

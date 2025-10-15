@@ -1,45 +1,46 @@
+import { getMarkdownFileFileData, parseMarkdownFile } from "@/lib/markdown";
+import { getPostFrontmatter, PostModel } from "@/lib/post";
 import { readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { z } from "zod";
-import { parsePostFile } from "./post";
-import type { PostMeta } from "./post";
-import { extractFrontmatter } from "./markdown";
 
 const TOPICS_DIR = join(process.cwd(), "public/topics");
 
-// ============================================================================
-// Schema & Types
-// ============================================================================
-
-export const TopicFrontmatterSchema = z.object({
-  name: z.string().min(1, "Topic name is required"),
-  description: z.string().min(1, "Topic description is required"),
+export const PartialPostDTO = z.object({
+  frontmatter: PostModel.shape.frontmatter,
+  fileData: PostModel.shape.fileData,
 });
 
-export type TopicFrontmatter = z.infer<typeof TopicFrontmatterSchema>;
+export const TopicModel = z.object({
+  slug: z.string(),
+  name: z.string().min(1, "Topic name is required"),
+  description: z.string().min(1, "Topic description is required"),
+  content: z.string(),
+  posts: z.array(PartialPostDTO),
+});
 
-export type TopicMeta = TopicFrontmatter & {
-  slug: string;
-};
+export const TopicFrontmatterDTO = z.object({
+  name: TopicModel.shape.name,
+  description: TopicModel.shape.description,
+});
 
-export interface TopicInfo {
-  slug: string;
-  name: string;
-  description: string;
-  postCount: number;
-}
+export const TopicPreviewDTO = z.object({
+  slug: TopicModel.shape.slug,
+  name: TopicModel.shape.name,
+  description: TopicModel.shape.description,
+  posts: z.number(),
+});
 
-// ============================================================================
-// Utilities
-// ============================================================================
+export type Topic = z.infer<typeof TopicModel>;
+export type PartialPost = z.infer<typeof PartialPostDTO>;
+export type TopicFrontmatter = z.infer<typeof TopicFrontmatterDTO>;
+export type TopicPreview = z.infer<typeof TopicPreviewDTO>;
 
-export async function getTopic(
-  slug: string
-): Promise<{ meta: TopicMeta; content: string } | null> {
+export async function getTopic(slug: string): Promise<Topic | null> {
   try {
     const topicPath = join(TOPICS_DIR, slug);
-    const indexPath = join(topicPath, "index.md");
-    const file = Bun.file(indexPath);
+    const topicFile = join(topicPath, "topic.md");
+    const file = Bun.file(topicFile);
     const exists = await file.exists();
 
     if (!exists) {
@@ -47,54 +48,54 @@ export async function getTopic(
     }
 
     const text = await file.text();
-    const { frontmatter, body } = extractFrontmatter(
+    const { frontmatter, content } = parseMarkdownFile(
       text,
-      TopicFrontmatterSchema
+      TopicFrontmatterDTO
     );
 
-    return {
-      meta: {
-        ...frontmatter,
-        slug,
-      },
-      content: body,
-    };
+    const posts = await getPosts(slug);
+
+    return TopicModel.parse({
+      ...frontmatter,
+      content,
+      posts,
+      slug,
+    } satisfies Topic);
   } catch (error) {
     console.error(`Error reading topic "${slug}":`, error);
     return null;
   }
 }
 
-function slugToTitle(slug: string): string {
-  return slug
-    .split("-")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
-}
-
-export async function getTopics(): Promise<TopicInfo[]> {
+export async function getTopicPreviews(): Promise<TopicPreview[]> {
   try {
     const entries = readdirSync(TOPICS_DIR);
-    const topics: TopicInfo[] = [];
+    const topics: TopicPreview[] = [];
 
     for (const entry of entries) {
       const topicPath = join(TOPICS_DIR, entry);
       const stat = statSync(topicPath);
 
       if (stat.isDirectory()) {
-        const posts = readdirSync(topicPath).filter((file) =>
-          file.endsWith(".post.md")
+        const topicFile = Bun.file(join(topicPath, "topic.md"));
+        const exists = await topicFile.exists();
+
+        if (!exists) continue;
+
+        const text = await topicFile.text();
+        const { frontmatter } = parseMarkdownFile(text, TopicFrontmatterDTO);
+
+        const glob = new Bun.Glob("*.post.md");
+        const files = await Array.fromAsync(glob.scan({ cwd: topicPath }));
+
+        topics.push(
+          TopicPreviewDTO.parse({
+            slug: entry,
+            name: frontmatter.name,
+            description: frontmatter.description,
+            posts: files.length,
+          } satisfies TopicPreview)
         );
-
-        const topic = await getTopic(entry);
-
-        topics.push({
-          slug: entry,
-          name: topic?.meta.name || slugToTitle(entry),
-          description:
-            topic?.meta.description || `Posts about ${slugToTitle(entry)}`,
-          postCount: posts.length,
-        });
       }
     }
 
@@ -105,34 +106,21 @@ export async function getTopics(): Promise<TopicInfo[]> {
   }
 }
 
-export async function getTopicPosts(
-  topic: string
-): Promise<Array<{ slug: string; topic: string; meta: PostMeta }>> {
+async function getPosts(topic: string): Promise<PartialPost[]> {
   try {
     const topicPath = join(TOPICS_DIR, topic);
-    const entries = readdirSync(topicPath);
-    const posts: Array<{ slug: string; topic: string; meta: PostMeta }> = [];
+    const glob = new Bun.Glob("*.post.md");
+    const files = await Array.fromAsync(glob.scan({ cwd: topicPath }));
 
-    for (const entry of entries) {
-      if (entry.endsWith(".post.md")) {
-        const slug = entry.replace(".post.md", "");
-        const postPath = join(topicPath, entry);
-
-        try {
-          const { meta } = await parsePostFile(postPath);
-          posts.push({
-            slug,
-            topic,
-            meta,
-          });
-        } catch (err) {
-          if (err instanceof Error) {
-            console.error(`Error reading post ${topic}/${slug}:`, err.message);
-          } else {
-            console.error(`Error reading post ${topic}/${slug}:`, err);
-          }
-        }
-      }
+    const posts: PartialPost[] = [];
+    for (let i = 0; i < files.length; i++) {
+      const filePath = join(topicPath, files[i]);
+      const file = Bun.file(filePath);
+      const frontmatter = await getPostFrontmatter(file);
+      const fileData = await getMarkdownFileFileData(file);
+      posts.push(
+        PartialPostDTO.parse({ frontmatter, fileData } satisfies PartialPost)
+      );
     }
 
     return posts;
@@ -143,26 +131,5 @@ export async function getTopicPosts(
       console.error(`Error reading topic "${topic}":`, error);
     }
     return [];
-  }
-}
-
-export async function getPost(
-  topic: string,
-  slug: string
-): Promise<{ content: string; meta: PostMeta } | null> {
-  try {
-    const topicPath = join(TOPICS_DIR, topic);
-    const postPath = join(topicPath, `${slug}.post.md`);
-
-    try {
-      statSync(postPath);
-    } catch {
-      return null;
-    }
-
-    return parsePostFile(postPath);
-  } catch (error) {
-    console.error(`Error reading post "${topic}/${slug}":`, error);
-    return null;
   }
 }

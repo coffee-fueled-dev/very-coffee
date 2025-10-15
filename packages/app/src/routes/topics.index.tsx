@@ -1,35 +1,26 @@
 import { TopicList, type Topic } from "@/components/blocks/topic";
 import { createFileRoute } from "@tanstack/react-router";
-
-import { content as topicOverview } from "@/topics/index.md";
+import topicOverviewData from "@/topics/index.md";
 import MarkdownPreview from "@uiw/react-markdown-preview";
-
-interface TopicInfo {
-  slug: string;
-  name: string;
-  description: string;
-  postCount: number;
-}
+import type { TopicPreview } from "@/lib/topics";
 
 export const Route = createFileRoute("/topics/")({
   loader: async () => {
     const response = await fetch("/api/topics");
-    const topicInfos: TopicInfo[] = await response.json();
-    return topicInfos;
+    const topicPreviews: TopicPreview[] = await response.json();
+    return topicPreviews;
   },
   component: TopicsPage,
 });
 
 function TopicsPage() {
-  const topicInfos = Route.useLoaderData();
+  const topicPreviews = Route.useLoaderData();
 
-  const topics: Topic[] = topicInfos.map((info) => ({
-    title: info.name,
-    posts: info.postCount,
-    description: info.description,
+  const topics: Topic[] = topicPreviews.map((preview) => ({
+    preview,
     link: {
       to: "/topics/$topic",
-      params: { topic: info.slug },
+      params: { topic: preview.slug },
     },
   }));
 
@@ -41,7 +32,7 @@ function TopicsPage() {
             backgroundColor: "transparent",
             color: "inherit",
           }}
-          source={topicOverview}
+          source={topicOverviewData.content}
         />
       </div>
       <TopicList topics={topics} />

@@ -1,11 +1,6 @@
 import { createFileRoute, notFound, rootRouteId } from "@tanstack/react-router";
 import { Post } from "@/components/blocks/post";
-import type { PostMeta } from "@/lib/post";
-
-interface PostData {
-  content: string;
-  meta: PostMeta;
-}
+import type { Post as PostData } from "@/lib/post";
 
 export const Route = createFileRoute("/topics/$topic/$post")({
   loader: async ({ params }): Promise<PostData> => {
@@ -21,7 +16,7 @@ export const Route = createFileRoute("/topics/$topic/$post")({
 });
 
 function PostPage() {
-  const postData = Route.useLoaderData();
+  const post = Route.useLoaderData();
 
-  return <Post content={postData.content} meta={postData.meta} />;
+  return <Post post={post} />;
 }
