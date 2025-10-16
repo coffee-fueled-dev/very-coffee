@@ -2,7 +2,7 @@ import { type IGate, type IGateSnapshot } from "./gate.domain";
 import type { IQueue } from "./queue.domain";
 
 export type Value = string;
-export type Sentinel = number;
+export type Sentinel = `<${number}>`;
 export type Key = string;
 export type SequencerInput = Value | Sentinel;
 export type SequencerOutput = SequencerInput[];
@@ -67,11 +67,10 @@ export class Sequencer<TGates extends IGate[] = IGate[]> implements ISequencer {
   }
 
   push: ISequencer["push"] = (input) => {
-    this._previousKey = JSON.stringify(this._candidate);
     this._candidate.push(input);
-    this._queue.push(
-      this._evaluateGates(JSON.stringify(this._candidate), this._previousKey)
-    );
+    const key = `${this._previousKey}${input}`;
+    this._queue.push(this._evaluateGates(key, this._previousKey));
+    this._previousKey = key;
   };
 
   private _evaluateGates(
