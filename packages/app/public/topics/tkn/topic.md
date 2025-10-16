@@ -15,5 +15,3 @@ The constraints I put on the problem were:
 - It must ingest one character at a time
 - It must learn the concept of a word without first being told anything about language
 - It must be able to reproduce the original text
-
-I'm not a trained programmer, so I often think through things like this and discover concepts before knowing what they're called. In this case, I later learned what I imaginined belongs to the Lemple-Ziv family of algorithms, but with the added feature of maintaining token order as a graph of markov chains.
