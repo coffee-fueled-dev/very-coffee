@@ -1,0 +1,10 @@
+{
+  "name": "@very-coffee/tkn",
+  "module": "src/index.ts",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./src/index.ts"
+    }
+  }
+}
