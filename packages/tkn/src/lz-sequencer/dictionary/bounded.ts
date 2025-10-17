@@ -1,4 +1,4 @@
-import type { Key } from "@/sequencer";
+import type { Key } from "../../sequencer";
 import type { IDictionary } from "./dictionary.domain";
 
 /**
@@ -13,7 +13,7 @@ export class Bounded implements IDictionary {
 
   constructor(max: number) {
     if (max <= 0 || !Number.isFinite(max)) {
-      throw new Error(`FIFO max must be a positive integer; got ${max}`);
+      throw new Error(`Bounded max must be a positive integer; got ${max}`);
     }
     this._max = max | 0;
     this._buf = new Array(this._max);

@@ -1,4 +1,4 @@
-import type { Key } from "@/sequencer";
+import type { Key } from "../../sequencer";
 import type { IDictionary } from "./dictionary.domain";
 
 /**

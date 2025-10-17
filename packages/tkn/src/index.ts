@@ -1,3 +1,3 @@
-export * from "./sequencer";
-export * from "./lz-sequencer";
+export * from "./sequencer/index";
+export * from "./lz-sequencer/index";
 export * from "./unicode-reader";

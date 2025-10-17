@@ -33,7 +33,7 @@ const RootLayout = () => (
       </NavigationMenu>
     </header>
     <div className="min-h-dvh flex flex-col">
-      <main className="py-20 mx-6 flex-1 min-h-dvh max-w-5xl self-center">
+      <main className="py-20 mx-6 flex-1 min-h-dvh max-w-5xl w-full self-center">
         <Outlet />
       </main>
       <footer className="p-6 flex-0 border-t">

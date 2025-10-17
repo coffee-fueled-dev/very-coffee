@@ -15,6 +15,7 @@ import { Route as TopicsIndexRouteImport } from './routes/topics.index'
 import { Route as TopicsTopicRouteImport } from './routes/topics.$topic'
 import { Route as TopicsTopicIndexRouteImport } from './routes/topics.$topic.index'
 import { Route as TopicsTopicPostRouteImport } from './routes/topics.$topic.$post'
+import { Route as DemosTknTextInputRouteImport } from './routes/demos.tkn.text-input'
 
 const TopicsRoute = TopicsRouteImport.update({
   id: '/topics',
@@ -46,18 +47,25 @@ const TopicsTopicPostRoute = TopicsTopicPostRouteImport.update({
   path: '/$post',
   getParentRoute: () => TopicsTopicRoute,
 } as any)
+const DemosTknTextInputRoute = DemosTknTextInputRouteImport.update({
+  id: '/demos/tkn/text-input',
+  path: '/demos/tkn/text-input',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/topics': typeof TopicsRouteWithChildren
   '/topics/$topic': typeof TopicsTopicRouteWithChildren
   '/topics/': typeof TopicsIndexRoute
+  '/demos/tkn/text-input': typeof DemosTknTextInputRoute
   '/topics/$topic/$post': typeof TopicsTopicPostRoute
   '/topics/$topic/': typeof TopicsTopicIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/topics': typeof TopicsIndexRoute
+  '/demos/tkn/text-input': typeof DemosTknTextInputRoute
   '/topics/$topic/$post': typeof TopicsTopicPostRoute
   '/topics/$topic': typeof TopicsTopicIndexRoute
 }
@@ -67,6 +75,7 @@ export interface FileRoutesById {
   '/topics': typeof TopicsRouteWithChildren
   '/topics/$topic': typeof TopicsTopicRouteWithChildren
   '/topics/': typeof TopicsIndexRoute
+  '/demos/tkn/text-input': typeof DemosTknTextInputRoute
   '/topics/$topic/$post': typeof TopicsTopicPostRoute
   '/topics/$topic/': typeof TopicsTopicIndexRoute
 }
@@ -77,16 +86,23 @@ export interface FileRouteTypes {
     | '/topics'
     | '/topics/$topic'
     | '/topics/'
+    | '/demos/tkn/text-input'
     | '/topics/$topic/$post'
     | '/topics/$topic/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/topics' | '/topics/$topic/$post' | '/topics/$topic'
+  to:
+    | '/'
+    | '/topics'
+    | '/demos/tkn/text-input'
+    | '/topics/$topic/$post'
+    | '/topics/$topic'
   id:
     | '__root__'
     | '/'
     | '/topics'
     | '/topics/$topic'
     | '/topics/'
+    | '/demos/tkn/text-input'
     | '/topics/$topic/$post'
     | '/topics/$topic/'
   fileRoutesById: FileRoutesById
@@ -94,6 +110,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   TopicsRoute: typeof TopicsRouteWithChildren
+  DemosTknTextInputRoute: typeof DemosTknTextInputRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -140,6 +157,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TopicsTopicPostRouteImport
       parentRoute: typeof TopicsTopicRoute
     }
+    '/demos/tkn/text-input': {
+      id: '/demos/tkn/text-input'
+      path: '/demos/tkn/text-input'
+      fullPath: '/demos/tkn/text-input'
+      preLoaderRoute: typeof DemosTknTextInputRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -173,6 +197,7 @@ const TopicsRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   TopicsRoute: TopicsRouteWithChildren,
+  DemosTknTextInputRoute: DemosTknTextInputRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

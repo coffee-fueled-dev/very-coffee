@@ -1,5 +1,5 @@
 import { type IGate, type IGateSnapshot } from "./gate.domain";
-import type { IQueue } from "./queue.domain";
+import type { IQueue } from "./queue/queue.domain";
 
 export type Value = string;
 export type Sentinel = `<${number}>`;
@@ -25,20 +25,15 @@ export interface ISequencer {
    */
   readonly _gates: IGate[];
   /**
-   * The queue which receives segmentation results
-   */
-  readonly _queue: IQueue;
-  /**
    * Processes a single int and returns the longest known subsequence if found
    * @param input The value to process or a sentinel
    * @returns Output sequences triggered by the input value
    */
-  push(input: SequencerInput): SequencerOutput | void;
+  push(input: SequencerInput): void;
   /**
-   * Flushes the current state
-   * @returns The currently buffered sequences
+   * Flushes the current candidate to the queue
    */
-  flush(): SequencerOutput;
+  flush(): void;
   /**
    * Resets all internal state
    */
@@ -48,6 +43,14 @@ export interface ISequencer {
    */
   snapshot(): Promise<ISequencerSnapshot[]>;
   /**
+   * Read segmentation outputs from the queue
+   */
+  read(): AsyncGenerator<SequencerOutput, void, unknown>;
+  /**
+   * The history of segmentation outputs
+   */
+  readonly history: SequencerOutput[];
+  /**
    * The amount of time since the first time push was called for this sequencer
    */
   durationMS: number;
@@ -56,27 +59,37 @@ export interface ISequencer {
 export class Sequencer<TGates extends IGate[] = IGate[]> implements ISequencer {
   private _name: string;
   private _timeStart = 0;
-  private _previousKey = "";
-  private _candidate: SequencerInput[] = [];
   readonly _gates: TGates;
-  readonly _queue: IQueue;
+  private _queue: IQueue;
   constructor({ name, gates, queue }: ISequencerConfig<TGates>) {
     this._name = name ?? this.constructor.name;
     this._gates = gates ?? [];
     this._queue = queue;
   }
 
-  push: ISequencer["push"] = (input) => {
+  private _candidate: SequencerInput[] = [];
+  private _currentKey = "";
+  private _previousKey = "";
+  private _lastEvaluationResult: SequencerOutput | undefined;
+  push: ISequencer["push"] = (input): void => {
     this._candidate.push(input);
-    const key = `${this._previousKey}${input}`;
-    this._queue.push(this._evaluateGates(key, this._previousKey));
-    this._previousKey = key;
+    this._currentKey = `${this._previousKey}${input}`;
+    this._lastEvaluationResult = this._evaluateGates(
+      this._currentKey,
+      this._previousKey
+    );
+    if (this._lastEvaluationResult && this._lastEvaluationResult.length > 0) {
+      this._queue.push(this._lastEvaluationResult);
+      this._previousKey = this._candidate.join("");
+    } else {
+      this._previousKey = this._currentKey;
+    }
   };
 
   private _evaluateGates(
     currentKey: Key,
     previousKey: Key
-  ): SequencerOutput | void {
+  ): SequencerOutput | undefined {
     for (let index = 0; index < this._gates.length; index++) {
       // Continue as long as the gate passes
       if (this._gates[index].evaluate(currentKey, previousKey)) continue;
@@ -89,7 +102,9 @@ export class Sequencer<TGates extends IGate[] = IGate[]> implements ISequencer {
   }
 
   flush: ISequencer["flush"] = () => {
-    return this._candidate;
+    if (this._candidate.length > 0) {
+      this._queue.push(this._candidate.splice(0, this._candidate.length));
+    }
   };
 
   reset: ISequencer["reset"] = () => {
@@ -116,6 +131,14 @@ export class Sequencer<TGates extends IGate[] = IGate[]> implements ISequencer {
       },
     ];
   };
+
+  read(): AsyncGenerator<SequencerOutput, void, unknown> {
+    return this._queue.read();
+  }
+
+  get history(): SequencerOutput[] {
+    return this._queue.history;
+  }
 
   get durationMS(): number {
     return performance.now() - this._timeStart;

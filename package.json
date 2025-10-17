@@ -4,6 +4,9 @@
   "workspaces": [
     "packages/*"
   ],
+  "scripts": {
+    "dev:app": "bun run --filter @very-coffee/app dev"
+  },
   "devDependencies": {
     "@types/bun": "^1.3.0"
   }

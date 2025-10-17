@@ -42,6 +42,11 @@ function Home() {
                 TKN
               </Button>
             </Link>
+            <Link to="/demos/tkn/text-input" params={{ topic: "tkn" }}>
+              <Button size="sm" variant="secondary">
+                TKN demo!
+              </Button>
+            </Link>
           </span>
         </div>
         <p className="text-xs">

@@ -11,11 +11,8 @@ export type LZCustomMetrics = {
 };
 
 export class LZGate implements IGate<LZCustomMetrics> {
-  _ingested = 0;
-  _passed = 0;
-  _name: string;
-  _cache: IDictionary;
-  _stats?: boolean;
+  private _cache: IDictionary;
+  private _stats?: boolean;
 
   constructor({ name = "LZGate", cache, stats }: LZGateConfig) {
     this._name = name ?? this.constructor.name;
@@ -24,18 +21,22 @@ export class LZGate implements IGate<LZCustomMetrics> {
   }
 
   // Simple LZ-style inclusion heuristic
+  private _currentWasKnown = false;
   evaluate: IGate<LZCustomMetrics>["evaluate"] = (current) => {
     if (!this._stats) return this._cache.merge(current);
     this._ingested += 1;
-    const wasKnown = this._cache.merge(current);
-    if (wasKnown) this._passed += 1;
-    return wasKnown;
+    this._currentWasKnown = this._cache.merge(current);
+    if (this._currentWasKnown) this._passed += 1;
+    return this._currentWasKnown;
   };
 
   reset = (): void => {
     this._cache.clear();
   };
 
+  private _ingested = 0;
+  private _passed = 0;
+  private _name: string;
   snapshot: IGate<LZCustomMetrics>["snapshot"] = async () => ({
     name: this._name,
     passRate: this._passed / this._ingested,
@@ -45,5 +46,3 @@ export class LZGate implements IGate<LZCustomMetrics> {
     },
   });
 }
-
-export const createLZGate = (config: LZGateConfig) => new LZGate(config);
