@@ -72,10 +72,13 @@ export class Sequencer<TGates extends IGate[] = IGate[]> implements ISequencer {
 
     // Sequencer.evaluate produces a key internally and returns it in either continue or reset
     // We set _ongoingKey, which will be used in the the next push call, depending on the shape of the output.
-    // The presence of continue signals we're continuing to build, so it will be equal to the concatenated version of the ongoing sequence
-    // The presence of reset, signals we should emit and start the next pattern, so it will be equal to the string that was input
+    // The presence of continue signals we're in the middle of a known pattern, so it will be equal to the concatenated version of the ongoing sequence
+    // The presence of reset signals at least one of the gates said we should segment before the input item
+    // If emit is not present, there was no pattern accumulating yet and the gate did not trust the first input item
     if ("continue" in result) {
       this._ongoingKey = result.continue;
+    } else if (!result.emit) {
+      this._ongoingKey = result.reset;
     } else {
       this._ongoingKey = result.reset;
       this._queue.push({
@@ -95,14 +98,21 @@ export class Sequencer<TGates extends IGate[] = IGate[]> implements ISequencer {
     previous: Key,
     input: SequencerInput,
     gates: IGate[]
-  ): { reset: string; emit: string } | { continue: string } {
+  ): { reset: string; emit?: string } | { continue: string } {
     const current = `${previous}${input}`;
     for (let index = 0; index < gates.length; index++) {
       // Continue as long as the gate passes
       if (gates[index].evaluate(current, previous)) continue;
 
       // The last input added caused this gate to fail.
-      // Reset the candidate to the new value, assuming it is the start of a new pattern and emit the accumulated sequence as a trusted patten
+      // This is our signal to stop accumulating and segment here, assuming the input is the start of a new pattern.
+
+      // We should never emit an empty string, but the gates are still allowed to fail on one in the case of a single input being unknown.
+      // This can occur on the first input when a gate uses a cache that starts completely empty
+      // In this case, we trust the gate's decision to segment here and reset the accumulator to the input but do not signal to emit
+      if (previous === "") return { reset: input };
+
+      // If there was actually a pattern accumulating, we emit it and also reset the accumulator to the input
       return { reset: input, emit: previous };
     }
     return { continue: current };
