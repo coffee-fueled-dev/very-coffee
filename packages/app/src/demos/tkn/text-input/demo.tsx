@@ -15,9 +15,8 @@ import { Badge } from "@/components/ui/badge";
 import type { SequencerOutput } from "@very-coffee/tkn";
 import { Card, CardContent } from "@/components/ui/card";
 
-// Memoized segment component to prevent unnecessary re-renders
 const SegmentBadge = memo(({ segment }: { segment: SequencerOutput }) => (
-  <Badge variant="secondary">{segment.join("")}</Badge>
+  <Badge variant="secondary">{segment.key}</Badge>
 ));
 SegmentBadge.displayName = "SegmentBadge";
 

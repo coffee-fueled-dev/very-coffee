@@ -5,7 +5,7 @@ export type Value = string;
 export type Sentinel = `<${number}>`;
 export type Key = string;
 export type SequencerInput = Value | Sentinel;
-export type SequencerOutput = SequencerInput[];
+export type SequencerOutput = { sequence: SequencerInput[]; key: Key };
 
 export interface ISequencerConfig<TGates extends IGate[] = IGate[]> {
   name?: string;
@@ -25,9 +25,7 @@ export interface ISequencer {
    */
   readonly _gates: IGate[];
   /**
-   * Processes a single int and returns the longest known subsequence if found
    * @param input The value to process or a sentinel
-   * @returns Output sequences triggered by the input value
    */
   push(input: SequencerInput): void;
   /**
@@ -67,48 +65,60 @@ export class Sequencer<TGates extends IGate[] = IGate[]> implements ISequencer {
     this._queue = queue;
   }
 
-  private _candidate: SequencerInput[] = [];
-  private _currentKey = "";
-  private _previousKey = "";
-  private _lastEvaluationResult: SequencerOutput | undefined;
-  push: ISequencer["push"] = (input): void => {
-    this._candidate.push(input);
-    this._currentKey = `${this._previousKey}${input}`;
-    this._lastEvaluationResult = this._evaluateGates(
-      this._currentKey,
-      this._previousKey
-    );
-    if (this._lastEvaluationResult && this._lastEvaluationResult.length > 0) {
-      this._queue.push(this._lastEvaluationResult);
-      this._previousKey = this._candidate.join("");
+  private _ongoingSequence: SequencerInput[] = [];
+  private _ongoingKey: Key = "";
+  push: ISequencer["push"] = (input) => {
+    const result = Sequencer.evaluate(this._ongoingKey, input, this._gates);
+
+    // Sequencer.evaluate produces a key internally and returns it in either continue or reset
+    // We set _ongoingKey, which will be used in the the next push call, depending on the shape of the output.
+    // The presence of continue signals we're continuing to build, so it will be equal to the concatenated version of the ongoing sequence
+    // The presence of reset, signals we should emit and start the next pattern, so it will be equal to the string that was input
+    if ("continue" in result) {
+      this._ongoingKey = result.continue;
     } else {
-      this._previousKey = this._currentKey;
+      this._ongoingKey = result.reset;
+      this._queue.push({
+        key: result.emit,
+
+        // Splicing here avoids an assignment in exchange for readability
+        // This claims the ongoing sequence to the queue and resets ongoing to empty
+        sequence: this._ongoingSequence.splice(0),
+      });
     }
+
+    // Whether we continue or emit above, we still need to add the input to the ongoing sequence
+    this._ongoingSequence.push(input);
   };
 
-  private _evaluateGates(
-    currentKey: Key,
-    previousKey: Key
-  ): SequencerOutput | undefined {
-    for (let index = 0; index < this._gates.length; index++) {
+  static evaluate(
+    previous: Key,
+    input: SequencerInput,
+    gates: IGate[]
+  ): { reset: string; emit: string } | { continue: string } {
+    const current = `${previous}${input}`;
+    for (let index = 0; index < gates.length; index++) {
       // Continue as long as the gate passes
-      if (this._gates[index].evaluate(currentKey, previousKey)) continue;
+      if (gates[index].evaluate(current, previous)) continue;
 
-      // The last input added caused the gate to fail this gate.
-      // We reset the candidate to this value and
-      // emit the last known candidate
-      return this._candidate.splice(0, this._candidate.length - 1);
+      // The last input added caused this gate to fail.
+      // Reset the candidate to the new value, assuming it is the start of a new pattern and emit the accumulated sequence as a trusted patten
+      return { reset: input, emit: previous };
     }
+    return { continue: current };
   }
 
   flush: ISequencer["flush"] = () => {
-    if (this._candidate.length > 0) {
-      this._queue.push(this._candidate.splice(0, this._candidate.length));
+    if (this._ongoingSequence.length > 0) {
+      this._queue.push({
+        sequence: this._ongoingSequence.splice(0),
+        key: this._ongoingKey,
+      });
     }
   };
 
   reset: ISequencer["reset"] = () => {
-    this._candidate = [];
+    this._ongoingSequence = [];
     this._timeStart = 0;
     this._gates.forEach((gate) => gate.reset());
   };

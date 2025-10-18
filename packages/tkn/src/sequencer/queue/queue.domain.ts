@@ -4,42 +4,34 @@ import {
   UnboundedHistory,
   type IQueueHistory,
 } from "./history.domain";
-
-export type Transform = (input: SequencerOutput[]) => SequencerOutput[];
-export type Condition = (queue: SequencerOutput[]) => boolean;
+import type { IResegmenter } from "./resegmenter.domain";
 
 export interface IQueue {
   push(input: SequencerOutput | void): void;
   read(): AsyncGenerator<SequencerOutput, void, unknown>;
-  /**
-   * The history of the queue
-   */
   history: SequencerOutput[];
 }
 
+type Resolver = (value: SequencerOutput) => void;
+
 export class Queue implements IQueue {
-  readonly _transforms?: Transform[];
+  private _resegmenters?: IResegmenter[];
   private _queue: SequencerOutput[] = [];
-  private _resolvers: ((value: SequencerOutput) => void)[] = [];
-  private _flushCondition: Condition;
+  private _resolvers: Resolver[] = [];
   private _history?: IQueueHistory;
 
   /**
-   * @param flushCondition A function that determines if the current members of the queue are ready to be flushed.
-   * @param transforms When provided, transforms run on the entire current queue each time push is called.
-   * @param history Optional history tracking configuration
+   * @param resegmenters
+   * @param history
    */
   constructor({
-    flushCondition,
-    transforms,
+    resegmenters,
     historyOptions,
   }: {
-    flushCondition: Condition;
-    transforms?: Transform[];
+    resegmenters: IResegmenter[];
     historyOptions?: { bounded: true; maxLength: number } | { bounded: false };
   }) {
-    this._transforms = transforms;
-    this._flushCondition = flushCondition;
+    this._resegmenters = resegmenters;
 
     if (historyOptions) {
       this._history = historyOptions.bounded
@@ -51,36 +43,25 @@ export class Queue implements IQueue {
   push: IQueue["push"] = (input) => {
     if (!input) return;
     this._queue.push(input);
-    let transformed = this._queue;
-    if (this._transforms) {
-      for (const transform of this._transforms) {
-        transformed = transform(transformed);
-      }
-    }
 
-    if (!this._flushCondition(this._queue)) return void 0;
-
-    // Drain queue to waiting resolvers and track history
-    while (this._queue.length > 0 && this._resolvers.length > 0) {
-      const item = this._queue.shift()!;
-      const resolver = this._resolvers.shift()!;
-      if (this._history) {
-        this._history.push(item);
-      }
-      resolver(item);
+    if (this._resegmenters) {
+      const { skipped, segments: resegmentedQueue } = Queue.resegment(
+        this._queue,
+        this._resegmenters
+      );
+      if (!skipped) return void 0;
+      return Queue.drain(resegmentedQueue, this._resolvers, this._history);
+    } else {
+      return Queue.drain(this._queue, this._resolvers, this._history);
     }
   };
 
   async *read(): ReturnType<IQueue["read"]> {
     while (true) {
-      if (this._queue.length > 0) {
-        const item = this._queue.shift()!;
-        if (this._history) {
-          this._history.push(item);
-        }
+      const item = Queue.consumeNext(this._queue, this._history);
+      if (item) {
         yield item;
       } else {
-        // Wait for a new element to be pushed
         yield await new Promise<SequencerOutput>((resolve) => {
           this._resolvers.push(resolve);
         });
@@ -91,4 +72,40 @@ export class Queue implements IQueue {
   get history(): SequencerOutput[] {
     return this._history?.get() ?? [];
   }
+
+  private static consumeNext(
+    queue: SequencerOutput[],
+    history?: IQueueHistory
+  ): SequencerOutput | undefined {
+    const item = queue.shift();
+    if (item && history) history.push(item);
+    return item;
+  }
+
+  private static drain(
+    queue: SequencerOutput[],
+    resolvers: Resolver[],
+    history?: IQueueHistory
+  ) {
+    while (queue.length > 0 && resolvers.length > 0) {
+      const item = Queue.consumeNext(queue, history)!;
+      resolvers.shift()!(item);
+    }
+  }
+
+  private static resegment = (
+    initialSegments: SequencerOutput[],
+    resegmenters: IResegmenter[]
+  ): ReturnType<IResegmenter["evaluate"]> =>
+    resegmenters.reduce<ReturnType<IResegmenter["evaluate"]>>(
+      (lastSegmentation, resegmenter) => {
+        const evaluation = resegmenter.evaluate(lastSegmentation.segments);
+        if (evaluation.skipped) return lastSegmentation;
+        return evaluation;
+      },
+      {
+        skipped: true,
+        segments: initialSegments,
+      }
+    );
 }
