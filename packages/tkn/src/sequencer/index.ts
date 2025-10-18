@@ -1,3 +1,3 @@
-export * from "./sequencer.domain";
-export * from "./gate.domain";
+export * from "./sequencer";
+export * from "./gate";
 export * from "./queue";

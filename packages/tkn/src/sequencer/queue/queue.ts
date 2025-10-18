@@ -1,10 +1,10 @@
-import type { SequencerOutput } from "../sequencer.domain";
+import type { SequencerOutput } from "../sequencer";
 import {
   BoundedHistory,
   UnboundedHistory,
   type IQueueHistory,
-} from "./history.domain";
-import type { IResegmenter } from "./resegmenter.domain";
+} from "./history";
+import type { IResegmenter } from "./resegmenter";
 
 export interface IQueue {
   push(input: SequencerOutput | void): void;

@@ -1,2 +1,2 @@
-export * from "./history.domain";
-export * from "./queue.domain";
+export * from "./history";
+export * from "./queue";

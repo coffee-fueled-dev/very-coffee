@@ -1,5 +1,5 @@
-import { type IGate, type IGateSnapshot } from "./gate.domain";
-import type { IQueue } from "./queue/queue.domain";
+import { type IGate, type IGateSnapshot } from "./gate";
+import type { IQueue } from "./queue/queue";
 
 export type Value = string;
 export type Sentinel = `<${number}>`;

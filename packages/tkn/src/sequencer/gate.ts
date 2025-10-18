@@ -1,4 +1,4 @@
-import type { Key } from "./sequencer.domain";
+import type { Key } from "./sequencer";
 
 export interface IGateSnapshot<
   TCustomMetrics extends Record<string, number> = Record<string, number>

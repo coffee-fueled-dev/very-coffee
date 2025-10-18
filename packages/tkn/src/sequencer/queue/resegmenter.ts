@@ -1,4 +1,4 @@
-import type { SequencerOutput } from "../sequencer.domain";
+import type { SequencerOutput } from "../sequencer";
 
 export interface IResegmenter {
   evaluate(segments: SequencerOutput[]): {
