@@ -20,7 +20,6 @@ export const createLZSequencer = (
   const gate = new LZGate({ cache });
 
   const queue = new Queue({
-    flushCondition: (queue) => queue.length > 0,
     historyOptions: properties?.historyOptions,
   });
 

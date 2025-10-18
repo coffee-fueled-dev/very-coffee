@@ -28,7 +28,7 @@ export class Queue implements IQueue {
     resegmenters,
     historyOptions,
   }: {
-    resegmenters: IResegmenter[];
+    resegmenters?: IResegmenter[];
     historyOptions?: { bounded: true; maxLength: number } | { bounded: false };
   }) {
     this._resegmenters = resegmenters;
