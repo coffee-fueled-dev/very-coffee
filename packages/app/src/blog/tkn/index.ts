@@ -1,6 +1,4 @@
 import type { PostModule } from "@/lib/post";
-import corpusFingerprinting from "./corpus-fingerprinting";
-import userData from "./user-data";
 import patternDiscovery from "./pattern-discovery";
 
 export default {
@@ -12,8 +10,8 @@ export default {
     "An online algorithm that incrementally discovers and compresses recurring symbol patterns in a data stream, building its own token vocabulary without any prior linguistic or statistical model.",
   module: () => import("./post.mdx"),
   posts: {
-    "user-data": userData,
-    "corpus-fingerprinting": corpusFingerprinting,
+    // "user-data": userData,
+    // "corpus-fingerprinting": corpusFingerprinting,
     "pattern-discovery": patternDiscovery,
   },
 } satisfies PostModule;
