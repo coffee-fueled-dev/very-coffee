@@ -29,7 +29,7 @@ for each input:
     pattern ← input
 ```
 
-The key insight: by checking if extended patterns exist in the dictionary (LZ-style inclusion), the algorithm naturally segments at boundaries where patterns become novel, discovering repetition and structure without explicit pattern matching.
+By checking if extended patterns exist in the dictionary (LZ-style inclusion), the algorithm naturally segments at boundaries where patterns become novel, discovering repetition and structure without explicit pattern matching.
 
 This said, the tkn algorithm is not a tokenizer on its own. Instead, it focuses on greedy, fast, pattern discovery -- not optimal segmentation. As patterns are emit, the probability of emission of a pattern that has actual meaning in the language will be higher than the probability of a non-meaningful pattern. In the *global* context, the emission frequencies and connectedness to other patterns in the graph of pattern co-occurences encodes the structure of the data. This, then can *be used* for tasks such as segmentation and tokenization.
 
