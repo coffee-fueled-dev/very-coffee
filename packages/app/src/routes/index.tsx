@@ -14,7 +14,7 @@ const cfdHref = "https://github.com/coffee-fueled-dev/very-coffee";
 
 function Home() {
   return (
-    <div className="flex-1 flex flex-col justify-center items-center gap-4">
+    <div className="flex-1 flex flex-col justify-center items-center gap-6 p-6">
       <CoffeeCup />
       <section className="max-w-lg text-center space-y-4">
         <h4 className="scroll-m-20 text-xl font-semibold tracking-tight">

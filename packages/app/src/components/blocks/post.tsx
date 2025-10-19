@@ -10,7 +10,7 @@ import {
   ItemActions,
   ItemContent,
   ItemDescription,
-  ItemMedia,
+  ItemFooter,
   ItemTitle,
 } from "@/components/ui/item";
 import { Badge } from "../ui/badge";
@@ -44,7 +44,7 @@ const PostCountBadge = ({ posts }: { posts: PostPreviewProps["posts"] }) => {
 
   return (
     postCount && (
-      <Badge variant="secondary">
+      <Badge>
         {postCount} {postCount === 1 ? "post" : "posts"}
       </Badge>
     )
@@ -53,7 +53,7 @@ const PostCountBadge = ({ posts }: { posts: PostPreviewProps["posts"] }) => {
 
 const TagCloud = ({ tags }: { tags: PostPreviewProps["tags"] }) =>
   tags && (
-    <div className="flex flex-wrap gap-1">
+    <div className="flex flex-wrap gap-1 items-center">
       {tags.map((tag) => (
         <Badge key={tag} variant="secondary">
           {tag}
@@ -64,7 +64,6 @@ const TagCloud = ({ tags }: { tags: PostPreviewProps["tags"] }) =>
 
 const PostPreview = ({
   link,
-  author,
   title,
   tags,
   posts,
@@ -73,13 +72,9 @@ const PostPreview = ({
   return (
     <Item variant="outline" size="sm" asChild>
       <Link {...link}>
-        <ItemMedia className="flex flex-col items-start gap-2">
-          <Badge variant="default">{author}</Badge>
-          <PostCountBadge posts={posts} />
-        </ItemMedia>
         <ItemContent>
           <span className="flex gap-2">
-            <ItemTitle>{title}</ItemTitle>
+            <ItemTitle className="text-lg font-medium">{title}</ItemTitle>
             <TagCloud tags={tags} />
           </span>
           <ItemDescription>{summary}</ItemDescription>
@@ -87,6 +82,9 @@ const PostPreview = ({
         <ItemActions>
           <ChevronRightIcon className="size-4" />
         </ItemActions>
+        <ItemFooter className="space-x-4">
+          <PostCountBadge posts={posts} />
+        </ItemFooter>
       </Link>
     </Item>
   );
@@ -100,7 +98,7 @@ export const PostPreviews = ({
   sectionTitle: string;
 }) =>
   postPreviews && (
-    <>
+    <section className="space-y-6">
       <Separator />
       <div className="w-full space-y-2">
         <h1 className="scroll-m-20 text-2xl font-medium tracking-tight text-balance text-muted-foreground">
@@ -112,24 +110,27 @@ export const PostPreviews = ({
           ))}
         </div>
       </div>
-    </>
+    </section>
   );
 
 // Custom MDX components
 const mdxComponents = {
   // Override default HTML elements
   h1: (props: React.HTMLAttributes<HTMLHeadingElement>) => (
-    <h1 className="scroll-m-20 text-4xl font-bold tracking-tight" {...props} />
+    <h1
+      className="scroll-m-20 text-4xl font-bold tracking-tight mt-6 mb-4"
+      {...props}
+    />
   ),
   h2: (props: React.HTMLAttributes<HTMLHeadingElement>) => (
     <h2
-      className="scroll-m-20 text-3xl font-semibold tracking-tight"
+      className="scroll-m-20 text-3xl font-semibold tracking-tight mt-6 mb-4"
       {...props}
     />
   ),
   h3: (props: React.HTMLAttributes<HTMLHeadingElement>) => (
     <h3
-      className="scroll-m-20 text-2xl font-semibold tracking-tight"
+      className="scroll-m-20 text-2xl font-semibold tracking-tight mt-6 mb-4"
       {...props}
     />
   ),
@@ -168,7 +169,7 @@ export const Post = (post: ResolvedPost) => {
   const lastModified = module?.metadata?.lastModified;
 
   return (
-    <section className="flex flex-col gap-6 p-6">
+    <section className="space-y-6">
       <div className="flex flex-col gap-2">
         <h1 className="scroll-m-20 text-center text-4xl font-extrabold tracking-tight text-balance">
           {title}

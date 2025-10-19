@@ -36,10 +36,10 @@ const getPostFromPathSegment = (pathname: string, pathSegment: string[]) =>
     const childPostPreviews = getChildPostPreviews(pathname, resolvedPost);
 
     const LazyPostPage = () => (
-      <div className="w-full space-y-6">
+      <>
         <Post {...resolvedPost} />
         <PostPreviews postPreviews={childPostPreviews} sectionTitle="Posts" />
-      </div>
+      </>
     );
     return { default: LazyPostPage };
   });
