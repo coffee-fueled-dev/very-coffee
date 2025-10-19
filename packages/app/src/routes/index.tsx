@@ -37,7 +37,7 @@ function Home() {
             These are the things I've been most interested in lately:
           </p>
           <span className="space-x-2 p-6">
-            <Link to="/topics/$topic" params={{ topic: "tkn" }}>
+            <Link to="/blog/$" params={{ _splat: "tkn" }}>
               <Button size="sm" variant="secondary">
                 TKN
               </Button>

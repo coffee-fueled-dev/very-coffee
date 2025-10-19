@@ -9,17 +9,15 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as TopicsRouteImport } from './routes/topics'
+import { Route as BlogRouteImport } from './routes/blog'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as TopicsIndexRouteImport } from './routes/topics.index'
-import { Route as TopicsTopicRouteImport } from './routes/topics.$topic'
-import { Route as TopicsTopicIndexRouteImport } from './routes/topics.$topic.index'
-import { Route as TopicsTopicPostRouteImport } from './routes/topics.$topic.$post'
+import { Route as BlogIndexRouteImport } from './routes/blog.index'
+import { Route as BlogSplatRouteImport } from './routes/blog.$'
 import { Route as DemosTknTextInputRouteImport } from './routes/demos.tkn.text-input'
 
-const TopicsRoute = TopicsRouteImport.update({
-  id: '/topics',
-  path: '/topics',
+const BlogRoute = BlogRouteImport.update({
+  id: '/blog',
+  path: '/blog',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -27,25 +25,15 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const TopicsIndexRoute = TopicsIndexRouteImport.update({
+const BlogIndexRoute = BlogIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => TopicsRoute,
+  getParentRoute: () => BlogRoute,
 } as any)
-const TopicsTopicRoute = TopicsTopicRouteImport.update({
-  id: '/$topic',
-  path: '/$topic',
-  getParentRoute: () => TopicsRoute,
-} as any)
-const TopicsTopicIndexRoute = TopicsTopicIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => TopicsTopicRoute,
-} as any)
-const TopicsTopicPostRoute = TopicsTopicPostRouteImport.update({
-  id: '/$post',
-  path: '/$post',
-  getParentRoute: () => TopicsTopicRoute,
+const BlogSplatRoute = BlogSplatRouteImport.update({
+  id: '/$',
+  path: '/$',
+  getParentRoute: () => BlogRoute,
 } as any)
 const DemosTknTextInputRoute = DemosTknTextInputRouteImport.update({
   id: '/demos/tkn/text-input',
@@ -55,71 +43,52 @@ const DemosTknTextInputRoute = DemosTknTextInputRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/topics': typeof TopicsRouteWithChildren
-  '/topics/$topic': typeof TopicsTopicRouteWithChildren
-  '/topics/': typeof TopicsIndexRoute
+  '/blog': typeof BlogRouteWithChildren
+  '/blog/$': typeof BlogSplatRoute
+  '/blog/': typeof BlogIndexRoute
   '/demos/tkn/text-input': typeof DemosTknTextInputRoute
-  '/topics/$topic/$post': typeof TopicsTopicPostRoute
-  '/topics/$topic/': typeof TopicsTopicIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/topics': typeof TopicsIndexRoute
+  '/blog/$': typeof BlogSplatRoute
+  '/blog': typeof BlogIndexRoute
   '/demos/tkn/text-input': typeof DemosTknTextInputRoute
-  '/topics/$topic/$post': typeof TopicsTopicPostRoute
-  '/topics/$topic': typeof TopicsTopicIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/topics': typeof TopicsRouteWithChildren
-  '/topics/$topic': typeof TopicsTopicRouteWithChildren
-  '/topics/': typeof TopicsIndexRoute
+  '/blog': typeof BlogRouteWithChildren
+  '/blog/$': typeof BlogSplatRoute
+  '/blog/': typeof BlogIndexRoute
   '/demos/tkn/text-input': typeof DemosTknTextInputRoute
-  '/topics/$topic/$post': typeof TopicsTopicPostRoute
-  '/topics/$topic/': typeof TopicsTopicIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/topics'
-    | '/topics/$topic'
-    | '/topics/'
-    | '/demos/tkn/text-input'
-    | '/topics/$topic/$post'
-    | '/topics/$topic/'
+  fullPaths: '/' | '/blog' | '/blog/$' | '/blog/' | '/demos/tkn/text-input'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/topics'
-    | '/demos/tkn/text-input'
-    | '/topics/$topic/$post'
-    | '/topics/$topic'
+  to: '/' | '/blog/$' | '/blog' | '/demos/tkn/text-input'
   id:
     | '__root__'
     | '/'
-    | '/topics'
-    | '/topics/$topic'
-    | '/topics/'
+    | '/blog'
+    | '/blog/$'
+    | '/blog/'
     | '/demos/tkn/text-input'
-    | '/topics/$topic/$post'
-    | '/topics/$topic/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  TopicsRoute: typeof TopicsRouteWithChildren
+  BlogRoute: typeof BlogRouteWithChildren
   DemosTknTextInputRoute: typeof DemosTknTextInputRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/topics': {
-      id: '/topics'
-      path: '/topics'
-      fullPath: '/topics'
-      preLoaderRoute: typeof TopicsRouteImport
+    '/blog': {
+      id: '/blog'
+      path: '/blog'
+      fullPath: '/blog'
+      preLoaderRoute: typeof BlogRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -129,33 +98,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/topics/': {
-      id: '/topics/'
+    '/blog/': {
+      id: '/blog/'
       path: '/'
-      fullPath: '/topics/'
-      preLoaderRoute: typeof TopicsIndexRouteImport
-      parentRoute: typeof TopicsRoute
+      fullPath: '/blog/'
+      preLoaderRoute: typeof BlogIndexRouteImport
+      parentRoute: typeof BlogRoute
     }
-    '/topics/$topic': {
-      id: '/topics/$topic'
-      path: '/$topic'
-      fullPath: '/topics/$topic'
-      preLoaderRoute: typeof TopicsTopicRouteImport
-      parentRoute: typeof TopicsRoute
-    }
-    '/topics/$topic/': {
-      id: '/topics/$topic/'
-      path: '/'
-      fullPath: '/topics/$topic/'
-      preLoaderRoute: typeof TopicsTopicIndexRouteImport
-      parentRoute: typeof TopicsTopicRoute
-    }
-    '/topics/$topic/$post': {
-      id: '/topics/$topic/$post'
-      path: '/$post'
-      fullPath: '/topics/$topic/$post'
-      preLoaderRoute: typeof TopicsTopicPostRouteImport
-      parentRoute: typeof TopicsTopicRoute
+    '/blog/$': {
+      id: '/blog/$'
+      path: '/$'
+      fullPath: '/blog/$'
+      preLoaderRoute: typeof BlogSplatRouteImport
+      parentRoute: typeof BlogRoute
     }
     '/demos/tkn/text-input': {
       id: '/demos/tkn/text-input'
@@ -167,36 +122,21 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface TopicsTopicRouteChildren {
-  TopicsTopicPostRoute: typeof TopicsTopicPostRoute
-  TopicsTopicIndexRoute: typeof TopicsTopicIndexRoute
+interface BlogRouteChildren {
+  BlogSplatRoute: typeof BlogSplatRoute
+  BlogIndexRoute: typeof BlogIndexRoute
 }
 
-const TopicsTopicRouteChildren: TopicsTopicRouteChildren = {
-  TopicsTopicPostRoute: TopicsTopicPostRoute,
-  TopicsTopicIndexRoute: TopicsTopicIndexRoute,
+const BlogRouteChildren: BlogRouteChildren = {
+  BlogSplatRoute: BlogSplatRoute,
+  BlogIndexRoute: BlogIndexRoute,
 }
 
-const TopicsTopicRouteWithChildren = TopicsTopicRoute._addFileChildren(
-  TopicsTopicRouteChildren,
-)
-
-interface TopicsRouteChildren {
-  TopicsTopicRoute: typeof TopicsTopicRouteWithChildren
-  TopicsIndexRoute: typeof TopicsIndexRoute
-}
-
-const TopicsRouteChildren: TopicsRouteChildren = {
-  TopicsTopicRoute: TopicsTopicRouteWithChildren,
-  TopicsIndexRoute: TopicsIndexRoute,
-}
-
-const TopicsRouteWithChildren =
-  TopicsRoute._addFileChildren(TopicsRouteChildren)
+const BlogRouteWithChildren = BlogRoute._addFileChildren(BlogRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  TopicsRoute: TopicsRouteWithChildren,
+  BlogRoute: BlogRouteWithChildren,
   DemosTknTextInputRoute: DemosTknTextInputRoute,
 }
 export const routeTree = rootRouteImport

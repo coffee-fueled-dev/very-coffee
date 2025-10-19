@@ -26,7 +26,7 @@ const RootLayout = () => (
           </NavigationMenuItem>
           <NavigationMenuItem>
             <NavigationMenuLink asChild>
-              <Link to="/topics">Topics</Link>
+              <Link to="/blog">Topics</Link>
             </NavigationMenuLink>
           </NavigationMenuItem>
         </NavigationMenuList>

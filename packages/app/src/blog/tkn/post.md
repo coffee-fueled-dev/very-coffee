@@ -1,8 +1,3 @@
----
-name: tkn
-description: An online algorithm that incrementally discovers and compresses recurring symbol patterns in a data stream, building its own token vocabulary without any prior linguistic or statistical model.
----
-
 ## Overview
 
 I've been working on the tkn project for a few years as of writing this. It started in the basement of my friend's house watching a [Two Minute Papers](https://www.youtube.com/channel/UCbfYPyITQ-7l4upoX8nvctg) video on Youtube in (I think) 2022 about GPT3.

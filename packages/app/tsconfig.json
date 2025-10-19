@@ -26,8 +26,8 @@
 
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"],
-      "@/topics/*": ["./public/topics/*"]
+      "@/*": ["src/*"],
+      "@/topics/*": ["src/blog/*"]
     }
   }
 }
