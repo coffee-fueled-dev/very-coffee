@@ -1,4 +1,4 @@
-import type { PostModule } from "@/blog/lib";
+import type { PostModule } from "@/lib/post";
 
 export default {
   __type: "post",

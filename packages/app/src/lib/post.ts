@@ -1,4 +1,4 @@
-import { blog } from ".";
+import { blog } from "../blog";
 import type { ComponentType } from "react";
 
 const TOPICS = blog?.posts;

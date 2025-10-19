@@ -1,4 +1,4 @@
-import type { PostModule } from "@/blog/lib";
+import type { PostModule } from "@/lib/post";
 import corpusFingerprinting from "./corpus-fingerprinting";
 import userData from "./user-data";
 import patternDiscovery from "./pattern-discovery";

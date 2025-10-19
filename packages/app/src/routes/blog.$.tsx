@@ -1,6 +1,6 @@
 import { createFileRoute, useLocation } from "@tanstack/react-router";
 import { lazy, Suspense } from "react";
-import { postFromPathSegment } from "@/blog/lib";
+import { postFromPathSegment } from "@/lib/post";
 import {
   getChildPostPreviews,
   Post,

@@ -14,7 +14,7 @@ import {
   ItemTitle,
 } from "@/components/ui/item";
 import { Badge } from "../ui/badge";
-import type { PostModule, ResolvedPost } from "@/blog/lib";
+import type { PostModule, ResolvedPost } from "@/lib/post";
 import { Separator } from "../ui/separator";
 import { ExternalLink } from "./external-link";
 import { CopyButton } from "./copy-button";

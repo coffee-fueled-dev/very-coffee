@@ -1,4 +1,4 @@
-import type { PostModule } from "./lib";
+import type { PostModule } from "../lib/post";
 import tkn from "./tkn";
 
 export const blog = {
