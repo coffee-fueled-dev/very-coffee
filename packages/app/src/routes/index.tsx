@@ -1,5 +1,5 @@
 import { CoffeeCup } from "@/components/blocks/coffee-cup";
-import { ExternalLink as XLink } from "@/components/external-link";
+import { ExternalLink as XLink } from "@/components/blocks/external-link";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { createFileRoute, Link } from "@tanstack/react-router";
