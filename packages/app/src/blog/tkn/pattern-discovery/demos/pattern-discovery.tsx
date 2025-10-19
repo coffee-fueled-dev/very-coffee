@@ -82,11 +82,10 @@ export const PatternDiscoveryDemo = () => {
 
   return (
     <InlineDemo
-      title="TKN Algorithm Demo"
-      description="Type in the text area below to see real-time learning using the tkn
-          algorithm."
+      title="TKN Pattern Discovery Demo"
+      description="Type in the text area below to see real-time pattern discovery using the tkn algorithm."
     >
-      <div className="space-y-6 p-6 w-full max-w-4xl mx-auto">
+      <div className="space-y-6 w-full max-w-4xl mx-auto">
         <div className="grid w-full gap-3">
           <Textarea
             placeholder="Type your text here..."
