@@ -1,4 +1,5 @@
 import { compile } from "@mdx-js/mdx";
+import rehypeStarryNight from "rehype-starry-night";
 
 function formatSize(bytes: number): string {
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
@@ -22,6 +23,7 @@ export default {
 
       const compiled = await compile(raw, {
         jsxImportSource: "react",
+        rehypePlugins: [rehypeStarryNight],
       });
 
       const withMetadata = `

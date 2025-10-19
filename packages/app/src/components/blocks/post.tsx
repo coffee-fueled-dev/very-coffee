@@ -17,6 +17,23 @@ import { Badge } from "../ui/badge";
 import type { PostModule, ResolvedPost } from "@/blog/lib";
 import { Separator } from "../ui/separator";
 import { ExternalLink } from "./external-link";
+import { CopyButton } from "./copy-button";
+import { isValidElement } from "react";
+
+// Helper to extract text content from React children
+const extractTextFromChildren = (children: React.ReactNode): string => {
+  if (typeof children === "string") return children;
+  if (typeof children === "number") return String(children);
+  if (Array.isArray(children)) {
+    return children.map(extractTextFromChildren).join("");
+  }
+  if (isValidElement(children) && children.props) {
+    return extractTextFromChildren(
+      (children.props as { children?: React.ReactNode }).children
+    );
+  }
+  return "";
+};
 
 interface PostPreviewProps extends Omit<ResolvedPost, "module"> {
   link: Omit<LinkComponentProps, "children">;
@@ -98,24 +115,6 @@ export const PostPreviews = ({
     </>
   );
 
-// const PostContent = ({ content }: { content: ResolvedPost["content"] }) =>
-//   content && (
-//     <div className="w-full space-y-6">
-//       <div>
-//         <CopyButton content={content} label="Copy as markdown" />
-//       </div>
-//       <div className="prose prose-neutral dark:prose-invert max-w-none">
-//         <MarkdownPreview
-//           style={{
-//             backgroundColor: "transparent",
-//             color: "inherit",
-//           }}
-//           source={content}
-//         />
-//       </div>
-//     </div>
-//   );
-
 // Custom MDX components
 const mdxComponents = {
   // Override default HTML elements
@@ -143,18 +142,20 @@ const mdxComponents = {
   ol: (props: React.HTMLAttributes<HTMLOListElement>) => (
     <ol className="my-6 ml-6 list-decimal [&>li]:mt-2" {...props} />
   ),
-  code: (props: React.HTMLAttributes<HTMLElement>) => (
-    <code
-      className="relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-sm"
-      {...props}
-    />
-  ),
-  pre: (props: React.HTMLAttributes<HTMLPreElement>) => (
-    <pre
-      className="mb-4 mt-6 overflow-x-auto rounded-lg border bg-black p-4"
-      {...props}
-    />
-  ),
+  pre: (props: React.HTMLAttributes<HTMLPreElement>) => {
+    const codeContent = extractTextFromChildren(props.children);
+    return (
+      <div className="relative">
+        <div className="absolute top-2 right-2">
+          <CopyButton content={codeContent} label="Copy" />
+        </div>
+        <pre
+          className="mb-4 mt-6 overflow-x-auto rounded-lg bg-muted p-4"
+          {...props}
+        />
+      </div>
+    );
+  },
   blockquote: (props: React.HTMLAttributes<HTMLQuoteElement>) => (
     <blockquote className="mt-6 border-l-2 pl-6 italic" {...props} />
   ),

@@ -1,5 +1,5 @@
 import { Clipboard } from "lucide-react";
-import { Badge } from "../ui/badge";
+import { Button } from "../ui/button";
 
 export const CopyButton = ({
   content,
@@ -17,13 +17,9 @@ export const CopyButton = ({
   };
 
   return (
-    <Badge
-      onClick={handleCopy}
-      variant="secondary"
-      className="flex justify-start gap-1 items-center cursor-pointer"
-    >
-      <Clipboard size={16} />
+    <Button size="xs" onClick={handleCopy} variant="outline">
+      <Clipboard />
       {label}
-    </Badge>
+    </Button>
   );
 };
