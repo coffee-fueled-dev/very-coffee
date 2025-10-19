@@ -9,9 +9,9 @@ export interface IResegmenter {
 
 export abstract class Resegmenter implements IResegmenter {
   evaluate: IResegmenter["evaluate"] = (segments) => {
-    if (this.skipWhen(segments)) return { skipped: true, segments };
+    if (this.shouldEmit(segments)) return { skipped: true, segments };
     return { skipped: false, segments: this.transform(segments) };
   };
   protected abstract transform(input: SequencerOutput[]): SequencerOutput[];
-  protected abstract skipWhen(segments: SequencerOutput[]): boolean;
+  protected abstract shouldEmit(segments: SequencerOutput[]): boolean;
 }
