@@ -16,10 +16,10 @@ import type { SequencerOutput } from "@very-coffee/tkn";
 import { Card, CardContent } from "@/components/ui/card";
 import { InlineDemo } from "@/components/blocks/inline-demo";
 
-const SegmentBadge = memo(({ segment }: { segment: SequencerOutput }) => (
-  <Badge variant="secondary">{segment.key}</Badge>
+const PatternBadge = memo(({ pattern }: { pattern: SequencerOutput }) => (
+  <Badge variant="secondary">{pattern.key}</Badge>
 ));
-SegmentBadge.displayName = "SegmentBadge";
+PatternBadge.displayName = "PatternBadge";
 
 export const PatternDiscoveryDemo = () => {
   const { push, flush, startReader, reset, history } = useLZSequencer();
@@ -112,7 +112,7 @@ export const PatternDiscoveryDemo = () => {
 
         <div>
           <h4 className="font-medium mb-3">
-            Segments {history.length > 0 && `(${history.length})`}
+            Patterns {history.length > 0 && `(${history.length})`}
           </h4>
           {history.length === 0 ? (
             <Empty className="border rounded-lg py-12">
@@ -120,7 +120,7 @@ export const PatternDiscoveryDemo = () => {
                 <EmptyMedia variant="icon">
                   <Layers className="size-10" />
                 </EmptyMedia>
-                <EmptyTitle>No segments yet</EmptyTitle>
+                <EmptyTitle>No patterns yet</EmptyTitle>
                 <EmptyDescription>
                   Start typing to see how the tkn algorithm learns patterns from
                   your input
@@ -132,8 +132,8 @@ export const PatternDiscoveryDemo = () => {
               <CardContent>
                 <ScrollArea className="h-[400px]">
                   <div className="flex flex-wrap gap-2 p-4 items-center">
-                    {history.map((segment, idx) => (
-                      <SegmentBadge key={idx} segment={segment} />
+                    {history.map((pattern, idx) => (
+                      <PatternBadge key={idx} pattern={pattern} />
                     ))}
                   </div>
                 </ScrollArea>
