@@ -7,5 +7,5 @@ export const blog = {
   author: "Zach Garrett",
   summary: "Zach's dev blog",
   posts: { tkn },
-  module: () => import("./post.md"),
+  module: () => import("./post.mdx"),
 } satisfies PostModule;

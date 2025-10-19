@@ -1,4 +1,4 @@
-// import "normalize.css";
+import "normalize.css";
 import "../globals.css";
 
 import { createRootRoute, Outlet } from "@tanstack/react-router";

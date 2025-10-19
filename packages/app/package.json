@@ -18,13 +18,13 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
+    "@mdx-js/mdx": "^3.1.1",
     "@radix-ui/react-navigation-menu": "^1.2.14",
     "@radix-ui/react-scroll-area": "^1.2.10",
     "@radix-ui/react-separator": "^1.1.7",
     "@radix-ui/react-slot": "^1.2.3",
     "@radix-ui/react-tooltip": "^1.2.8",
     "@tanstack/react-router": "^1.132.47",
-    "@uiw/react-markdown-preview": "^5.1.5",
     "@very-coffee/tkn": "workspace:*",
     "bun-plugin-tailwind": "^0.1.2",
     "class-variance-authority": "^0.7.1",

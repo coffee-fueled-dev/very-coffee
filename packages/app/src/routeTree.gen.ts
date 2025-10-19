@@ -13,7 +13,6 @@ import { Route as BlogRouteImport } from './routes/blog'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as BlogIndexRouteImport } from './routes/blog.index'
 import { Route as BlogSplatRouteImport } from './routes/blog.$'
-import { Route as DemosTknTextInputRouteImport } from './routes/demos.tkn.text-input'
 
 const BlogRoute = BlogRouteImport.update({
   id: '/blog',
@@ -35,24 +34,17 @@ const BlogSplatRoute = BlogSplatRouteImport.update({
   path: '/$',
   getParentRoute: () => BlogRoute,
 } as any)
-const DemosTknTextInputRoute = DemosTknTextInputRouteImport.update({
-  id: '/demos/tkn/text-input',
-  path: '/demos/tkn/text-input',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/blog': typeof BlogRouteWithChildren
   '/blog/$': typeof BlogSplatRoute
   '/blog/': typeof BlogIndexRoute
-  '/demos/tkn/text-input': typeof DemosTknTextInputRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/blog/$': typeof BlogSplatRoute
   '/blog': typeof BlogIndexRoute
-  '/demos/tkn/text-input': typeof DemosTknTextInputRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -60,26 +52,18 @@ export interface FileRoutesById {
   '/blog': typeof BlogRouteWithChildren
   '/blog/$': typeof BlogSplatRoute
   '/blog/': typeof BlogIndexRoute
-  '/demos/tkn/text-input': typeof DemosTknTextInputRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/blog' | '/blog/$' | '/blog/' | '/demos/tkn/text-input'
+  fullPaths: '/' | '/blog' | '/blog/$' | '/blog/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/blog/$' | '/blog' | '/demos/tkn/text-input'
-  id:
-    | '__root__'
-    | '/'
-    | '/blog'
-    | '/blog/$'
-    | '/blog/'
-    | '/demos/tkn/text-input'
+  to: '/' | '/blog/$' | '/blog'
+  id: '__root__' | '/' | '/blog' | '/blog/$' | '/blog/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   BlogRoute: typeof BlogRouteWithChildren
-  DemosTknTextInputRoute: typeof DemosTknTextInputRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -112,13 +96,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BlogSplatRouteImport
       parentRoute: typeof BlogRoute
     }
-    '/demos/tkn/text-input': {
-      id: '/demos/tkn/text-input'
-      path: '/demos/tkn/text-input'
-      fullPath: '/demos/tkn/text-input'
-      preLoaderRoute: typeof DemosTknTextInputRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
@@ -137,7 +114,6 @@ const BlogRouteWithChildren = BlogRoute._addFileChildren(BlogRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   BlogRoute: BlogRouteWithChildren,
-  DemosTknTextInputRoute: DemosTknTextInputRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

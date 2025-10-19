@@ -42,7 +42,7 @@ function Home() {
                 TKN
               </Button>
             </Link>
-            <Link to="/demos/tkn/text-input" params={{ topic: "tkn" }}>
+            <Link to="/blog/$" params={{ _splat: "tkn/pattern-discovery" }}>
               <Button size="sm" variant="secondary">
                 TKN demo!
               </Button>
@@ -51,10 +51,19 @@ function Home() {
         </div>
         <p className="text-xs">
           Btw, this site is built entirely with{" "}
-          <XLink href={bunjsHref}>Bunjs</XLink> and{" "}
-          <XLink href={tsrHref}>Tanstack Router</XLink>. It's quick and super
-          tiny. If you're curious how that works, you can check out the source
-          code <XLink href={cfdHref}>here</XLink>.
+          <XLink href={bunjsHref} size="sm">
+            Bunjs
+          </XLink>{" "}
+          and{" "}
+          <XLink href={tsrHref} size="sm">
+            Tanstack Router
+          </XLink>
+          . It's quick and super tiny. If you're curious how that works, you can
+          check out the source code{" "}
+          <XLink href={cfdHref} size="sm">
+            here
+          </XLink>
+          .
         </p>
       </section>
     </div>

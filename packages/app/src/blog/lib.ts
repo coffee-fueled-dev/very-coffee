@@ -1,5 +1,5 @@
-import type { MarkdownFile } from "@/lib/markdown";
 import { blog } from ".";
+import type { ComponentType } from "react";
 
 const TOPICS = blog?.posts;
 
@@ -26,16 +26,31 @@ export function asPostKey(topic: keyof typeof TOPICS, post: string) {
   return post as keyof (typeof selectedTopic)["posts"];
 }
 
+export interface PostMetadata {
+  size: string;
+  lastModified: string;
+  path?: string | undefined;
+}
+
+export interface MDXModule {
+  default: ComponentType<any>;
+  metadata?: PostMetadata;
+}
+
 export interface PostModule {
   __type: "post";
   title: string;
   author: string;
   summary: string;
   tags?: Tag[];
-  module?: () => Promise<typeof import("*.md")>;
+  module?: () => Promise<MDXModule>;
   posts?: Record<string, PostModule>;
 }
-export type ResolvedPost = Omit<PostModule, "module"> & Partial<MarkdownFile>;
+export type ResolvedPost = Omit<PostModule, "module"> & {
+  module: MDXModule | undefined;
+};
+
+// TODO: Add schema
 export const isPost = (post: Object) =>
   "__type" in post && post.__type === "post";
 
