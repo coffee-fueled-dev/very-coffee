@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import type { SequencerOutput } from "@very-coffee/tkn";
 import { Card, CardContent } from "@/components/ui/card";
 import { InlineDemo } from "@/components/blocks/inline-demo";
+import { TooltipButton } from "@/components/blocks/tooltip-button";
 
 const PatternBadge = memo(({ pattern }: { pattern: SequencerOutput }) => (
   <Badge variant="secondary">{pattern.key}</Badge>
@@ -95,17 +96,21 @@ export const PatternDiscoveryDemo = () => {
             className="min-h-[120px]"
           />
           <div className="flex gap-2">
-            <Button onClick={handleFlush} variant="outline" size="sm">
-              Flush Buffer
-            </Button>
-            <Button
-              onClick={handleClear}
-              variant="outline"
-              size="sm"
-              disabled={text.length === 0}
-            >
-              Clear
-            </Button>
+            <TooltipButton tooltip="Force the currently accumulating pattern out of the buffer">
+              <Button onClick={handleFlush} variant="outline" size="sm">
+                Flush Buffer
+              </Button>
+            </TooltipButton>
+            <TooltipButton tooltip="Clear the text area and reset the buffer">
+              <Button
+                onClick={handleClear}
+                variant="outline"
+                size="sm"
+                disabled={text.length === 0}
+              >
+                Clear
+              </Button>
+            </TooltipButton>
           </div>
         </div>
 
