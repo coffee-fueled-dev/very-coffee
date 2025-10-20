@@ -21,7 +21,7 @@ const TSRLink = () => (
 
 const CFDLink = () => (
   <InlineLink href="https://github.com/coffee-fueled-dev/very-coffee">
-    Tanstack Router
+    here
   </InlineLink>
 );
 
