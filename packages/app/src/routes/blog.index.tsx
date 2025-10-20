@@ -6,13 +6,12 @@ import {
   PostPreviews,
   resolvePost,
 } from "@/components/blocks/post";
-import { createFileRoute, useLocation } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { lazy, Suspense } from "react";
 
 export const Route = createFileRoute("/blog/")({
   component: () => {
-    const { pathname } = useLocation();
-    const BlogRoot = getBlogRoot(pathname);
+    const BlogRoot = getBlogRoot();
 
     return (
       <Suspense fallback={<FullscreenSpinner />}>
@@ -22,14 +21,14 @@ export const Route = createFileRoute("/blog/")({
   },
 });
 
-const getBlogRoot = (pathname: string) =>
+const getBlogRoot = () =>
   lazy(async () => {
     const resolvedPost = await resolvePost(blog);
-    const childPostPreviews = getChildPostPreviews(pathname, resolvedPost);
+    const childPostPreviews = getChildPostPreviews([], resolvedPost);
 
     const LazyPostPage = () => (
       <>
-        <Post {...resolvedPost} />
+        <Post {...resolvedPost} segments={[]} />
         <PostPreviews postPreviews={childPostPreviews} sectionTitle="Topics" />
       </>
     );

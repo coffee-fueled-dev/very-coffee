@@ -1,4 +1,4 @@
-import { createFileRoute, useLocation } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { lazy, Suspense } from "react";
 import { postFromPathSegment } from "@/lib/post";
 import {
@@ -14,12 +14,11 @@ const MAX_POST_DEPTH = 3; // TODO: Get from module
 export const Route = createFileRoute("/blog/$")({
   component: () => {
     const { _splat } = Route.useParams();
-    const { pathname } = useLocation();
 
     const segments = _splat?.split("/");
 
     if (!segments || segments.length > MAX_POST_DEPTH) return undefined;
-    const LazyPostPage = getPostFromPathSegment(pathname, segments);
+    const LazyPostPage = getPostFromPathSegments(segments);
 
     return (
       <Suspense fallback={<FullscreenSpinner />}>
@@ -29,15 +28,15 @@ export const Route = createFileRoute("/blog/$")({
   },
 });
 
-const getPostFromPathSegment = (pathname: string, pathSegment: string[]) =>
+const getPostFromPathSegments = (segments: string[]) =>
   lazy(async () => {
-    const post = postFromPathSegment(pathSegment);
+    const post = postFromPathSegment(segments);
     const resolvedPost = await resolvePost(post);
-    const childPostPreviews = getChildPostPreviews(pathname, resolvedPost);
+    const childPostPreviews = getChildPostPreviews(segments, resolvedPost);
 
     const LazyPostPage = () => (
       <>
-        <Post {...resolvedPost} />
+        <Post {...resolvedPost} segments={segments} />
         <PostPreviews postPreviews={childPostPreviews} sectionTitle="Posts" />
       </>
     );

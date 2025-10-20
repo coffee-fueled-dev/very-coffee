@@ -18,6 +18,7 @@ import type { RegisteredPost, ResolvedPost } from "@/lib/post";
 import { Separator } from "../ui/separator";
 import { ExternalLink } from "./external-link";
 import { CopyButton } from "./copy-button";
+import { PostBreadcrumb } from "./post-breadcrumb";
 import { isValidElement } from "react";
 
 // Helper to extract text content from React children
@@ -168,13 +169,16 @@ const mdxComponents = {
   a: ExternalLink,
 };
 
-export const Post = (post: ResolvedPost) => {
-  const { author, title, tags, summary, module } = post;
+export const Post = (post: ResolvedPost & { segments?: string[] }) => {
+  const { author, title, tags, summary, module, segments } = post;
 
   const lastModified = module?.metadata?.lastModified;
 
   return (
     <section className="space-y-6">
+      {segments && segments.length > 0 && (
+        <PostBreadcrumb segments={segments} />
+      )}
       <div className="flex flex-col gap-2">
         <h1 className="scroll-m-20 text-center text-4xl font-extrabold tracking-tight text-balance">
           {title}
@@ -196,11 +200,10 @@ export const Post = (post: ResolvedPost) => {
 };
 
 export function getChildPostPreviews(
-  pathname: string,
+  segments: string[],
   post: ResolvedPost
 ): PostPreviewProps[] | undefined {
   if (!post.posts) return;
-  const basePath = pathname.replace(/^\/blog\/?/, "");
 
   const allChildPosts = Object.entries(post.posts);
   const publishedChildren: PostPreviewProps[] = [];
@@ -208,11 +211,13 @@ export function getChildPostPreviews(
   for (let i = 0; i < allChildPosts.length; i++) {
     const [postKey, post] = allChildPosts[i];
     if (!post.published) continue;
+
+    const childSegments = [...segments, postKey];
     publishedChildren.push({
       ...post,
       link: {
         to: "/blog/$",
-        params: { _splat: basePath ? `${basePath}/${postKey}` : postKey },
+        params: { _splat: childSegments.join("/") },
       },
     });
   }
