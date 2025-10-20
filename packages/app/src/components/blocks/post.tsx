@@ -14,7 +14,7 @@ import {
   ItemTitle,
 } from "@/components/ui/item";
 import { Badge } from "../ui/badge";
-import type { PostModule, ResolvedPost } from "@/lib/post";
+import type { RegisteredPost, ResolvedPost } from "@/lib/post";
 import { Separator } from "../ui/separator";
 import { ExternalLink } from "./external-link";
 import { CopyButton } from "./copy-button";
@@ -40,7 +40,12 @@ interface PostPreviewProps extends Omit<ResolvedPost, "module"> {
 }
 
 const PostCountBadge = ({ posts }: { posts: PostPreviewProps["posts"] }) => {
-  const postCount = posts ? Object.keys(posts).length : undefined;
+  const postCount = posts
+    ? Object.values(posts).reduce(
+        (acc, { published }) => (published ? acc + 1 : acc),
+        0
+      )
+    : undefined;
 
   return (
     postCount && (
@@ -196,19 +201,30 @@ export function getChildPostPreviews(
 ): PostPreviewProps[] | undefined {
   if (!post.posts) return;
   const basePath = pathname.replace(/^\/blog\/?/, "");
-  return Object.entries(post.posts).map(([postKey, { module, ...post }]) => ({
-    ...post,
-    link: {
-      to: "/blog/$",
-      params: { _splat: basePath ? `${basePath}/${postKey}` : postKey },
-    },
-  }));
+
+  const allChildPosts = Object.entries(post.posts);
+  const publishedChildren: PostPreviewProps[] = [];
+
+  for (let i = 0; i < allChildPosts.length; i++) {
+    const [postKey, post] = allChildPosts[i];
+    if (!post.published) continue;
+    publishedChildren.push({
+      ...post,
+      link: {
+        to: "/blog/$",
+        params: { _splat: basePath ? `${basePath}/${postKey}` : postKey },
+      },
+    });
+  }
+
+  return publishedChildren;
 }
 
 export const resolvePost = async (
-  post: PostModule | undefined
+  post: RegisteredPost | undefined
 ): Promise<ResolvedPost> => {
-  if (!post || !post.module) throw notFound({ routeId: rootRouteId });
+  if (!post || !post.module || !post.published)
+    throw notFound({ routeId: rootRouteId });
   const { module, ...rest } = post;
   const postData = await module();
   if (!postData) throw notFound({ routeId: rootRouteId });

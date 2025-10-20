@@ -37,16 +37,17 @@ export interface MDXModule {
   metadata?: PostMetadata;
 }
 
-export interface PostModule {
+export interface RegisteredPost {
   __type: "post";
+  published: boolean;
   title: string;
   author: string;
   summary: string;
   tags?: Tag[];
   module?: () => Promise<MDXModule>;
-  posts?: Record<string, PostModule>;
+  posts?: Record<string, RegisteredPost>;
 }
-export type ResolvedPost = Omit<PostModule, "module"> & {
+export type ResolvedPost = Omit<RegisteredPost, "module"> & {
   module: MDXModule | undefined;
 };
 
@@ -55,7 +56,7 @@ export const isPost = (post: Object) =>
   "__type" in post && post.__type === "post";
 
 export const postFromPathSegment = (pathSegment: string[]) =>
-  pathSegment.reduce<PostModule | undefined>((acc, key) => {
+  pathSegment.reduce<RegisteredPost | undefined>((acc, key) => {
     if (!acc || !acc.posts || !(key in acc.posts)) return undefined;
     const child = acc.posts[key];
     if (isPost(child)) return child;
