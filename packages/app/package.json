@@ -7,7 +7,7 @@
     "watch-routes": "tsr watch",
     "dev": "bun --watch src/server.tsx",
     "start": "bun src/server.tsx",
-    "postinstall": "playwright install --with-deps chromium"
+    "postinstall": "playwright install firefox"
   },
   "devDependencies": {
     "@tanstack/router-cli": "^1.132.51",
