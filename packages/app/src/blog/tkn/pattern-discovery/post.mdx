@@ -1,10 +1,8 @@
 import { PatternDiscoveryDemo } from "./demos/pattern-discovery";
 
-The tkn algorithm reads a sequence of inputs one at a time, discovering and segmenting patterns as they emerge.
-
 ## Algorithm Overview
 
-The algorithm uses a LZ-style inclusion heuristic to decide whether to grow or emit sequences:
+The tkn algorithm reads a sequence of inputs one at a time, discovering and segmenting patterns as they emerge. It uses a LZ-style inclusion heuristic to decide whether to grow or emit sequences:
 
 ```
 initialize:
@@ -31,6 +29,6 @@ for each input:
 
 By checking if extended patterns exist in the dictionary (LZ-style inclusion), the algorithm naturally segments at boundaries where patterns become novel, discovering repetition and structure without explicit pattern matching.
 
-This said, the tkn algorithm is not a tokenizer on its own. Instead, it focuses on greedy, fast, pattern discovery -- not optimal segmentation. As patterns are emit, the probability of emission of a pattern that has actual meaning in the language will be higher than the probability of a non-meaningful pattern. In the *global* context, the emission frequencies and connectedness to other patterns in the graph of pattern co-occurences encodes the structure of the data. This, then can *be used* for tasks such as segmentation and tokenization.
+This said, the tkn algorithm is not a tokenizer on its own. Instead, it focuses on greedy, fast, pattern discovery -- not optimal segmentation. As patterns are emit, the probability of emission of a pattern that has actual meaning in the language will be higher than the probability of a non-meaningful pattern. In the _global_ context, the emission frequencies and connectedness to other patterns in the graph of pattern co-occurences encodes the structure of the data. This can then _be used_ for tasks such as tokenization.
 
 <PatternDiscoveryDemo />
