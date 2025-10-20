@@ -10,9 +10,10 @@ import {
   NavigationMenuList,
 } from "@/components/ui/navigation-menu";
 import { Link } from "@tanstack/react-router";
-
 import { CoffeeCup } from "@/components/blocks/coffee-cup";
 import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { SocialLinks } from "@/components/blocks/social-links";
 
 const RootLayout = () => (
   <>
@@ -39,11 +40,15 @@ const RootLayout = () => (
       <footer className="p-6 flex-0 border-t">
         <section className="flex justify-between items-center">
           <CoffeeCup size="xs" />
-          <div className="flex flex-col justify-end text-right">
+          <div className="flex flex-col justify-end text-right gap-2">
             <pre>Coffee Fueled Dev</pre>
             <pre className="text-muted-foreground">
               {new Date(Date.now()).getFullYear()}
             </pre>
+            <Separator />
+            <span className="flex items-center justify-end">
+              <SocialLinks />
+            </span>
           </div>
         </section>
       </footer>

@@ -1,5 +1,6 @@
 import { CoffeeCup } from "@/components/blocks/coffee-cup";
 import { InlineLink } from "@/components/blocks/external-link";
+import { SocialLinks } from "@/components/blocks/social-links";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { createFileRoute, Link } from "@tanstack/react-router";
@@ -67,6 +68,7 @@ function Home() {
           works, you can check out the source code <CFDLink />
         </p>
       </section>
+      <SocialLinks />
     </div>
   );
 }

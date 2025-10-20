@@ -5,14 +5,15 @@ export const ExternalLink = ({
   size,
   children,
   variant = "link",
+  className,
   ...props
 }: Omit<AnchorHTMLAttributes<HTMLAnchorElement>, "target" | "rel"> & {
   children?: ReactNode;
-  size?: "sm" | "default" | "lg";
+  size?: "default" | "xs" | "sm" | "lg" | "icon" | "icon-sm" | "icon-lg";
   variant?: "link" | "default" | "outline" | "secondary" | "ghost";
 }) => (
   <a target="_blank" rel="noopener noreferrer" {...props}>
-    <Button variant={variant} size={size}>
+    <Button variant={variant} size={size} className={className}>
       {children}
     </Button>
   </a>
