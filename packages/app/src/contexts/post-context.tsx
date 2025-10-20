@@ -1,6 +1,7 @@
 import { createContext, useContext, useMemo } from "react";
 import { postFromPathSegment, type RegisteredPost } from "@/lib/post";
 import { useBlog } from "./blog-context";
+import type { LinkComponentProps } from "@tanstack/react-router";
 
 const MAX_POST_DEPTH = 3;
 
@@ -14,6 +15,7 @@ interface PostContextValue {
   post: Omit<RegisteredPost, "module"> | undefined;
   segments: string[];
   breadcrumbs: BreadcrumbCrumb[];
+  childPostPreviews: PostPreviewProps[];
   isValid: boolean;
   path: string;
 }
@@ -65,6 +67,36 @@ function segmentsToPath(baseRoute: string, segments: string[]): string {
   return `/${baseRoute}/${segments.join("/")}`;
 }
 
+export interface PostPreviewProps extends Omit<RegisteredPost, "module"> {
+  link: Omit<LinkComponentProps, "children">;
+}
+
+export function getChildPostPreviews(
+  segments: string[],
+  post: RegisteredPost
+): PostPreviewProps[] | undefined {
+  if (!post.posts) return;
+
+  const allChildPosts = Object.entries(post.posts);
+  const publishedChildren: PostPreviewProps[] = [];
+
+  for (let i = 0; i < allChildPosts.length; i++) {
+    const [postKey, post] = allChildPosts[i];
+    if (!post.published) continue;
+
+    const childSegments = [...segments, postKey];
+    publishedChildren.push({
+      ...post,
+      link: {
+        to: "/blog/$",
+        params: { _splat: childSegments.join("/") },
+      },
+    });
+  }
+
+  return publishedChildren;
+}
+
 interface PostProviderProps {
   splat: string | undefined;
   children: React.ReactNode;
@@ -83,6 +115,7 @@ export function PostProvider({ splat, children }: PostProviderProps) {
         post: undefined,
         segments: segments,
         breadcrumbs: [],
+        childPostPreviews: [],
         isValid: false,
         path: "",
       };
@@ -94,10 +127,16 @@ export function PostProvider({ splat, children }: PostProviderProps) {
     // Build breadcrumbs
     const breadcrumbs = buildBreadcrumbPath(rootPost, baseRoute, segments);
 
+    // Get child post previews
+    const childPostPreviews = post
+      ? getChildPostPreviews(segments, post) ?? []
+      : [];
+
     return {
       post,
       segments,
       breadcrumbs,
+      childPostPreviews,
       isValid: post !== undefined,
       path: segmentsToPath(baseRoute, segments),
     };

@@ -1,14 +1,15 @@
 import { createFileRoute, notFound, rootRouteId } from "@tanstack/react-router";
 import { lazy, Suspense } from "react";
 import {
-  getChildPostPreviews,
   Post,
+  PostHeader,
   PostPreviews,
   resolvePost,
 } from "@/components/blocks/post";
 import { FullscreenSpinner } from "@/components/blocks/fullscreen-spinner";
 import { PostProvider, useStaticPost } from "@/contexts/post-context";
 import type { RegisteredPost } from "@/lib/post";
+import { PostBreadcrumb } from "@/components/blocks/post-breadcrumb";
 
 export const Route = createFileRoute("/blog/$")({
   component: () => {
@@ -16,18 +17,23 @@ export const Route = createFileRoute("/blog/$")({
 
     return (
       <PostProvider splat={_splat}>
-        <PostPageContent />
+        <section className="space-y-6">
+          <PostBreadcrumb />
+          <PostHeader />
+          <PostPageContent />
+          <PostPreviews sectionTitle="Posts" />
+        </section>
       </PostProvider>
     );
   },
 });
 
 function PostPageContent() {
-  const { post, segments, isValid } = useStaticPost();
+  const { post, isValid } = useStaticPost();
 
   if (!isValid || !post) throw notFound({ routeId: rootRouteId });
 
-  const LazyPostPage = getPostFromPathSegments(post, segments);
+  const LazyPostPage = getPostFromPathSegments(post);
 
   return (
     <Suspense fallback={<FullscreenSpinner />}>
@@ -36,16 +42,10 @@ function PostPageContent() {
   );
 }
 
-const getPostFromPathSegments = (post: RegisteredPost, segments: string[]) =>
+const getPostFromPathSegments = (post: RegisteredPost) =>
   lazy(async () => {
     const resolvedPost = await resolvePost(post);
-    const childPostPreviews = getChildPostPreviews(segments, resolvedPost);
 
-    const LazyPostPage = () => (
-      <>
-        <Post {...resolvedPost} />
-        <PostPreviews postPreviews={childPostPreviews} sectionTitle="Posts" />
-      </>
-    );
+    const LazyPostPage = () => <Post {...resolvedPost} />;
     return { default: LazyPostPage };
   });

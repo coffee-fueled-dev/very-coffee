@@ -1,10 +1,5 @@
 import { ChevronRightIcon } from "lucide-react";
-import {
-  Link,
-  notFound,
-  rootRouteId,
-  type LinkComponentProps,
-} from "@tanstack/react-router";
+import { Link, notFound, rootRouteId } from "@tanstack/react-router";
 import {
   Item,
   ItemActions,
@@ -20,7 +15,7 @@ import { ExternalLink } from "./external-link";
 import { CopyButton } from "./copy-button";
 import { PostBreadcrumb } from "./post-breadcrumb";
 import { isValidElement } from "react";
-import { useStaticPost } from "@/contexts/post-context";
+import { useStaticPost, type PostPreviewProps } from "@/contexts/post-context";
 
 // Helper to extract text content from React children
 const extractTextFromChildren = (children: React.ReactNode): string => {
@@ -36,10 +31,6 @@ const extractTextFromChildren = (children: React.ReactNode): string => {
   }
   return "";
 };
-
-interface PostPreviewProps extends Omit<ResolvedPost, "module"> {
-  link: Omit<LinkComponentProps, "children">;
-}
 
 const PostCountBadge = ({ posts }: { posts: PostPreviewProps["posts"] }) => {
   const postCount = posts
@@ -97,14 +88,12 @@ const PostPreview = ({
   );
 };
 
-export const PostPreviews = ({
-  postPreviews,
-  sectionTitle,
-}: {
-  postPreviews: PostPreviewProps[] | undefined;
-  sectionTitle: string;
-}) =>
-  postPreviews && (
+export const PostPreviews = ({ sectionTitle }: { sectionTitle: string }) => {
+  const { childPostPreviews } = useStaticPost();
+
+  if (childPostPreviews.length === 0) return null;
+
+  return (
     <section className="space-y-6">
       <Separator />
       <div className="w-full space-y-2">
@@ -112,13 +101,14 @@ export const PostPreviews = ({
           {sectionTitle}
         </h1>
         <div className="flex flex-col gap-4">
-          {postPreviews.map((postPreview, i) => (
+          {childPostPreviews.map((postPreview, i) => (
             <PostPreview {...postPreview} key={i} />
           ))}
         </div>
       </div>
     </section>
   );
+};
 
 export const PostHeader = () => {
   const { post } = useStaticPost();
@@ -193,43 +183,13 @@ export const Post = (post: ResolvedPost) => {
   const { module } = post;
 
   return (
-    <section className="space-y-6">
-      <PostBreadcrumb />
-      <PostHeader />
-      {module?.default && (
-        <div className="prose prose-neutral dark:prose-invert max-w-none">
-          <module.default components={mdxComponents} />
-        </div>
-      )}
-    </section>
+    module?.default && (
+      <div className="prose prose-neutral dark:prose-invert max-w-none">
+        <module.default components={mdxComponents} />
+      </div>
+    )
   );
 };
-
-export function getChildPostPreviews(
-  segments: string[],
-  post: ResolvedPost
-): PostPreviewProps[] | undefined {
-  if (!post.posts) return;
-
-  const allChildPosts = Object.entries(post.posts);
-  const publishedChildren: PostPreviewProps[] = [];
-
-  for (let i = 0; i < allChildPosts.length; i++) {
-    const [postKey, post] = allChildPosts[i];
-    if (!post.published) continue;
-
-    const childSegments = [...segments, postKey];
-    publishedChildren.push({
-      ...post,
-      link: {
-        to: "/blog/$",
-        params: { _splat: childSegments.join("/") },
-      },
-    });
-  }
-
-  return publishedChildren;
-}
 
 export const resolvePost = async (
   post: RegisteredPost | undefined
