@@ -1,5 +1,6 @@
-import type { RegisteredPost } from "../lib/post";
+import type { RegisteredPost } from "@/lib/post";
 import tkn from "./tkn";
+import protologic from "./protologic";
 
 export const blog = {
   __type: "post",
@@ -7,6 +8,6 @@ export const blog = {
   title: "Topics",
   author: "Zach Garrett",
   summary: "Zach's dev blog",
-  posts: { tkn },
+  posts: { tkn, protologic },
   module: () => import("./post.mdx"),
 } satisfies RegisteredPost;

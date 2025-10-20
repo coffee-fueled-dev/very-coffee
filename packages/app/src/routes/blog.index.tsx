@@ -5,7 +5,7 @@ import {
 } from "@/components/blocks/post";
 import { createFileRoute } from "@tanstack/react-router";
 import { PostProvider } from "@/contexts/post-context";
-import { PostBreadcrumb } from "@/components/blocks/post-breadcrumb";
+import { PostBreadcrumb } from "@/components/blocks/post";
 
 export const Route = createFileRoute("/blog/")({
   component: () => (

@@ -21,23 +21,48 @@ import {
   type PostPreviewProps,
 } from "@/contexts/post-context";
 import { extractTextFromChildren } from "@/lib/extract-text-from-children";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 
-const PostCountBadge = ({ posts }: { posts: PostPreviewProps["posts"] }) => {
-  const postCount = posts
-    ? Object.values(posts).reduce(
-        (acc, { published }) => (published ? acc + 1 : acc),
-        0
-      )
-    : undefined;
+export function PostBreadcrumb() {
+  const { breadcrumbs } = useStaticPost();
+
+  // Don't show breadcrumb if we're at the root
+  if (breadcrumbs.length <= 1) {
+    return null;
+  }
 
   return (
-    postCount && (
-      <Badge>
-        {postCount} {postCount === 1 ? "post" : "posts"}
-      </Badge>
-    )
+    <Breadcrumb>
+      <BreadcrumbList>
+        {breadcrumbs.map((crumb, index) => {
+          const isLast = index === breadcrumbs.length - 1;
+
+          return (
+            <div key={crumb.path} className="contents">
+              <BreadcrumbItem>
+                {isLast ? (
+                  <BreadcrumbPage>{crumb.title}</BreadcrumbPage>
+                ) : (
+                  <BreadcrumbLink asChild>
+                    <Link to={crumb.path}>{crumb.title}</Link>
+                  </BreadcrumbLink>
+                )}
+              </BreadcrumbItem>
+              {!isLast && <BreadcrumbSeparator />}
+            </div>
+          );
+        })}
+      </BreadcrumbList>
+    </Breadcrumb>
   );
-};
+}
 
 const TagCloud = ({ tags }: { tags: PostPreviewProps["tags"] }) =>
   tags && (
@@ -54,7 +79,7 @@ const PostPreview = ({
   link,
   title,
   tags,
-  posts,
+  childPostCount,
   summary,
 }: PostPreviewProps) => {
   return (
@@ -70,9 +95,16 @@ const PostPreview = ({
         <ItemActions>
           <ChevronRightIcon className="size-4" />
         </ItemActions>
-        <ItemFooter className="space-x-4">
-          <PostCountBadge posts={posts} />
-        </ItemFooter>
+        {childPostCount > 0 && (
+          <>
+            <Separator />
+            <ItemFooter className="space-x-4">
+              <Badge>
+                {childPostCount} {childPostCount === 1 ? "post" : "posts"}
+              </Badge>
+            </ItemFooter>
+          </>
+        )}
       </Link>
     </Item>
   );
