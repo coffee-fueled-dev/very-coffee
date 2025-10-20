@@ -20,6 +20,7 @@ import { ExternalLink } from "./external-link";
 import { CopyButton } from "./copy-button";
 import { PostBreadcrumb } from "./post-breadcrumb";
 import { isValidElement } from "react";
+import { useStaticPost } from "@/contexts/post-context";
 
 // Helper to extract text content from React children
 const extractTextFromChildren = (children: React.ReactNode): string => {
@@ -119,6 +120,25 @@ export const PostPreviews = ({
     </section>
   );
 
+export const PostHeader = () => {
+  const { post } = useStaticPost();
+  if (!post) return null;
+  const { author, title, tags, summary } = post;
+
+  return (
+    <div className="flex flex-col gap-2">
+      <h1 className="scroll-m-20 text-center text-4xl font-extrabold tracking-tight text-balance">
+        {title}
+      </h1>
+      <p className="text-center text-muted-foreground text-lg">{summary}</p>
+      <div className="flex gap-1 items-center justify-center flex-wrap">
+        <Badge variant="default">{author}</Badge>
+        <TagCloud tags={tags} />
+      </div>
+    </div>
+  );
+};
+
 // Custom MDX components
 const mdxComponents = {
   // Override default HTML elements
@@ -169,27 +189,13 @@ const mdxComponents = {
   a: ExternalLink,
 };
 
-export const Post = (post: ResolvedPost & { segments?: string[] }) => {
-  const { author, title, tags, summary, module, segments } = post;
-
-  const lastModified = module?.metadata?.lastModified;
+export const Post = (post: ResolvedPost) => {
+  const { module } = post;
 
   return (
     <section className="space-y-6">
-      {segments && segments.length > 0 && (
-        <PostBreadcrumb segments={segments} />
-      )}
-      <div className="flex flex-col gap-2">
-        <h1 className="scroll-m-20 text-center text-4xl font-extrabold tracking-tight text-balance">
-          {title}
-        </h1>
-        <p className="text-center text-muted-foreground text-lg">{summary}</p>
-        <div className="flex gap-1 items-center justify-center flex-wrap">
-          <Badge variant="default">{author}</Badge>
-          {lastModified && <Badge variant="outline">{lastModified}</Badge>}
-          <TagCloud tags={tags} />
-        </div>
-      </div>
+      <PostBreadcrumb />
+      <PostHeader />
       {module?.default && (
         <div className="prose prose-neutral dark:prose-invert max-w-none">
           <module.default components={mdxComponents} />

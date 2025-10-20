@@ -1,0 +1,115 @@
+import { createContext, useContext, useMemo } from "react";
+import { postFromPathSegment, type RegisteredPost } from "@/lib/post";
+import { useBlog } from "./blog-context";
+
+const MAX_POST_DEPTH = 3;
+
+interface BreadcrumbCrumb {
+  title: string;
+  segments: string[];
+  path: string;
+}
+
+interface PostContextValue {
+  post: Omit<RegisteredPost, "module"> | undefined;
+  segments: string[];
+  breadcrumbs: BreadcrumbCrumb[];
+  isValid: boolean;
+  path: string;
+}
+
+const PostContext = createContext<PostContextValue | undefined>(undefined);
+
+/**
+ * Build breadcrumb trail by traversing the blog post tree
+ */
+function buildBreadcrumbPath(
+  rootPost: RegisteredPost,
+  baseRoute: string,
+  segments: string[]
+): BreadcrumbCrumb[] {
+  const crumbs: BreadcrumbCrumb[] = [
+    {
+      title: rootPost.title,
+      segments: [],
+      path: `/${baseRoute}`,
+    },
+  ];
+
+  let currentPost: RegisteredPost | undefined = rootPost;
+
+  for (let i = 0; i < segments.length; i++) {
+    const segment = segments[i];
+    if (!currentPost?.posts || !(segment in currentPost.posts)) {
+      break;
+    }
+
+    currentPost = currentPost.posts[segment];
+    const crumbSegments = segments.slice(0, i + 1);
+
+    crumbs.push({
+      title: currentPost.title,
+      segments: crumbSegments,
+      path: segmentsToPath(baseRoute, crumbSegments),
+    });
+  }
+
+  return crumbs;
+}
+
+/**
+ * Convert path segments to a blog URL
+ */
+function segmentsToPath(baseRoute: string, segments: string[]): string {
+  if (segments.length === 0) return `/${baseRoute}`;
+  return `/${baseRoute}/${segments.join("/")}`;
+}
+
+interface PostProviderProps {
+  splat: string | undefined;
+  children: React.ReactNode;
+}
+
+export function PostProvider({ splat, children }: PostProviderProps) {
+  const { rootPost, baseRoute } = useBlog();
+
+  const value = useMemo(() => {
+    // Parse splat into segments
+    const segments = splat?.split("/").filter(Boolean) ?? [];
+
+    // Validate depth
+    if (segments.length > MAX_POST_DEPTH) {
+      return {
+        post: undefined,
+        segments: segments,
+        breadcrumbs: [],
+        isValid: false,
+        path: "",
+      };
+    }
+
+    // Get post from segments
+    const post = postFromPathSegment(segments);
+
+    // Build breadcrumbs
+    const breadcrumbs = buildBreadcrumbPath(rootPost, baseRoute, segments);
+
+    return {
+      post,
+      segments,
+      breadcrumbs,
+      isValid: post !== undefined,
+      path: segmentsToPath(baseRoute, segments),
+    };
+  }, [splat, rootPost, baseRoute]);
+
+  return <PostContext.Provider value={value}>{children}</PostContext.Provider>;
+}
+
+export function useStaticPost(): PostContextValue {
+  const context = useContext(PostContext);
+  if (context === undefined) {
+    throw new Error("usePost must be used within a PostProvider");
+  }
+  return context;
+}

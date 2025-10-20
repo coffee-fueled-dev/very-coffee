@@ -8,15 +8,18 @@ import {
 } from "@/components/blocks/post";
 import { createFileRoute } from "@tanstack/react-router";
 import { lazy, Suspense } from "react";
+import { PostProvider } from "@/contexts/post-context";
 
 export const Route = createFileRoute("/blog/")({
   component: () => {
     const BlogRoot = getBlogRoot();
 
     return (
-      <Suspense fallback={<FullscreenSpinner />}>
-        <BlogRoot />
-      </Suspense>
+      <PostProvider splat={undefined}>
+        <Suspense fallback={<FullscreenSpinner />}>
+          <BlogRoot />
+        </Suspense>
+      </PostProvider>
     );
   },
 });
@@ -28,7 +31,7 @@ const getBlogRoot = () =>
 
     const LazyPostPage = () => (
       <>
-        <Post {...resolvedPost} segments={[]} />
+        <Post {...resolvedPost} />
         <PostPreviews postPreviews={childPostPreviews} sectionTitle="Topics" />
       </>
     );
