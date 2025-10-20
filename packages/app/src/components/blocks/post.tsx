@@ -1,5 +1,5 @@
 import { ChevronRightIcon } from "lucide-react";
-import { Link, notFound, rootRouteId } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import {
   Item,
   ItemActions,
@@ -14,27 +14,13 @@ import { Separator } from "../ui/separator";
 import { ExternalLink } from "./external-link";
 import { CopyButton } from "./copy-button";
 import { FullscreenSpinner } from "./fullscreen-spinner";
-import { isValidElement, Suspense, useMemo } from "react";
+import { Suspense, useMemo } from "react";
 import {
   useStaticPost,
   useLazyPost,
   type PostPreviewProps,
 } from "@/contexts/post-context";
-
-// Helper to extract text content from React children
-const extractTextFromChildren = (children: React.ReactNode): string => {
-  if (typeof children === "string") return children;
-  if (typeof children === "number") return String(children);
-  if (Array.isArray(children)) {
-    return children.map(extractTextFromChildren).join("");
-  }
-  if (isValidElement(children) && children.props) {
-    return extractTextFromChildren(
-      (children.props as { children?: React.ReactNode }).children
-    );
-  }
-  return "";
-};
+import { extractTextFromChildren } from "@/lib/extract-text-from-children";
 
 const PostCountBadge = ({ posts }: { posts: PostPreviewProps["posts"] }) => {
   const postCount = posts
