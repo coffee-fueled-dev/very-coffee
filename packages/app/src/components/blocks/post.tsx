@@ -11,7 +11,7 @@ import {
 import { Badge } from "../ui/badge";
 import type { ResolvedPost } from "@/lib/post";
 import { Separator } from "../ui/separator";
-import { ExternalLink } from "./external-link";
+import { InlineLink } from "./external-link";
 import { CopyButton } from "./copy-button";
 import { FullscreenSpinner } from "./fullscreen-spinner";
 import { Suspense, useMemo } from "react";
@@ -119,9 +119,7 @@ export const PostHeader = () => {
   );
 };
 
-// Custom MDX components
 const mdxComponents = {
-  // Override default HTML elements
   h1: (props: React.HTMLAttributes<HTMLHeadingElement>) => (
     <h1
       className="scroll-m-20 text-4xl font-bold tracking-tight mt-6 mb-4"
@@ -166,7 +164,7 @@ const mdxComponents = {
   blockquote: (props: React.HTMLAttributes<HTMLQuoteElement>) => (
     <blockquote className="mt-6 border-l-2 pl-6 italic" {...props} />
   ),
-  a: ExternalLink,
+  a: InlineLink,
 };
 
 export const Post = (post: ResolvedPost) => {
