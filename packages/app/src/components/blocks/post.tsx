@@ -9,13 +9,17 @@ import {
   ItemTitle,
 } from "@/components/ui/item";
 import { Badge } from "../ui/badge";
-import type { RegisteredPost, ResolvedPost } from "@/lib/post";
+import type { ResolvedPost } from "@/lib/post";
 import { Separator } from "../ui/separator";
 import { ExternalLink } from "./external-link";
 import { CopyButton } from "./copy-button";
-import { PostBreadcrumb } from "./post-breadcrumb";
-import { isValidElement } from "react";
-import { useStaticPost, type PostPreviewProps } from "@/contexts/post-context";
+import { FullscreenSpinner } from "./fullscreen-spinner";
+import { isValidElement, Suspense, useMemo } from "react";
+import {
+  useStaticPost,
+  useLazyPost,
+  type PostPreviewProps,
+} from "@/contexts/post-context";
 
 // Helper to extract text content from React children
 const extractTextFromChildren = (children: React.ReactNode): string => {
@@ -191,14 +195,14 @@ export const Post = (post: ResolvedPost) => {
   );
 };
 
-export const resolvePost = async (
-  post: RegisteredPost | undefined
-): Promise<ResolvedPost> => {
-  if (!post || !post.module || !post.published)
-    throw notFound({ routeId: rootRouteId });
-  const { module, ...rest } = post;
-  const postData = await module();
-  if (!postData) throw notFound({ routeId: rootRouteId });
+export function PostPageContent() {
+  const { post } = useStaticPost();
+  const getLazyPost = useLazyPost();
+  const LazyPost = useMemo(() => getLazyPost(post), [getLazyPost, post]);
 
-  return { ...rest, module: postData };
-};
+  return (
+    <Suspense fallback={<FullscreenSpinner />}>
+      <LazyPost />
+    </Suspense>
+  );
+}

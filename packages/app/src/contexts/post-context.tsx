@@ -1,7 +1,16 @@
-import { createContext, useContext, useMemo } from "react";
-import { postFromPathSegment, type RegisteredPost } from "@/lib/post";
+import { createContext, useContext, useMemo, useCallback, lazy } from "react";
+import {
+  postFromPathSegment,
+  type RegisteredPost,
+  type ResolvedPost,
+} from "@/lib/post";
 import { useBlog } from "./blog-context";
-import type { LinkComponentProps } from "@tanstack/react-router";
+import {
+  notFound,
+  rootRouteId,
+  type LinkComponentProps,
+} from "@tanstack/react-router";
+import { Post } from "@/components/blocks/post";
 
 const MAX_POST_DEPTH = 3;
 
@@ -151,4 +160,31 @@ export function useStaticPost(): PostContextValue {
     throw new Error("usePost must be used within a PostProvider");
   }
   return context;
+}
+
+const resolvePost = async (
+  post: RegisteredPost | undefined
+): Promise<ResolvedPost> => {
+  if (!post || !post.module || !post.published)
+    throw notFound({ routeId: rootRouteId });
+  const { module, ...rest } = post;
+  const postData = await module();
+  if (!postData) throw notFound({ routeId: rootRouteId });
+
+  return { ...rest, module: postData };
+};
+
+export function useLazyPost() {
+  const { rootPost } = useBlog();
+
+  return useCallback(
+    (post: RegisteredPost | undefined) => {
+      const postToResolve = post ?? rootPost;
+      return lazy(async () => {
+        const resolvedPost = await resolvePost(postToResolve);
+        return { default: () => <Post {...resolvedPost} /> };
+      });
+    },
+    [rootPost]
+  );
 }

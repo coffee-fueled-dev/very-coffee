@@ -1,14 +1,10 @@
-import { createFileRoute, notFound, rootRouteId } from "@tanstack/react-router";
-import { lazy, Suspense } from "react";
 import {
-  Post,
   PostHeader,
   PostPreviews,
-  resolvePost,
+  PostPageContent,
 } from "@/components/blocks/post";
-import { FullscreenSpinner } from "@/components/blocks/fullscreen-spinner";
-import { PostProvider, useStaticPost } from "@/contexts/post-context";
-import type { RegisteredPost } from "@/lib/post";
+import { createFileRoute } from "@tanstack/react-router";
+import { PostProvider } from "@/contexts/post-context";
 import { PostBreadcrumb } from "@/components/blocks/post-breadcrumb";
 
 export const Route = createFileRoute("/blog/$")({
@@ -27,25 +23,3 @@ export const Route = createFileRoute("/blog/$")({
     );
   },
 });
-
-function PostPageContent() {
-  const { post, isValid } = useStaticPost();
-
-  if (!isValid || !post) throw notFound({ routeId: rootRouteId });
-
-  const LazyPostPage = getPostFromPathSegments(post);
-
-  return (
-    <Suspense fallback={<FullscreenSpinner />}>
-      <LazyPostPage />
-    </Suspense>
-  );
-}
-
-const getPostFromPathSegments = (post: RegisteredPost) =>
-  lazy(async () => {
-    const resolvedPost = await resolvePost(post);
-
-    const LazyPostPage = () => <Post {...resolvedPost} />;
-    return { default: LazyPostPage };
-  });
