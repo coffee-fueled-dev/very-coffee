@@ -3,16 +3,29 @@ import type { AnchorHTMLAttributes, ReactNode } from "react";
 
 export const ExternalLink = ({
   size,
-  href,
   children,
+  variant = "link",
   ...props
-}: AnchorHTMLAttributes<HTMLAnchorElement> & {
+}: Omit<AnchorHTMLAttributes<HTMLAnchorElement>, "target" | "rel"> & {
   children?: ReactNode;
   size?: "sm" | "default" | "lg";
+  variant?: "link" | "default" | "outline" | "secondary" | "ghost";
 }) => (
-  <a target="_blank" rel="noopener noreferrer" href={href} {...props}>
-    <Button variant="link" size={size} className="px-0">
+  <a target="_blank" rel="noopener noreferrer" {...props}>
+    <Button variant={variant} size={size}>
       {children}
     </Button>
   </a>
+);
+
+export const InlineLink = ({
+  children,
+  href,
+}: {
+  children: ReactNode;
+  href: string;
+}) => (
+  <ExternalLink href={href} size="sm" className="px-0">
+    {children}
+  </ExternalLink>
 );

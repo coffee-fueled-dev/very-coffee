@@ -1,5 +1,5 @@
 import { CoffeeCup } from "@/components/blocks/coffee-cup";
-import { ExternalLink as XLink } from "@/components/blocks/external-link";
+import { InlineLink } from "@/components/blocks/external-link";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { createFileRoute, Link } from "@tanstack/react-router";
@@ -7,10 +7,22 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 export const Route = createFileRoute("/")({
   component: Home,
 });
-const bunjsHref = "https://bun.com/docs/bundler/fullstack";
-const tsrHref =
-  "https://tanstack.com/router/latest/docs/framework/react/installation/with-router-cli";
-const cfdHref = "https://github.com/coffee-fueled-dev/very-coffee";
+
+const BunLink = () => (
+  <InlineLink href="https://bun.com/docs/bundler/fullstack">Bunjs</InlineLink>
+);
+
+const TSRLink = () => (
+  <InlineLink href="https://tanstack.com/router/latest/docs/framework/react/installation/with-router-cli">
+    Tanstack Router
+  </InlineLink>
+);
+
+const CFDLink = () => (
+  <InlineLink href="https://github.com/coffee-fueled-dev/very-coffee">
+    Tanstack Router
+  </InlineLink>
+);
 
 function Home() {
   return (
@@ -50,20 +62,9 @@ function Home() {
           </span>
         </div>
         <p className="text-xs">
-          Btw, this site is built entirely with{" "}
-          <XLink href={bunjsHref} size="sm">
-            Bunjs
-          </XLink>{" "}
-          and{" "}
-          <XLink href={tsrHref} size="sm">
-            Tanstack Router
-          </XLink>
-          . It's quick and super tiny. If you're curious how that works, you can
-          check out the source code{" "}
-          <XLink href={cfdHref} size="sm">
-            here
-          </XLink>
-          .
+          Btw, this site is built entirely with <BunLink />
+          and <TSRLink />. It's quick and super tiny. If you're curious how that
+          works, you can check out the source code <CFDLink />
         </p>
       </section>
     </div>
