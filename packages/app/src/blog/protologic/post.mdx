@@ -1,7 +1,31 @@
+As I've learned more about building AI agents' I've realized that existing access control loops won't work as seamlessly as before for public facing agents. Those agents may need to escalate and de-escalate their permissions based on context. This is especially true in situations where an untrusted party is negotiating for some capability with the agent. Protologic is a concept for addressing that in a way that enables runtime negotiated policy checks and attestation like in the diagram below.
+
 ```mermaid
-graph TD;
-    A-->B;
-    A-->C;
-    B-->D;
-    C-->D;
+sequenceDiagram
+    participant U as User
+    participant A as Agent
+    participant C as Context
+    participant P as Policy
+    participant O as Oracle
+
+    U->>A: "Help me create a RFQ"
+
+    A->>C: Request tool: create_rfq
+
+    C->>P: Publish Intent: use_tool:create_rfq
+    P-->>A: Demand Evidence for Conditions: requires user_auth + org_exists
+
+    A->>U: "Please verify identity and org membership"
+    U-->>A: Evidence: user_authenticated, org_exists
+
+    A->>P: Evidence: user_authenticated, org_exists
+
+    P->>O: Evidence: user_authenticated, org_exists<br/>Condition: user_auth + org_exists
+    O-->>P: Review: valid
+
+    P-->>A: Grant: use_tool:create_rfq
+    A->>C: Request tool: create_rfq
+
+    C->>A: <Generated RFQ>
+    A->>U: "Here's your RFQ..."
 ```

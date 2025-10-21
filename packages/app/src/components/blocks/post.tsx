@@ -171,7 +171,7 @@ const mdxComponents = {
     />
   ),
   p: (props: React.HTMLAttributes<HTMLParagraphElement>) => (
-    <p className="leading-7 [&:not(:first-child)]:mt-6" {...props} />
+    <p className="leading-7 mb-6" {...props} />
   ),
   ul: (props: React.HTMLAttributes<HTMLUListElement>) => (
     <ul className="my-6 ml-6 list-disc [&>li]:mt-2" {...props} />
