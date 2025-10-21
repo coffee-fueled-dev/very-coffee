@@ -2,6 +2,7 @@ import "normalize.css";
 import "../globals.css";
 
 import { createRootRoute, Outlet } from "@tanstack/react-router";
+import { Toaster } from "@/components/ui/sonner";
 
 import {
   NavigationMenu,
@@ -15,8 +16,11 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { SocialLinks } from "@/components/blocks/social-links";
 
+import.meta.hot.accept();
+
 const RootLayout = () => (
   <>
+    <Toaster richColors />
     <header className="absolute w-full p-6 flex justify-end">
       <NavigationMenu>
         <NavigationMenuList>

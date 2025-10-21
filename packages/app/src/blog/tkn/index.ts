@@ -2,6 +2,7 @@ import type { RegisteredPost } from "@/lib/post";
 import patternDiscovery from "./pattern-discovery";
 import corpusFingerprinting from "./corpus-fingerprinting";
 import userData from "./user-data";
+import patternConfidence from "./pattern-confidence";
 
 export default {
   __type: "post",
@@ -16,5 +17,6 @@ export default {
     "user-data": userData,
     "corpus-fingerprinting": corpusFingerprinting,
     "pattern-discovery": patternDiscovery,
+    "pattern-confidence": patternConfidence,
   },
 } satisfies RegisteredPost;
