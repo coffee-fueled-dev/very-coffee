@@ -8,6 +8,10 @@ export const TAGS = [
   "machine learning",
   "tokenization",
   "compression",
+  "security",
+  "graphs",
+  "ai",
+  "agents",
 ] as const;
 
 export function asTag(tag: string) {
