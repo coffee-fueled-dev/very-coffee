@@ -1,5 +1,5 @@
 import type { Key } from "../../sequencer";
-import type { IDictionary } from "./dictionary.domain";
+import type { IDictionary } from "./dictionary";
 
 /**
  * The Bounded dictionary respects a maximum size using a FIFO queue

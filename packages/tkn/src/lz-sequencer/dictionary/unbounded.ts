@@ -1,5 +1,5 @@
 import type { Key } from "../../sequencer";
-import type { IDictionary } from "./dictionary.domain";
+import type { IDictionary } from "./dictionary";
 
 /**
  *

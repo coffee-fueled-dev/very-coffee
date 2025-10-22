@@ -1,5 +1,5 @@
 import type { IGate, IGateConfig } from "../sequencer";
-import type { IDictionary } from "./dictionary/dictionary.domain";
+import type { IDictionary } from "./dictionary/dictionary";
 
 export interface LZGateConfig extends IGateConfig {
   cache: IDictionary;
