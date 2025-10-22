@@ -217,7 +217,7 @@ export function PostPageContent() {
   const LazyPost = useMemo(() => getLazyPost(post), [getLazyPost, post]);
 
   return (
-    <Suspense fallback={<FullscreenSpinner />}>
+    <Suspense fallback={<FullscreenSpinner task="Loading post" />}>
       <LazyPost />
     </Suspense>
   );
