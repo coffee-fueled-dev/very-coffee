@@ -2,18 +2,25 @@ import { Queue, Sequencer } from "../sequencer";
 import { Bounded } from "./dictionary/bounded";
 import { Unbounded } from "./dictionary/unbounded";
 import { LZGate } from "./lz-gate";
+import { isDictionary, type IDictionary } from "./dictionary/dictionary.domain";
 
 export { LZGate, type LZGateConfig, type LZCustomMetrics } from "./lz-gate";
 
 export interface LZSequencerProperties {
-  cacheOptions?: { bounded: true; max: number } | { bounded: false };
+  cacheOptions?:
+    | { bounded: true; max: number }
+    | { bounded: false }
+    | IDictionary
+    | undefined;
   historyOptions?: { bounded: true; maxLength: number } | { bounded: false };
   emissionPolicy?: "immediate"; // TODO: add other policies
 }
 export const createLZSequencer = (
   properties?: LZSequencerProperties
 ): Sequencer<LZGate[]> => {
-  const cache = properties?.cacheOptions?.bounded
+  const cache = isDictionary(properties?.cacheOptions)
+    ? properties.cacheOptions
+    : properties?.cacheOptions?.bounded
     ? new Bounded(properties.cacheOptions.max)
     : new Unbounded();
 
