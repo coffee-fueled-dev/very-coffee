@@ -25,7 +25,7 @@ export class Unicode {
    * Stream a file, character by character, normalizing the text to NFC
    * @param file
    */
-  static async *streamFile(file: Bun.BunFile) {
+  static async *streamFile(file: Bun.BunFile | File) {
     const textStream = file.stream().pipeThrough(new TextDecoderStream());
     const reader = textStream.getReader();
 
