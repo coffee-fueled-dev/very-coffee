@@ -23,6 +23,7 @@ import { createLZSequencer, Unicode } from "@very-coffee/tkn";
 import { Lattice, DegreeScorer } from "@very-coffee/tkn";
 import { lazy, Suspense, memo } from "react";
 import { TrendingUp } from "lucide-react";
+import { InlineDemo } from "@/components/blocks/inline-demo";
 
 const FILE_LIMIT = 5;
 const MAX_FILE_SIZE = 1 * 1024 * 1024;
@@ -33,10 +34,17 @@ const SUPPORTED_FILE_TYPES = {
   "text/xml": [".xml"],
 };
 
+type PatternWithScore = { token: string; hubScore: number };
+
 export const PatternConfidenceDemo = () => (
-  <FileProvider>
-    <FileForm />
-  </FileProvider>
+  <InlineDemo
+    title="TKN Pattern Confidence Demo"
+    description="Upload text files to see how the tkn algorithm discovers patterns and their confidence scores."
+  >
+    <FileProvider>
+      <FileForm />
+    </FileProvider>
+  </InlineDemo>
 );
 
 const FileForm = () => {
@@ -112,40 +120,47 @@ const FileResults = ({ topPatterns }: { topPatterns: PatternWithScore[] }) => {
       </CardHeader>
       <CardContent>
         {topPatterns.length === 0 ? (
-          <Empty className="border rounded-lg py-12">
-            <EmptyHeader>
-              <EmptyMedia variant="icon">
-                <TrendingUp className="size-10" />
-              </EmptyMedia>
-              <EmptyTitle>No patterns found</EmptyTitle>
-              <EmptyDescription>
-                Upload files to analyze patterns
-              </EmptyDescription>
-            </EmptyHeader>
-          </Empty>
+          <EmptyPatterns />
         ) : (
-          <ScrollArea className="h-[400px]">
-            <div className="flex flex-col gap-3 p-4">
-              {topPatterns.map((pattern, idx) => (
-                <ConfidenceBadge
-                  key={`${pattern.token}-${idx}`}
-                  token={pattern.token}
-                  score={pattern.hubScore}
-                  rank={idx + 1}
-                />
-              ))}
-            </div>
-          </ScrollArea>
+          <Patterns topPatterns={topPatterns} />
         )}
       </CardContent>
     </Card>
   );
 };
 
-type PatternWithScore = { token: string; hubScore: number };
+const EmptyPatterns = () => (
+  <Empty className="border rounded-lg py-12">
+    <EmptyHeader>
+      <EmptyMedia variant="icon">
+        <TrendingUp className="size-10" />
+      </EmptyMedia>
+      <EmptyTitle>No patterns found</EmptyTitle>
+      <EmptyDescription>Upload files to analyze patterns</EmptyDescription>
+    </EmptyHeader>
+  </Empty>
+);
+
+const Patterns = ({ topPatterns }: { topPatterns: PatternWithScore[] }) => {
+  return (
+    <ScrollArea className="h-[400px]">
+      <div className="flex flex-col gap-3 p-4">
+        {topPatterns.map((pattern, idx) => (
+          <ConfidenceBadge
+            key={`${pattern.token}-${idx}`}
+            token={pattern.token}
+            score={pattern.hubScore}
+            rank={idx + 1}
+          />
+        ))}
+      </div>
+    </ScrollArea>
+  );
+};
 
 const getFileResults = (files: File[]) =>
   lazy(async () => {
+    if (files.length === 0) return { default: () => <></> };
     // Small delay to ensure Suspense fallback renders
     await new Promise((resolve) => setTimeout(resolve, 100));
     const topPatterns = await processFiles(files);
@@ -155,14 +170,13 @@ const getFileResults = (files: File[]) =>
 const processFiles = async (files: File[]): Promise<PatternWithScore[]> => {
   if (files.length === 0) return [];
 
-  // Create sequencer and lattice with degree-based scoring (fast, non-blocking)
   const sequencer = createLZSequencer();
   const lattice = new Lattice({
     scorer: new DegreeScorer(),
   });
 
   // Start piping sequencer output to lattice (runs in background)
-  const pipePromise = lattice.pipe(sequencer.read());
+  const waitForPatternIngestion = lattice.pipe(sequencer.read());
 
   // Stream each file through the sequencer
   for (let i = 0; i < files.length; i++) {
@@ -178,12 +192,8 @@ const processFiles = async (files: File[]): Promise<PatternWithScore[]> => {
     }
   }
 
-  // Close the sequencer (flushes and signals readers that no more data is coming)
-  await sequencer.close();
-
-  // Wait for pipe to complete processing all sequences
-  await pipePromise;
-
-  // Get top patterns by hub score
-  return lattice.getTopTokens(50);
+  return sequencer
+    .close()
+    .then(() => waitForPatternIngestion)
+    .then(() => lattice.getTopTokens(50));
 };

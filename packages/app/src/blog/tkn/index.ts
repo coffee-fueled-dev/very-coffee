@@ -11,7 +11,7 @@ export default {
   title: "tkn",
   tags: ["compression", "machine learning", "tokenization"],
   summary:
-    "An online algorithm that incrementally discovers and compresses recurring symbol patterns in a data stream, building its own token vocabulary without any prior linguistic or statistical model.",
+    "An online algorithm that incrementally discovers and compresses recurring patterns in a data stream.",
   module: () => import("./post.mdx"),
   posts: {
     "user-data": userData,
