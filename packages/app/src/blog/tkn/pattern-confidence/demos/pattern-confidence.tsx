@@ -3,7 +3,6 @@ import {
   useUploadedFiles,
 } from "@/components/blocks/file-upload";
 import { FileUpload } from "@/components/blocks/file-upload/file-upload";
-import { FullscreenSpinner } from "@/components/blocks/fullscreen-spinner";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -21,9 +20,11 @@ import {
 } from "@/components/ui/empty";
 import { createLZSequencer, Unicode } from "@very-coffee/tkn";
 import { Lattice, DegreeScorer } from "@very-coffee/tkn";
-import { lazy, Suspense, memo } from "react";
+import { lazy, memo, Suspense } from "react";
 import { TrendingUp } from "lucide-react";
 import { InlineDemo } from "@/components/blocks/inline-demo";
+import { AnimatePresence, motion } from "motion/react";
+import { Loader } from "@/components/blocks/loader";
 
 const FILE_LIMIT = 5;
 const MAX_FILE_SIZE = 1 * 1024 * 1024;
@@ -58,16 +59,15 @@ const FileForm = () => {
         maxFiles={FILE_LIMIT}
         maxFileSize={MAX_FILE_SIZE}
       />
-      <Suspense
-        fallback={
-          <FullscreenSpinner
-            task="Processing files"
-            feature={files.length.toString()}
-          />
-        }
-      >
-        <FileResults />
-      </Suspense>
+      <AnimatePresence mode="wait">
+        <Suspense
+          fallback={
+            <Loader task="Processing files" feature={files.length.toString()} />
+          }
+        >
+          <FileResults />
+        </Suspense>
+      </AnimatePresence>
     </section>
   );
 };
@@ -107,25 +107,30 @@ const ConfidenceBadge = memo(
 ConfidenceBadge.displayName = "ConfidenceBadge";
 
 const FileResults = ({ topPatterns }: { topPatterns: PatternWithScore[] }) => {
-  if (topPatterns.length === 0) {
-    return null;
-  }
-
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-base">
-          Top Patterns by Confidence ({topPatterns.length})
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        {topPatterns.length === 0 ? (
-          <EmptyPatterns />
-        ) : (
-          <Patterns topPatterns={topPatterns} />
-        )}
-      </CardContent>
-    </Card>
+    topPatterns.length > 0 && (
+      <motion.div
+        key="file-results"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
+      >
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">
+              Top Patterns by Confidence ({topPatterns.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {topPatterns.length === 0 ? (
+              <EmptyPatterns />
+            ) : (
+              <Patterns topPatterns={topPatterns} />
+            )}
+          </CardContent>
+        </Card>
+      </motion.div>
+    )
   );
 };
 

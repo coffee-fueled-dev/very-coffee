@@ -8,7 +8,7 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useLZSequencer } from "@/hooks/useLZSequencer";
+import { useLZSequencer } from "@/hooks/use-lz-sequencer";
 import { memo, useEffect, useRef, useState } from "react";
 import { Layers } from "lucide-react";
 import { Badge } from "@/components/ui/badge";

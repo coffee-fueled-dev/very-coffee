@@ -1,4 +1,4 @@
-import { ChevronRightIcon } from "lucide-react";
+import { ChevronRightIcon, ChevronsUpDown } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import {
   Item,
@@ -13,7 +13,6 @@ import type { ResolvedPost } from "@/lib/post";
 import { Separator } from "../ui/separator";
 import { InlineLink } from "./external-link";
 import { CopyButton } from "./copy-button";
-import { FullscreenSpinner } from "./fullscreen-spinner";
 import { Suspense, useMemo } from "react";
 import {
   useStaticPost,
@@ -29,6 +28,12 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "../ui/collapsible";
+import { AnimatePresence, motion } from "motion/react";
 
 export function PostBreadcrumb() {
   const { breadcrumbs } = useStaticPost();
@@ -87,7 +92,7 @@ const PostPreview = ({
       <Link {...link}>
         <ItemContent>
           <span className="flex gap-2">
-            <ItemTitle className="text-lg font-medium">{title}</ItemTitle>
+            <ItemTitle>{title}</ItemTitle>
             <TagCloud tags={tags} />
           </span>
           <ItemDescription>{summary}</ItemDescription>
@@ -116,19 +121,27 @@ export const PostPreviews = ({ sectionTitle }: { sectionTitle: string }) => {
   if (childPostPreviews.length === 0) return null;
 
   return (
-    <section className="space-y-6">
-      <Separator />
-      <div className="w-full space-y-2">
-        <h1 className="scroll-m-20 text-2xl font-medium tracking-tight text-balance text-muted-foreground">
-          {sectionTitle}
-        </h1>
-        <div className="flex flex-col gap-4">
-          {childPostPreviews.map((postPreview, i) => (
-            <PostPreview {...postPreview} key={i} />
-          ))}
-        </div>
-      </div>
-    </section>
+    <Collapsible className="w-full flex flex-col gap-4">
+      <CollapsibleTrigger asChild>
+        <Item variant="outline" className="cursor-pointer" size="sm">
+          <ItemContent>
+            <ItemTitle>{sectionTitle}</ItemTitle>
+          </ItemContent>
+          <ItemContent>
+            <Badge variant="secondary">{childPostPreviews.length}</Badge>
+          </ItemContent>
+          <ItemActions>
+            <ChevronsUpDown size={16} />
+            <span className="sr-only">Toggle</span>
+          </ItemActions>
+        </Item>
+      </CollapsibleTrigger>
+      {childPostPreviews.map((postPreview, i) => (
+        <CollapsibleContent key={i}>
+          <PostPreview {...postPreview} />
+        </CollapsibleContent>
+      ))}
+    </Collapsible>
   );
 };
 
@@ -204,9 +217,15 @@ export const Post = (post: ResolvedPost) => {
 
   return (
     module?.default && (
-      <div className="prose prose-neutral dark:prose-invert max-w-none">
+      <motion.div
+        className="prose prose-neutral dark:prose-invert max-w-none"
+        key="content"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
+      >
         <module.default components={mdxComponents} />
-      </div>
+      </motion.div>
     )
   );
 };
@@ -217,8 +236,10 @@ export function PostPageContent() {
   const LazyPost = useMemo(() => getLazyPost(post), [getLazyPost, post]);
 
   return (
-    <Suspense fallback={<FullscreenSpinner task="Loading post" />}>
-      <LazyPost />
-    </Suspense>
+    <AnimatePresence mode="wait">
+      <Suspense>
+        <LazyPost />
+      </Suspense>
+    </AnimatePresence>
   );
 }

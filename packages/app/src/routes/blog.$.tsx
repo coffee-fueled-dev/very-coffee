@@ -6,6 +6,7 @@ import {
 import { createFileRoute } from "@tanstack/react-router";
 import { PostProvider } from "@/contexts/post-context";
 import { PostBreadcrumb } from "@/components/blocks/post";
+import { Separator } from "@/components/ui/separator";
 
 export const Route = createFileRoute("/blog/$")({
   component: () => {
@@ -14,10 +15,11 @@ export const Route = createFileRoute("/blog/$")({
     return (
       <PostProvider splat={_splat}>
         <section className="space-y-6">
-          <PostBreadcrumb />
           <PostHeader />
-          <PostPageContent />
+          <PostBreadcrumb />
+          <Separator />
           <PostPreviews sectionTitle="Posts" />
+          <PostPageContent />
         </section>
       </PostProvider>
     );
