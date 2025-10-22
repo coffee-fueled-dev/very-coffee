@@ -29,9 +29,14 @@ export interface ISequencer {
    */
   push(input: SequencerInput): void;
   /**
-   * Flushes the current candidate to the queue
+   * Flushes the current candidate to the queue and waits for async drain to complete.
+   * This ensures all patterns have been processed by active readers.
    */
-  flush(): void;
+  flush(): Promise<void>;
+  /**
+   * Flushes and closes the sequencer, signaling to readers that no more data is coming.
+   */
+  close(): Promise<void>;
   /**
    * Resets all internal state
    */
@@ -118,13 +123,20 @@ export class Sequencer<TGates extends IGate[] = IGate[]> implements ISequencer {
     return { continue: current };
   }
 
-  flush: ISequencer["flush"] = () => {
+  flush: ISequencer["flush"] = async () => {
     if (this._ongoingSequence.length > 0) {
       this._queue.push({
         sequence: this._ongoingSequence.splice(0),
         key: this._ongoingKey,
       });
     }
+    // Yield to event loop to allow async drain to active readers
+    await Promise.resolve();
+  };
+
+  close: ISequencer["close"] = async () => {
+    await this.flush();
+    this._queue.close();
   };
 
   reset: ISequencer["reset"] = () => {

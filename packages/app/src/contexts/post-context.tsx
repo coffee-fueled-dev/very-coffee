@@ -12,7 +12,7 @@ import {
 } from "@tanstack/react-router";
 import { Post } from "@/components/blocks/post";
 
-const MAX_POST_DEPTH = 3;
+const MAX_POST_DEPTH = 10;
 
 interface BreadcrumbCrumb {
   title: string;

@@ -9,6 +9,7 @@ import type { IResegmenter } from "./resegmenter";
 export interface IQueue {
   push(input: SequencerOutput | void): void;
   read(): AsyncGenerator<SequencerOutput, void, unknown>;
+  close(): void;
   history: SequencerOutput[];
 }
 
@@ -19,6 +20,7 @@ export class Queue implements IQueue {
   private _queue: SequencerOutput[] = [];
   private _resolvers: Resolver[] = [];
   private _history?: IQueueHistory;
+  private _closed = false;
 
   /**
    * @param resegmenters
@@ -61,11 +63,22 @@ export class Queue implements IQueue {
       const item = Queue.consumeNext(this._queue, this._history);
       if (item) {
         yield item;
+      } else if (this._closed) {
+        // No more items and queue is closed, exit the generator
+        return;
       } else {
         yield await new Promise<SequencerOutput>((resolve) => {
           this._resolvers.push(resolve);
         });
       }
+    }
+  }
+
+  close(): void {
+    this._closed = true;
+    // Reject any pending resolvers since no more data is coming
+    while (this._resolvers.length > 0) {
+      this._resolvers.shift();
     }
   }
 

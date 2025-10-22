@@ -1,0 +1,57 @@
+import { PatternConfidenceDemo } from "./demos/pattern-confidence";
+
+## Overview
+
+The tkn algorithm discovers patterns through greedy segmentation. Becasue of the locally optimized nature of greedy segmentation, not all patterns and transitions are equally important. Many will only appear occasionally. This feature of the discovery engine can be used to determine the confidence of a pattern in the stream by counting how hub-like it is in the transition graph.
+
+## How Confidence Works
+
+As the algorithm processes text, it builds two data structures:
+
+1. **Pattern Discovery**: The LZ-based sequencer segments input and discovers repeating patterns (e.g., `"the "`, `" said "`, `"ing"`)
+2. **Transition Graph**: A directed graph where edges represent pattern transitions with weights tracking co-occurrence frequency
+
+For example, processing "the cat said the dog said" may create transitions like:
+
+- `"the "` → `"cat "` (weight: 1)
+- `"cat "` → `"said "` (weight: 1)
+- `"said "` → `"the "` (weight: 1)
+- `"the "` → `"dog "` (weight: 1)
+- `"dog "` → `"said "` (weight: 1)
+
+## Computing Confidence
+
+We can compute confidence with various methods, but a simple one measures each pattern's weighted connectivity:
+
+$$
+\text{degree}(\text{pattern}) = \sum_{i} w(\text{pattern} \rightarrow \text{pattern}_i)
+$$
+
+$$
+\text{confidence} = \log(1 + \text{degree})
+$$
+
+where:
+
+- $w(\text{pattern} \rightarrow \text{pattern}_i)$ is the weight of the transition from this pattern to pattern $i$
+- $\log(1 + \text{degree})$ provides smooth logarithmic scaling to prevent high-degree patterns from dominating
+
+In the example above, `"the "` has degree = 2 (transitions to both "cat" and "dog"), while `"cat "` and `"dog "` each have degree = 1. The logarithmic scaling ensures that a pattern appearing 100 times isn't scored 100× higher than one appearing 10 times—structural importance matters more than raw frequency.
+
+## Why This Matters
+
+Patterns with high confidence scores appeared frequently with many connections. Not all connections are meaningful, but the fact that many exist means a pattern had a higher probability of appearing in the input stream than others. In natural language, these tend to be:
+
+- Common function words (`"the "`, `"and "`, `"of "`)
+- Frequent grammatical patterns (`"ing "`, `"ed "`)
+- Domain-specific terminology that bridges concepts
+
+This measure is fast and local (computed from immediate transitions), making it suitable for real-time analysis. More sophisticated algorithms like PageRank could provide global importance measures, but at significantly higher computational cost.
+
+This confidence scoring strategy can be used as a component in more complex systems like lattice tokenization, which would find a path through the token graph that optimizes for heavily used transitions between high-confidence patterns. 
+
+## Try It Yourself
+
+Upload a text file and see which patterns emerge as most confident. The algorithm will show you the top 50 patterns by confidence score. Notice how structural patterns (articles, conjunctions, common endings) tend to dominate, revealing the underlying scaffolding of the text.
+
+<PatternConfidenceDemo />

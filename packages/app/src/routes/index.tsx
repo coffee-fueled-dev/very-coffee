@@ -55,7 +55,7 @@ function Home() {
                 TKN
               </Button>
             </Link>
-            <Link to="/blog/$" params={{ _splat: "tkn/pattern-discovery" }}>
+            <Link to="/blog/$" params={{ _splat: "tkn/pattern-confidence" }}>
               <Button size="sm" variant="secondary">
                 TKN demo!
               </Button>

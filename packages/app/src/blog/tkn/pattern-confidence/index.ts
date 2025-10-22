@@ -4,8 +4,9 @@ export default {
   __type: "post",
   published: true,
   author: "Zach Garrett",
-  title: "Pattern Discovery",
-  tags: ["machine learning", "tokenization", "compression"],
-  summary: "How the tkn algorithm discovers patterns from a sample.",
+  title: "Pattern Confidence",
+  tags: ["compression", "machine learning", "tokenization"],
+  summary:
+    "How the tkn algorithm can be used to learn high confidence patterns from a sample.",
   module: () => import("./post.mdx"),
 } satisfies RegisteredPost;
