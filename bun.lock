@@ -53,6 +53,9 @@
     },
     "packages/tkn": {
       "name": "@very-coffee/tkn",
+      "dependencies": {
+        "zod": "^4.1.12",
+      },
     },
   },
   "packages": {
