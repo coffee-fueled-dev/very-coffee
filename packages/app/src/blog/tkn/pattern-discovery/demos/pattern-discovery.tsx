@@ -38,17 +38,13 @@ export const PatternDiscoveryDemo = () => {
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Backspace") {
-      // Push backspace sentinel
-      push("<BACKSPACE>"); // ASCII code for backspace
+      push("<BACKSPACE>");
     } else if (e.key === "Delete") {
-      // Push delete sentinel
-      push("<DELETE>"); // ASCII code for delete
+      push("<DELETE>");
     } else if (e.key === "Enter") {
-      // Push enter sentinel
-      push("<ENTER>"); // ASCII code for enter
+      push("<ENTER>");
     } else if (e.key === "Tab") {
-      // Push tab sentinel
-      push("<TAB>"); // ASCII code for tab
+      push("<TAB>");
     }
   };
 
@@ -77,8 +73,8 @@ export const PatternDiscoveryDemo = () => {
     reset(false);
   };
 
-  const handleFlush = () => {
-    flush();
+  const handleFlush = async () => {
+    await flush();
   };
 
   return (

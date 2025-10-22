@@ -24,8 +24,8 @@ export const useLZSequencer = (
     [sequencer]
   );
 
-  const flush = useCallback(() => {
-    sequencer.flush();
+  const flush = useCallback(async () => {
+    await sequencer.flush();
   }, [sequencer]);
 
   const startReader = useCallback(async () => {
