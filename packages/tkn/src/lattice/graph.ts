@@ -27,7 +27,7 @@ export interface IGraph {
   /**
    * Returns top N tokens by hub score using the configured scoring algorithm.
    * @param limit - Number of tokens to return (default 10)
-   * @returns Array of tokens with hub scores
+   * @returns Array of tokens with confidences
    */
-  getTopTokens(limit?: number): { token: string; hubScore: number }[];
+  getTopTokens(limit?: number): { pattern: string; confidence: number }[];
 }

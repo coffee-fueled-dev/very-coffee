@@ -9,7 +9,7 @@ import type {
 export type InsertNodeStmt = Statement<void, [GraphNodeInsert]>;
 export type SelectNodeIdStmt = Statement<
   Pick<GraphNode, "id">,
-  [Pick<GraphNode, "token">]
+  [Pick<GraphNode, "pattern">]
 >;
 export type InsertEdgeStmt = Statement<void, [GraphEdgeInsert]>;
 export type SelectTransitionsStmt = Statement<
@@ -25,7 +25,7 @@ export type PageRankIterationStmt = Statement<
 >;
 export type FinalizePageRankStmt = Statement<void, []>;
 export type SelectTopTokensStmt = Statement<
-  { token: string; hubScore: number },
+  { pattern: string; confidence: number },
   [{ limit: number }]
 >;
 
@@ -76,7 +76,7 @@ export const createGraphStatements = (database: Database) => {
   `);
 
   const selectTopTokens: SelectTopTokensStmt = database.query(`
-    SELECT token, hub_score AS hubScore
+    SELECT token AS pattern, hub_score AS confidence
     FROM nodes
     ORDER BY hub_score DESC
     LIMIT $limit

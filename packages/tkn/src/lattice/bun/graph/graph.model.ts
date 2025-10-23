@@ -3,8 +3,8 @@ import { z } from "zod";
 // Markov node schema
 export const GraphNodeSchema = z.object({
   id: z.number().int().positive(),
-  token: z.string(),
-  hub_score: z.number().default(0),
+  pattern: z.string(),
+  confidence: z.number().default(0),
 });
 
 // Markov edge schema
@@ -15,7 +15,7 @@ export const GraphEdgeSchema = z.object({
 });
 
 // Input schema for node insertion
-export const GraphNodeInsertSchema = GraphNodeSchema.pick({ token: true });
+export const GraphNodeInsertSchema = GraphNodeSchema.pick({ pattern: true });
 
 // Input schema for edge insertion
 export const GraphEdgeInsertSchema = GraphEdgeSchema.pick({

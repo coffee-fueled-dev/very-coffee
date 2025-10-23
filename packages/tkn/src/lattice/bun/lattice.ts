@@ -69,7 +69,7 @@ export class Lattice implements ILattice {
    * @param limit - Number of tokens to return (default 10)
    * @returns Array of tokens with hub scores
    */
-  getTopTokens(limit = 10): { token: string; hubScore: number }[] {
+  getTopTokens(limit = 10): { pattern: string; confidence: number }[] {
     return this.graph.getTopTokens(limit);
   }
 

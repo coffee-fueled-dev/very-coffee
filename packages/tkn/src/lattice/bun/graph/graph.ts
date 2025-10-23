@@ -54,10 +54,11 @@ export class Graph implements IGraph {
    * @param token - The token string
    * @returns The node id
    */
-  getOrCreateNode(token: string): number {
-    this.insertNode.run({ token });
-    const row = this.selectNodeId.get({ token });
-    if (!row) throw new Error(`Failed to get/create node for token: ${token}`);
+  getOrCreateNode(pattern: string): number {
+    this.insertNode.run({ pattern });
+    const row = this.selectNodeId.get({ pattern });
+    if (!row)
+      throw new Error(`Failed to get/create node for pattern: ${pattern}`);
     return row.id;
   }
 
@@ -100,9 +101,9 @@ export class Graph implements IGraph {
   /**
    * Returns top N tokens by hub score using the configured scoring algorithm.
    * @param limit - Number of tokens to return (default 10)
-   * @returns Array of tokens with hub scores
+   * @returns Array of tokens with confidences
    */
-  getTopTokens(limit = 10): { token: string; hubScore: number }[] {
+  getTopTokens(limit = 10): { pattern: string; confidence: number }[] {
     this.scorer.compute(this.db);
     return this.selectTopTokens.all({ limit });
   }

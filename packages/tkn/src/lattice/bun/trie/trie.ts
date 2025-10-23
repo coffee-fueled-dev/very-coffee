@@ -49,22 +49,22 @@ export class Trie implements ITrie {
    * @param markov_id - The markov node id to associate with this token
    * @returns The terminal node's trie id
    */
-  merge(token: string, markov_id: number): number {
+  merge(pattern: string, markov_id: number): number {
     let parent_id: number | null = null;
 
-    for (let i = 0; i < token.length; i++) {
-      const char = token[i];
-      const terminal = i === token.length - 1 ? 1 : 0;
+    for (let i = 0; i < pattern.length; i++) {
+      const char = pattern[i];
+      const terminal = i === pattern.length - 1 ? 1 : 0;
 
       const row = this.insertTrieNode.get({ parent_id, char, terminal });
       if (!row) throw new Error(`Failed to insert trie node for char: ${char}`);
       parent_id = row.id;
     }
 
-    // Update terminal node with token and markov_id
+    // Update terminal node with pattern and markov_id
     this.updateTrieTerminal.run({
       id: parent_id!,
-      token,
+      pattern,
       markov_id,
       terminal: 1,
     });

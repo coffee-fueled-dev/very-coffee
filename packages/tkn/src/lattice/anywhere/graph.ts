@@ -87,7 +87,7 @@ export class Graph implements IGraph {
     return results;
   }
 
-  getTopTokens(limit = 10): { token: string; hubScore: number }[] {
+  getTopTokens(limit = 10): { pattern: string; confidence: number }[] {
     this.scorer.compute({
       nodes: this.nodes,
       adjacencyList: this.adjacencyList,
@@ -96,6 +96,6 @@ export class Graph implements IGraph {
     return Array.from(this.nodes.values())
       .sort((a, b) => b.hubScore - a.hubScore)
       .slice(0, limit)
-      .map((node) => ({ token: node.token, hubScore: node.hubScore }));
+      .map((node) => ({ pattern: node.token, confidence: node.hubScore }));
   }
 }

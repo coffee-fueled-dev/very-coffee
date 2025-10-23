@@ -36,7 +36,7 @@ export class Lattice implements ILattice {
     return this.trie.nextCharacters(prefix);
   }
 
-  getTopTokens(limit = 10): { token: string; hubScore: number }[] {
+  getTopTokens(limit = 10): { pattern: string; confidence: number }[] {
     return this.graph.getTopTokens(limit);
   }
 

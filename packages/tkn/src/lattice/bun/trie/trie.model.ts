@@ -5,7 +5,7 @@ export const TrieNodeSchema = z.object({
   id: z.number().int().positive(),
   parent_id: z.number().int().positive().nullable(),
   char: z.string().length(1),
-  token: z.string().nullable(),
+  pattern: z.string().nullable(),
   terminal: z.number().int().min(0).max(1).default(0),
   markov_id: z.number().int().positive().nullable(),
 });
@@ -20,7 +20,7 @@ export const TrieNodeInsertSchema = TrieNodeSchema.pick({
 // Update schema for terminal nodes
 export const TrieNodeUpdateSchema = TrieNodeSchema.pick({
   id: true,
-  token: true,
+  pattern: true,
   markov_id: true,
 }).extend({
   terminal: z.literal(1),

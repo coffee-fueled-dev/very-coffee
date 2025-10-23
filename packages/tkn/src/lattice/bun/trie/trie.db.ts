@@ -22,7 +22,7 @@ export const createTrieTable = (database: Database) =>
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       parent_id INTEGER,
       char TEXT NOT NULL,
-      token TEXT,
+      pattern TEXT,
       terminal INTEGER DEFAULT 0,
       markov_id INTEGER,
       FOREIGN KEY (parent_id) REFERENCES trie_nodes(id),
@@ -30,7 +30,7 @@ export const createTrieTable = (database: Database) =>
     );
 
     CREATE UNIQUE INDEX IF NOT EXISTS idx_trie_parent_char ON trie_nodes(parent_id, char);
-    CREATE INDEX IF NOT EXISTS idx_trie_token ON trie_nodes(token);
+    CREATE INDEX IF NOT EXISTS idx_trie_pattern ON trie_nodes(pattern);
   `);
 
 export const createTrieStatements = (database: Database) => {
@@ -48,7 +48,7 @@ export const createTrieStatements = (database: Database) => {
 
   const updateTrieTerminal: UpdateTrieTerminalStmt = database.query(`
     UPDATE trie_nodes
-    SET terminal = 1, token = $token, markov_id = $markov_id
+    SET terminal = 1, pattern = $pattern, markov_id = $markov_id
     WHERE id = $id;
   `);
 
