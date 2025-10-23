@@ -4,7 +4,8 @@ declare module "*.mdx" {
 
   const metadata: MDXModule["metadata"];
   const MDXComponent: MDXModule["default"];
+  const raw: MDXModule["raw"];
 
-  export { metadata };
+  export { metadata, raw };
   export default MDXComponent;
 }

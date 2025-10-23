@@ -34,6 +34,7 @@ export default {
 ${compiled.value}
 
 export const metadata = ${JSON.stringify(metadata)};
+export const raw = ${JSON.stringify(raw)};
 `;
 
       return {

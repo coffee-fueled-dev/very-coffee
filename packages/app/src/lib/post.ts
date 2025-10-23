@@ -38,6 +38,7 @@ export interface PostMetadata {
 
 export interface MDXModule {
   default: ComponentType<any>;
+  raw?: string;
   metadata?: PostMetadata;
 }
 
