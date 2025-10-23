@@ -29,6 +29,8 @@ import { Loader } from "@/components/blocks/loader";
 import tinystories_100 from "./tinystories_100.txt";
 import { Button } from "@/components/ui/button";
 import { ExternalLink } from "@/components/blocks/external-link";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CopyButton } from "@/components/blocks/copy-button";
 
 const FILE_LIMIT = 5;
 const MAX_FILE_SIZE = 1 * 1024 * 1024;
@@ -42,7 +44,7 @@ const SUPPORTED_FILE_TYPES = {
 const SAMPLE_FILE_GH_LINK =
   "https://github.com/coffee-fueled-dev/very-coffee/blob/main/packages/app/src/blog/tkn/pattern-confidence/demos/tinystories_100.txt?raw=true";
 
-type PatternWithScore = { token: string; hubScore: number };
+type PatternWithScore = { pattern: string; confidence: number };
 
 export const PatternConfidenceDemo = () => (
   <InlineDemo
@@ -134,9 +136,9 @@ const ConfidenceBadge = memo(
 );
 ConfidenceBadge.displayName = "ConfidenceBadge";
 
-const FileResults = ({ topPatterns }: { topPatterns: PatternWithScore[] }) => {
+const FileResults = ({ topTokens }: { topTokens: PatternWithScore[] }) => {
   return (
-    topPatterns.length > 0 && (
+    topTokens.length > 0 && (
       <motion.div
         key="file-results"
         initial={{ opacity: 0, y: 10 }}
@@ -146,14 +148,14 @@ const FileResults = ({ topPatterns }: { topPatterns: PatternWithScore[] }) => {
         <Card>
           <CardHeader>
             <CardTitle className="text-base">
-              Top Patterns by Confidence ({topPatterns.length})
+              Top Patterns by Confidence ({topTokens.length})
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {topPatterns.length === 0 ? (
+            {topTokens.length === 0 ? (
               <EmptyPatterns />
             ) : (
-              <Patterns topPatterns={topPatterns} />
+              <Patterns topTokens={topTokens} />
             )}
           </CardContent>
         </Card>
@@ -174,20 +176,37 @@ const EmptyPatterns = () => (
   </Empty>
 );
 
-const Patterns = ({ topPatterns }: { topPatterns: PatternWithScore[] }) => {
+const Patterns = ({ topTokens }: { topTokens: PatternWithScore[] }) => {
   return (
-    <ScrollArea className="h-[400px]">
-      <div className="flex flex-col gap-3 p-4">
-        {topPatterns.map((pattern, idx) => (
-          <ConfidenceBadge
-            key={`${pattern.token}-${idx}`}
-            token={pattern.token}
-            score={pattern.hubScore}
-            rank={idx + 1}
-          />
-        ))}
-      </div>
-    </ScrollArea>
+    <Tabs defaultValue="formatted">
+      <span className="flex justify-between items-center gap-2">
+        <TabsList>
+          <TabsTrigger value="formatted">Formatted</TabsTrigger>
+          <TabsTrigger value="raw">Raw</TabsTrigger>
+        </TabsList>
+        <CopyButton
+          content={JSON.stringify(topTokens, null, 2)}
+          label="Copy results"
+        />
+      </span>
+      <ScrollArea className="h-[400px]">
+        <TabsContent value="formatted">
+          <div className="flex flex-col gap-3 p-4">
+            {topTokens.map((token, idx) => (
+              <ConfidenceBadge
+                key={`${token.pattern}-${idx}`}
+                token={token.pattern}
+                score={token.confidence}
+                rank={idx + 1}
+              />
+            ))}
+          </div>
+        </TabsContent>
+        <TabsContent value="raw">
+          <pre>{JSON.stringify(topTokens, null, 2)}</pre>
+        </TabsContent>
+      </ScrollArea>
+    </Tabs>
   );
 };
 
@@ -196,8 +215,8 @@ const getFileResults = (files: File[]) =>
     if (files.length === 0) return { default: () => <></> };
     // Small delay to ensure Suspense fallback renders
     await new Promise((resolve) => setTimeout(resolve, 100));
-    const topPatterns = await processFiles(files);
-    return { default: () => <FileResults topPatterns={topPatterns} /> };
+    const topTokens = await processFiles(files);
+    return { default: () => <FileResults topTokens={topTokens} /> };
   });
 
 const processFiles = async (files: File[]): Promise<PatternWithScore[]> => {
