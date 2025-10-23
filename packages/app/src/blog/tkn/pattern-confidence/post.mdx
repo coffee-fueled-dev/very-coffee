@@ -21,7 +21,7 @@ For example, processing "the cat said the dog said" may create transitions like:
 
 ## Computing Confidence
 
-We can compute confidence with various methods, but a simple one measures each pattern's weighted connectivity:
+We can compute confidence with various methods, but a simple approach is to measure each pattern's weighted connectivity with the following formula:
 
 $$
 \text{degree}(\text{pattern}) = \sum_{i} w(\text{pattern} \rightarrow \text{pattern}_i)
@@ -48,7 +48,7 @@ Patterns with high confidence scores appeared frequently with many connections. 
 
 This measure is fast and local (computed from immediate transitions), making it suitable for real-time analysis. More sophisticated algorithms like PageRank could provide global importance measures, but at significantly higher computational cost.
 
-This confidence scoring strategy can be used as a component in more complex systems like lattice tokenization, which would find a path through the token graph that optimizes for heavily used transitions between high-confidence patterns. 
+This confidence scoring strategy can be used as a component in more complex systems like lattice tokenization, which would find a path through the token graph that optimizes for heavily used transitions between high-confidence patterns.
 
 ## Try It Yourself
 
