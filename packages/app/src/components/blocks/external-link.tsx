@@ -12,14 +12,17 @@ export const ExternalLink = ({
   children?: ReactNode;
   size?: "default" | "xs" | "sm" | "lg" | "icon" | "icon-sm" | "icon-lg";
   variant?: "link" | "default" | "outline" | "secondary" | "ghost";
-}) => (
-  <a target="_blank" rel="noopener noreferrer" {...props}>
-    <Button variant={variant} size={size} className={className}>
-      {children}
-      <ExternalLinkIcon />
-    </Button>
-  </a>
-);
+}) => {
+  const isIcon = size === "icon" || size === "icon-sm" || size === "icon-lg";
+  return (
+    <a target="_blank" rel="noopener noreferrer" {...props}>
+      <Button variant={variant} size={size} className={className}>
+        {children}
+        {!isIcon && <ExternalLinkIcon />}
+      </Button>
+    </a>
+  );
+};
 
 export const InlineLink = ({
   children,
