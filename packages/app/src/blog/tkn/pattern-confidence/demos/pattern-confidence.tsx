@@ -20,11 +20,15 @@ import {
 } from "@/components/ui/empty";
 import { createLZSequencer, Unicode } from "@very-coffee/tkn";
 import { Lattice, DegreeScorer } from "@very-coffee/tkn";
-import { lazy, memo, Suspense } from "react";
+import { lazy, memo, Suspense, useState } from "react";
 import { TrendingUp } from "lucide-react";
 import { InlineDemo } from "@/components/blocks/inline-demo";
 import { AnimatePresence, motion } from "motion/react";
 import { Loader } from "@/components/blocks/loader";
+
+import tinystories_100 from "./tinystories_100.txt";
+import { Button } from "@/components/ui/button";
+import { ExternalLink } from "@/components/blocks/external-link";
 
 const FILE_LIMIT = 5;
 const MAX_FILE_SIZE = 1 * 1024 * 1024;
@@ -34,6 +38,9 @@ const SUPPORTED_FILE_TYPES = {
   "text/csv": [".csv"],
   "text/xml": [".xml"],
 };
+
+const SAMPLE_FILE_GH_LINK =
+  "https://github.com/coffee-fueled-dev/very-coffee/blob/main/packages/app/src/blog/tkn/pattern-confidence/demos/tinystories_100.txt?raw=true";
 
 type PatternWithScore = { token: string; hubScore: number };
 
@@ -49,8 +56,18 @@ export const PatternConfidenceDemo = () => (
 );
 
 const FileForm = () => {
+  const demoFile = new File([tinystories_100], "tinystories_100.txt", {
+    type: "text/plain",
+  });
+  const [demoFiles, setDemoFiles] = useState<File[]>([]);
   const { files } = useUploadedFiles();
-  const FileResults = getFileResults(files);
+  const filesToUse = demoFiles.length > 0 ? demoFiles : files;
+  const FileResults = getFileResults(filesToUse);
+
+  const handleUseDemoFile = () => {
+    setDemoFiles([demoFile]);
+  };
+
   return (
     <section className="flex flex-col gap-4">
       <FileUpload
@@ -59,10 +76,21 @@ const FileForm = () => {
         maxFiles={FILE_LIMIT}
         maxFileSize={MAX_FILE_SIZE}
       />
+      <span className="flex justify-start items-center gap-2">
+        <Button variant="secondary" onClick={handleUseDemoFile}>
+          Use sample file (100 tinystories)
+        </Button>
+        <ExternalLink href={SAMPLE_FILE_GH_LINK}>
+          Read sample file on GitHub
+        </ExternalLink>
+      </span>
       <AnimatePresence mode="wait">
         <Suspense
           fallback={
-            <Loader task="Processing files" feature={files.length.toString()} />
+            <Loader
+              task="Processing files"
+              feature={filesToUse.length.toString()}
+            />
           }
         >
           <FileResults />

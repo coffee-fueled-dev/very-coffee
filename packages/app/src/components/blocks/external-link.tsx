@@ -1,3 +1,4 @@
+import { ExternalLinkIcon } from "lucide-react";
 import { Button } from "../ui/button";
 import type { AnchorHTMLAttributes, ReactNode } from "react";
 
@@ -15,6 +16,7 @@ export const ExternalLink = ({
   <a target="_blank" rel="noopener noreferrer" {...props}>
     <Button variant={variant} size={size} className={className}>
       {children}
+      <ExternalLinkIcon />
     </Button>
   </a>
 );
