@@ -17,23 +17,21 @@ sequenceDiagram
     participant O as Oracle
 
     U->>A: "Help me create a RFQ"
-
     A->>C: Request tool: create_rfq
-
     C->>P: Publish Intent: use_tool:create_rfq
-    P-->>A: Demand Evidence for Conditions: requires user_auth + org_exists
-
-    A->>U: "Please verify identity and org membership"
-    U-->>A: Evidence: user_authenticated, org_exists
-
-    A->>P: Evidence: user_authenticated, org_exists
-
-    P->>O: Evidence: user_authenticated, org_exists<br/>Condition: user_auth + org_exists
+    P-->>C: Demand Evidence for Conditions: requires user_auth + org_exists
+    C-->>A: User must verify identity and org membership
+    A->>C: Request tool: authenticate_user
+    C->>P: Publish Intent: use_tool:create_rfq
+    P-->>C: Approve
+    C-->>U: Show authentication modal
+    U->>C: Complete authorization flow
+    C->>P: Publish evidence: user_authenticated, org_exists<br/>Condition: user_auth + org_exists
+    P->>O: Review Evidence: user_authenticated, org_exists<br/>Condition: user_auth + org_exists
     O-->>P: Review: valid
-
-    P-->>A: Grant: use_tool:create_rfq
+    P-->>C: Grant: use_tool:create_rfq
+    C-->>A: You are now allowed to create a RFQ. Please try again
     A->>C: Request tool: create_rfq
-
-    C->>A: <Generated RFQ>
-    A->>U: "Here's your RFQ..."
+    C-->>A: <Generated RFQ>
+    A-->>U: "Here's your RFQ..."
 ```
