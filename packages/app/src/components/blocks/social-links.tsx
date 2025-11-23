@@ -17,12 +17,12 @@ export const SocialLinks = () => (
   </span>
 );
 
-const GitHubLink = () => (
-  <ExternalLink
-    size="icon"
-    variant="ghost"
-    href="https://github.com/coffee-fueled-dev"
-  >
+export const GitHubLink = ({
+  href = "https://github.com/coffee-fueled-dev",
+}: {
+  href?: string;
+}) => (
+  <ExternalLink size="icon" variant="ghost" href={href}>
     <FontAwesomeIcon icon={faGithub} size="lg" />
   </ExternalLink>
 );

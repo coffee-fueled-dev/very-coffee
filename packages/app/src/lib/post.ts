@@ -12,6 +12,7 @@ export const TAGS = [
   "graphs",
   "ai",
   "agents",
+  "state spaces",
 ] as const;
 
 export function asTag(tag: string) {

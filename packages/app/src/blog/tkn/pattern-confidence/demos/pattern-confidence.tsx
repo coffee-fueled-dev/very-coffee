@@ -28,9 +28,10 @@ import { Loader } from "@/components/blocks/loader";
 
 import tinystories_100 from "./tinystories_100.txt";
 import { Button } from "@/components/ui/button";
-import { ExternalLink } from "@/components/blocks/external-link";
+import { GitHubLink } from "@/components/blocks/social-links";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CopyButton } from "@/components/blocks/copy-button";
+import { TooltipButton } from "@/components/blocks/tooltip-button";
 
 const FILE_LIMIT = 5;
 const MAX_FILE_SIZE = 1 * 1024 * 1024;
@@ -41,8 +42,8 @@ const SUPPORTED_FILE_TYPES = {
   "text/xml": [".xml"],
 };
 
-const SAMPLE_FILE_GH_LINK =
-  "https://github.com/coffee-fueled-dev/very-coffee/blob/main/packages/app/src/blog/tkn/pattern-confidence/demos/tinystories_100.txt?raw=true";
+const DEMO_GH_LINK =
+  "https://github.com/coffee-fueled-dev/very-coffee/blob/main/packages/app/src/blog/tkn/pattern-confidence/demos";
 
 type PatternWithScore = { pattern: string; confidence: number };
 
@@ -79,12 +80,13 @@ const FileForm = () => {
         maxFileSize={MAX_FILE_SIZE}
       />
       <span className="flex justify-start items-center gap-2">
-        <Button variant="secondary" onClick={handleUseDemoFile}>
-          Use sample file (100 tinystories)
-        </Button>
-        <ExternalLink href={SAMPLE_FILE_GH_LINK}>
-          Read sample file on GitHub
-        </ExternalLink>
+        <TooltipButton tooltip="100 tinystories">
+          <Button variant="secondary" onClick={handleUseDemoFile}>
+            Use sample file
+          </Button>
+        </TooltipButton>
+
+        <GitHubLink href={DEMO_GH_LINK} />
       </span>
       <AnimatePresence mode="wait">
         <Suspense
