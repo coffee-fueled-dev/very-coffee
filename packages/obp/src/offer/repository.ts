@@ -1,15 +1,16 @@
+import type { Session } from "neo4j-driver";
 import type { GraphTransaction } from "../graph";
 import type { BINDS, EXPOSES, Offer, Port } from "../schema";
 import { SchemaBINDS, SchemaEXPOSES, SchemaOffer } from "../schema";
 
 export class OfferRepository {
   static async get(
-    tx: GraphTransaction,
+    ctx: GraphTransaction | Session,
     id: Offer["id"]
   ): Promise<Offer | null> {
     const cypher = "MATCH (n:Offer { id: $id }) RETURN n";
     const params = { id };
-    const result = await tx.run<{ n: Offer }>(cypher, params);
+    const result = await ctx.run<{ n: Offer }>(cypher, params);
     if (result.records.length === 0) return null;
     if (result.records.length > 1)
       throw new Error("Multiple offers found for id");
@@ -18,13 +19,16 @@ export class OfferRepository {
     return SchemaOffer.parse(node);
   }
 
-  static async insert(tx: GraphTransaction, offer: Offer): Promise<Offer> {
+  static async insert(
+    ctx: GraphTransaction | Session,
+    offer: Offer
+  ): Promise<Offer> {
     const cypher = `
         CREATE (n:Offer $properties)
         RETURN n
       `;
     const params = { properties: SchemaOffer.parse(offer) };
-    const result = await tx.run<{ n: Offer }>(cypher, params);
+    const result = await ctx.run<{ n: Offer }>(cypher, params);
     if (result.records.length === 0) throw new Error("No offer created");
     if (result.records.length > 1) throw new Error("Multiple offers created");
     const node = result.records[0]?.get("n");
@@ -33,7 +37,7 @@ export class OfferRepository {
   }
 
   static async exposePort(
-    tx: GraphTransaction,
+    ctx: GraphTransaction | Session,
     offer: Offer["id"],
     edgeEXPOSES: EXPOSES,
     port: Port["id"]
@@ -48,11 +52,11 @@ export class OfferRepository {
       portId: port,
       edge: SchemaEXPOSES.parse(edgeEXPOSES),
     };
-    await tx.run(cypher, params);
+    await ctx.run(cypher, params);
   }
 
   static async bindPort(
-    tx: GraphTransaction,
+    ctx: GraphTransaction | Session,
     offer: Offer["id"],
     edgeBINDS: BINDS,
     port: Port["id"]
@@ -68,7 +72,7 @@ export class OfferRepository {
       portId: port,
       edge: SchemaBINDS.parse(edgeBINDS),
     };
-    await tx.run(cypher, params);
+    await ctx.run(cypher, params);
   }
 
   static isExpired(offer: Offer): boolean {

@@ -14,7 +14,9 @@ export class Graph {
     username: string = process.env.NEO4J_USERNAME || "neo4j",
     password: string = process.env.NEO4J_PASSWORD || "password"
   ) {
-    this.driver = neo4j.driver(uri, neo4j.auth.basic(username, password));
+    this.driver = neo4j.driver(uri, neo4j.auth.basic(username, password), {
+      disableLosslessIntegers: true,
+    });
   }
 
   async close(): Promise<void> {
@@ -23,6 +25,10 @@ export class Graph {
 
   async transaction(): Promise<GraphTransaction> {
     return new GraphTransaction(this.driver);
+  }
+
+  async session(): Promise<Session> {
+    return this.driver.session();
   }
 }
 

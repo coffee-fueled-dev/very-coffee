@@ -1,12 +1,16 @@
 import type { Port } from "../schema";
 import { SchemaPort } from "../schema";
 import type { GraphTransaction } from "../graph";
+import type { Session } from "neo4j-driver";
 
 export class PortRepository {
-  static async get(tx: GraphTransaction, id: Port["id"]): Promise<Port | null> {
+  static async get(
+    ctx: GraphTransaction | Session,
+    id: Port["id"]
+  ): Promise<Port | null> {
     const cypher = "MATCH (n:Port { id: $id }) RETURN n";
     const params = { id };
-    const result = await tx.run<{ n: Port }>(cypher, params);
+    const result = await ctx.run<{ n: Port }>(cypher, params);
 
     if (result.records.length === 0) return null;
     if (result.records.length > 1)
@@ -16,13 +20,16 @@ export class PortRepository {
     return SchemaPort.parse(node);
   }
 
-  static async insert(tx: GraphTransaction, port: Port): Promise<Port> {
+  static async insert(
+    ctx: GraphTransaction | Session,
+    port: Port
+  ): Promise<Port> {
     const cypher = `
         CREATE (n:Port $properties)
         RETURN n
       `;
     const params = { properties: SchemaPort.parse(port) };
-    const result = await tx.run<{ n: Port }>(cypher, params);
+    const result = await ctx.run<{ n: Port }>(cypher, params);
     if (result.records.length === 0) throw new Error("No port created");
     if (result.records.length > 1) throw new Error("Multiple ports created");
     const node = result.records[0]?.get("n");
@@ -31,8 +38,11 @@ export class PortRepository {
   }
 
   // TODO: move relationship-based bind validation into cypher
-  static async validateBind(tx: GraphTransaction, port: Port): Promise<void> {
-    const isExposed = await PortRepository.isExposed(tx, port.id);
+  static async validateBind(
+    ctx: GraphTransaction | Session,
+    port: Port
+  ): Promise<void> {
+    const isExposed = await PortRepository.isExposed(ctx, port.id);
     if (!isExposed) throw new Error(`Port ${port.id} is not exposed`);
 
     if (!PortRepository.isPublished(port))
@@ -41,7 +51,7 @@ export class PortRepository {
     if (PortRepository.isExpired(port))
       throw new Error(`Port ${port.id} is expired`);
 
-    const hasOpenBindings = await PortRepository.hasOpenBindings(tx, port);
+    const hasOpenBindings = await PortRepository.hasOpenBindings(ctx, port);
     if (!hasOpenBindings)
       throw new Error(
         `Port ${port.id} has reached max_bindings (${port.max_bindings})`
@@ -49,7 +59,7 @@ export class PortRepository {
   }
 
   static async countBindings(
-    tx: GraphTransaction,
+    ctx: GraphTransaction | Session,
     port: Port["id"]
   ): Promise<number> {
     const cypher = `
@@ -57,7 +67,7 @@ export class PortRepository {
         RETURN COUNT(r) as count
       `;
     const params = { portId: port };
-    const result = await tx.run<{ count: number }>(cypher, params);
+    const result = await ctx.run<{ count: number }>(cypher, params);
     const res = result.records[0];
     return res?.get("count") ?? 0;
   }
@@ -67,11 +77,11 @@ export class PortRepository {
   }
 
   static async hasOpenBindings(
-    tx: GraphTransaction,
+    ctx: GraphTransaction | Session,
     port: Port
   ): Promise<boolean> {
     return (
-      (await PortRepository.countBindings(tx, port.id)) < port.max_bindings
+      (await PortRepository.countBindings(ctx, port.id)) < port.max_bindings
     );
   }
 
@@ -84,7 +94,7 @@ export class PortRepository {
   }
 
   static async isExposed(
-    tx: GraphTransaction,
+    ctx: GraphTransaction | Session,
     port: Port["id"]
   ): Promise<boolean> {
     const cypher = `
@@ -92,7 +102,7 @@ export class PortRepository {
         RETURN COUNT(offer) as count
       `;
     const params = { portId: port };
-    const result = await tx.run<{ count: number }>(cypher, params);
+    const result = await ctx.run<{ count: number }>(cypher, params);
     const res = result.records[0];
     return (res?.get("count") ?? 0) > 0;
   }

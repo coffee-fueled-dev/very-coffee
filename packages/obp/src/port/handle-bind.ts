@@ -3,9 +3,10 @@ import { OfferRepository } from "../offer/repository";
 import { SchemaNewBINDS, type Offer, type Port } from "../schema";
 import { initializeWithSystemFields } from "../schema-helpers";
 import { PortRepository } from "./repository";
+import type { Session } from "neo4j-driver";
 
 export async function handleBind(
-  tx: GraphTransaction,
+  ctx: GraphTransaction | Session,
   offer: Offer["id"],
   port: Port["id"],
   visited: Set<Port["id"]> = new Set()
@@ -18,22 +19,22 @@ export async function handleBind(
   visited.add(port);
 
   // Check if offer is expired
-  const gOffer = await OfferRepository.get(tx, offer);
+  const gOffer = await OfferRepository.get(ctx, offer);
   if (!gOffer) throw new Error(`Offer ${offer} not found`);
   if (OfferRepository.isExpired(gOffer)) {
     throw new Error(`Offer ${offer} is expired and cannot bind ports`);
   }
 
-  const gPort = await PortRepository.get(tx, port);
+  const gPort = await PortRepository.get(ctx, port);
   if (!gPort) throw new Error(`Port ${port} not found`);
 
-  await PortRepository.validateBind(tx, gPort);
+  await PortRepository.validateBind(ctx, gPort);
 
   if (PortRepository.isRef(gPort))
-    await handleBind(tx, offer, gPort.ref, visited);
+    await handleBind(ctx, offer, gPort.ref, visited);
 
   await OfferRepository.bindPort(
-    tx,
+    ctx,
     offer,
     initializeWithSystemFields("binds", SchemaNewBINDS, {}),
     port

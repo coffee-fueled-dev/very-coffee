@@ -22,61 +22,53 @@ const graph = new Graph();
 
 export async function registerParty(party: NewParty): Promise<Party> {
   SchemaNewParty.parse(party);
-  const tx = await graph.transaction();
+  const ctx = await graph.session();
   try {
     const gParty = await PartyRepository.insert(
-      tx,
+      ctx,
       initializeWithSystemFields("party", SchemaNewParty, party)
     );
-    await tx.commit();
     return gParty;
   } catch (error) {
-    await tx.rollback();
     throw error;
   } finally {
-    await tx.close();
+    await ctx.close();
   }
 }
 
 export async function getParty(id: Party["id"]): Promise<Party | null> {
-  const tx = await graph.transaction();
+  const ctx = await graph.session();
   try {
-    const party = await PartyRepository.get(tx, id);
-    await tx.commit();
+    const party = await PartyRepository.get(ctx, id);
     return party;
   } catch (error) {
-    await tx.rollback();
     throw error;
   } finally {
-    await tx.close();
+    await ctx.close();
   }
 }
 
 export async function getOffer(id: Offer["id"]): Promise<Offer | null> {
-  const tx = await graph.transaction();
+  const ctx = await graph.session();
   try {
-    const offer = await OfferRepository.get(tx, id);
-    await tx.commit();
+    const offer = await OfferRepository.get(ctx, id);
     return offer;
   } catch (error) {
-    await tx.rollback();
     throw error;
   } finally {
-    await tx.close();
+    await ctx.close();
   }
 }
 
 export async function getPort(id: Port["id"]): Promise<Port | null> {
-  const tx = await graph.transaction();
+  const ctx = await graph.session();
   try {
-    const port = await PortRepository.get(tx, id);
-    await tx.commit();
+    const port = await PortRepository.get(ctx, id);
     return port;
   } catch (error) {
-    await tx.rollback();
     throw error;
   } finally {
-    await tx.close();
+    await ctx.close();
   }
 }
 
