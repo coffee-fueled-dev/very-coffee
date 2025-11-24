@@ -1,11 +1,9 @@
 import { Graph, GraphTransaction } from "./graph";
+import { OfferRepository } from "./offer/repository";
+import { PartyRepository } from "./party/repository";
+import { handleBind } from "./port/handle-bind";
+import { PortRepository } from "./port/repository";
 import {
-  OfferRepository,
-  PartyRepository,
-  PortRepository,
-} from "./repositories";
-import {
-  SchemaNewBINDS,
   SchemaNewEXPOSES,
   SchemaNewEXTENDS,
   SchemaNewOffer,
@@ -113,7 +111,7 @@ export async function extendOffer(
       gOffer.id
     );
 
-    if (port) await bindPort(tx, gOffer.id, port);
+    if (port) await handleBind(tx, gOffer.id, port);
 
     await tx.commit();
     return gOffer;
@@ -166,45 +164,17 @@ export async function exposePort(
 }
 
 export async function bindPort(
-  tx: GraphTransaction,
   offer: Offer["id"],
-  port: Port["id"],
-  visited: Set<Port["id"]> = new Set()
+  port: Port["id"]
 ): Promise<void> {
-  if (visited.has(port)) {
-    throw new Error(
-      `Circular reference detected: port ${port} is already in the binding chain`
-    );
+  const tx = await graph.transaction();
+  try {
+    await handleBind(tx, offer, port);
+    await tx.commit();
+  } catch (error) {
+    await tx.rollback();
+    throw error;
+  } finally {
+    await tx.close();
   }
-  visited.add(port);
-
-  // Check if offer is expired
-  const gOffer = await OfferRepository.get(tx, offer);
-  if (!gOffer) throw new Error(`Offer ${offer} not found`);
-  if (OfferRepository.isExpired(gOffer)) {
-    throw new Error(`Offer ${offer} is expired and cannot bind ports`);
-  }
-
-  const gPort = await PortRepository.get(tx, port);
-  if (!gPort) throw new Error(`Port ${port} not found`);
-
-  // Verify port is actually exposed
-  const isExposed = await PortRepository.isExposed(tx, port);
-  if (!isExposed) {
-    throw new Error(
-      `Port ${port} is not exposed by any offer and cannot be bound`
-    );
-  }
-
-  await PortRepository.validateBind(tx, gPort);
-
-  if (PortRepository.isRef(gPort))
-    await bindPort(tx, offer, gPort.ref, visited);
-
-  await OfferRepository.bindPort(
-    tx,
-    offer,
-    initializeWithSystemFields("binds", SchemaNewBINDS, {}),
-    port
-  );
 }
