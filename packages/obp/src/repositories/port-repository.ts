@@ -43,7 +43,9 @@ export class PortRepository {
 
     const hasOpenBindings = await PortRepository.hasOpenBindings(tx, port);
     if (!hasOpenBindings)
-      throw new Error(`Port ${port.id} has no open bindings`);
+      throw new Error(
+        `Port ${port.id} has reached max_bindings (${port.max_bindings})`
+      );
   }
 
   static async countBindings(
