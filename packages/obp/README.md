@@ -266,7 +266,23 @@ Creates:
 
 Returns the created `Port`.
 
-This gives you a complete write-path for building OBP workflows.
+### Get Entities
+
+```ts
+// Get a party by ID
+const party = await getParty(partyId);
+// Returns Party | null
+
+// Get an offer by ID
+const offer = await getOffer(offerId);
+// Returns Offer | null
+
+// Get a port by ID
+const port = await getPort(portId);
+// Returns Port | null
+```
+
+This gives you a complete write-path and read-path for building OBP workflows.
 
 ---
 

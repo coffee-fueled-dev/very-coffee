@@ -30,10 +30,20 @@ export class PortRepository {
     return SchemaPort.parse(node);
   }
 
-  static async canBind(tx: GraphTransaction, port: Port): Promise<boolean> {
-    if (!PortRepository.isPublished(port) || PortRepository.isExpired(port))
-      return false;
-    return await PortRepository.hasOpenBindings(tx, port);
+  // TODO: move relationship-based bind validation into cypher
+  static async validateBind(tx: GraphTransaction, port: Port): Promise<void> {
+    const isExposed = await PortRepository.isExposed(tx, port.id);
+    if (!isExposed) throw new Error(`Port ${port.id} is not exposed`);
+
+    if (!PortRepository.isPublished(port))
+      throw new Error(`Port ${port.id} is not published`);
+
+    if (PortRepository.isExpired(port))
+      throw new Error(`Port ${port.id} is expired`);
+
+    const hasOpenBindings = await PortRepository.hasOpenBindings(tx, port);
+    if (!hasOpenBindings)
+      throw new Error(`Port ${port.id} has no open bindings`);
   }
 
   static async countBindings(
@@ -69,5 +79,19 @@ export class PortRepository {
 
   static isExpired(port: Port): boolean {
     return port.ts_expired < Date.now();
+  }
+
+  static async isExposed(
+    tx: GraphTransaction,
+    port: Port["id"]
+  ): Promise<boolean> {
+    const cypher = `
+        MATCH (offer:Offer)-[:EXPOSES]->(port:Port { id: $portId })
+        RETURN COUNT(offer) as count
+      `;
+    const params = { portId: port };
+    const result = await tx.run<{ count: number }>(cypher, params);
+    const res = result.records[0];
+    return (res?.get("count") ?? 0) > 0;
   }
 }

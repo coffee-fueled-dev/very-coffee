@@ -57,6 +57,7 @@ export class OfferRepository {
     edgeBINDS: BINDS,
     port: Port["id"]
   ): Promise<void> {
+    // TODO: move relationship-based bind validation into cypher
     const cypher = `
         MATCH (offer:Offer { id: $offerId })
         MATCH (port:Port { id: $portId })
@@ -68,5 +69,9 @@ export class OfferRepository {
       edge: SchemaBINDS.parse(edgeBINDS),
     };
     await tx.run(cypher, params);
+  }
+
+  static isExpired(offer: Offer): boolean {
+    return offer.ts_expired < Date.now();
   }
 }

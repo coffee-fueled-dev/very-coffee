@@ -40,12 +40,62 @@ export async function registerParty(party: NewParty): Promise<Party> {
   }
 }
 
+export async function getParty(id: Party["id"]): Promise<Party | null> {
+  const tx = await graph.transaction();
+  try {
+    const party = await PartyRepository.get(tx, id);
+    await tx.commit();
+    return party;
+  } catch (error) {
+    await tx.rollback();
+    throw error;
+  } finally {
+    await tx.close();
+  }
+}
+
+export async function getOffer(id: Offer["id"]): Promise<Offer | null> {
+  const tx = await graph.transaction();
+  try {
+    const offer = await OfferRepository.get(tx, id);
+    await tx.commit();
+    return offer;
+  } catch (error) {
+    await tx.rollback();
+    throw error;
+  } finally {
+    await tx.close();
+  }
+}
+
+export async function getPort(id: Port["id"]): Promise<Port | null> {
+  const tx = await graph.transaction();
+  try {
+    const port = await PortRepository.get(tx, id);
+    await tx.commit();
+    return port;
+  } catch (error) {
+    await tx.rollback();
+    throw error;
+  } finally {
+    await tx.close();
+  }
+}
+
 export async function extendOffer(
   party: Party["id"],
   offer: NewOffer,
   port?: Port["id"]
 ): Promise<Offer> {
   SchemaNewOffer.parse(offer);
+
+  // Validate ts_expired is in the future
+  if (offer.ts_expired <= Date.now()) {
+    throw new Error(
+      `Offer ts_expired must be in the future, got ${offer.ts_expired}`
+    );
+  }
+
   const tx = await graph.transaction();
   try {
     const gParty = await PartyRepository.get(tx, party);
@@ -80,6 +130,14 @@ export async function exposePort(
   port: NewPort
 ): Promise<Port> {
   SchemaNewPort.parse(port);
+
+  // Validate ts_expired is in the future
+  if (port.ts_expired <= Date.now()) {
+    throw new Error(
+      `Port ts_expired must be in the future, got ${port.ts_expired}`
+    );
+  }
+
   const tx = await graph.transaction();
   try {
     const gOffer = await OfferRepository.get(tx, offer);
@@ -120,10 +178,25 @@ export async function bindPort(
   }
   visited.add(port);
 
+  // Check if offer is expired
+  const gOffer = await OfferRepository.get(tx, offer);
+  if (!gOffer) throw new Error(`Offer ${offer} not found`);
+  if (OfferRepository.isExpired(gOffer)) {
+    throw new Error(`Offer ${offer} is expired and cannot bind ports`);
+  }
+
   const gPort = await PortRepository.get(tx, port);
   if (!gPort) throw new Error(`Port ${port} not found`);
-  const canBindTargetPort = await PortRepository.canBind(tx, gPort);
-  if (!canBindTargetPort) throw new Error(`Port ${port} cannot be bound`);
+
+  // Verify port is actually exposed
+  const isExposed = await PortRepository.isExposed(tx, port);
+  if (!isExposed) {
+    throw new Error(
+      `Port ${port} is not exposed by any offer and cannot be bound`
+    );
+  }
+
+  await PortRepository.validateBind(tx, gPort);
 
   if (PortRepository.isRef(gPort))
     await bindPort(tx, offer, gPort.ref, visited);
