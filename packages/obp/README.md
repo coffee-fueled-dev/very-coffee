@@ -11,7 +11,7 @@ This SDK provides:
 - Strongly typed edges (`EXTENDS`, `EXPOSES`, `BINDS`)
 - Zod-based validation
 - Neo4j-backed persistence
-- A transactional operations layer for constructing OBP graphs
+- A transactional API layer for constructing OBP graphs
 
 The goal is to give you a **uniform representation of interactions**—no matter the domain—and a **causal history** of what happened, step-by-step.
 
@@ -193,7 +193,7 @@ A thin wrapper around Neo4j providing:
   - transactional commit/rollback
 - `GraphNode<T>` wrapper to attach `bind()` and `expose()` methods to Offers
 
-This layer is low-level and used internally by repositories & operations.
+This layer is low-level and used internally by repositories & the API.
 
 ---
 
@@ -215,7 +215,7 @@ Repositories are used inside transactions and do not expose business logic.
 
 ---
 
-## 4. **Operations Layer (`operations.ts`)**
+## 4. **API Layer (`api.ts`)**
 
 This is the ergonomic API you call from application code.
 
@@ -230,7 +230,7 @@ const party = await registerParty({
 ### Extend an Offer
 
 ```ts
-await extendOffer(
+const offer = await extendOffer(
   partyId,
   { name: "Quote", ts_expired: ... },
   optionalPortToBind
@@ -243,10 +243,12 @@ Creates:
 - `Party --EXTENDS--> Offer`
 - Optional `Offer --BINDS--> Port`
 
+Returns the created `Offer`.
+
 ### Expose a Port
 
 ```ts
-await exposePort(
+const port = await exposePort(
   offerId,
   {
     name: "accept",
@@ -261,6 +263,8 @@ Creates:
 
 - A new Port node
 - `Offer --EXPOSES--> Port`
+
+Returns the created `Port`.
 
 This gives you a complete write-path for building OBP workflows.
 
@@ -281,14 +285,14 @@ const acme = await registerParty({ name: "Acme" });
 const vendor = await registerParty({ name: "Vendor123" });
 
 // RFQ
-await extendOffer(
+const rfqOffer = await extendOffer(
   acme.id,
   { name: "rfq", ts_expired: ... }
 );
 
 // Expose RFQ affordance
-await exposePort(
-  rfqOfferId,
+const submitQuotePort = await exposePort(
+  rfqOffer.id,
   {
     name: "submit_quote",
     status: "published",
@@ -302,7 +306,7 @@ await exposePort(
 await extendOffer(
   vendor.id,
   { name: "quote", ts_expired: ... },
-  submitQuotePortId
+  submitQuotePort.id
 );
 ```
 
@@ -345,6 +349,6 @@ With:
 - Neo4j-backed persistence
 - Transactional writes
 - Zod validation
-- Clear, composable operations
+- Clear, composable API
 
 Use it to model negotiation, marketplace interactions, agent actions, or any multi-step workflow in a structured and consistent way.

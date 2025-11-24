@@ -22,7 +22,7 @@ import { initializeWithSystemFields } from "./schema-helpers";
 
 const graph = new Graph();
 
-export async function registerParty(party: NewParty) {
+export async function registerParty(party: NewParty): Promise<Party> {
   SchemaNewParty.parse(party);
   const tx = await graph.transaction();
   try {
@@ -44,7 +44,7 @@ export async function extendOffer(
   party: Party["id"],
   offer: NewOffer,
   port?: Port["id"]
-): Promise<void> {
+): Promise<Offer> {
   SchemaNewOffer.parse(offer);
   const tx = await graph.transaction();
   try {
@@ -66,6 +66,7 @@ export async function extendOffer(
     if (port) await bindPort(tx, gOffer.id, port);
 
     await tx.commit();
+    return gOffer;
   } catch (error) {
     await tx.rollback();
     throw error;
@@ -77,7 +78,7 @@ export async function extendOffer(
 export async function exposePort(
   offer: Offer["id"],
   port: NewPort
-): Promise<void> {
+): Promise<Port> {
   SchemaNewPort.parse(port);
   const tx = await graph.transaction();
   try {
@@ -97,6 +98,7 @@ export async function exposePort(
     );
 
     await tx.commit();
+    return gPort;
   } catch (error) {
     await tx.rollback();
     throw error;
