@@ -32,4 +32,23 @@ export class PartyRepository {
     if (!node) throw new Error("No party created");
     return SchemaParty.parse(node);
   }
+
+  static async extendOffer(
+    tx: GraphTransaction,
+    party: Party["id"],
+    edgeEXTENDS: EXTENDS,
+    offer: Offer["id"]
+  ): Promise<void> {
+    const cypher = `
+        MATCH (party:Party { id: $partyId })
+        MATCH (offer:Offer { id: $offerId })
+        CREATE (party)-[:EXTENDS $edge]->(offer)
+      `;
+    const params = {
+      partyId: party,
+      offerId: offer,
+      edge: SchemaEXTENDS.parse(edgeEXTENDS),
+    };
+    await tx.run(cypher, params);
+  }
 }

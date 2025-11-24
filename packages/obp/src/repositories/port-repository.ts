@@ -1,5 +1,5 @@
-import type { BINDS, Offer, Port } from "../schema";
-import { SchemaBINDS, SchemaPort } from "../schema";
+import type { Port } from "../schema";
+import { SchemaPort } from "../schema";
 import type { GraphTransaction } from "../graph";
 
 export class PortRepository {
@@ -30,35 +30,10 @@ export class PortRepository {
     return SchemaPort.parse(node);
   }
 
-  static async bind(
-    tx: GraphTransaction,
-    offer: Offer["id"],
-    port: Port["id"],
-    edgeBINDS: BINDS
-  ): Promise<void> {
-    const cypher = `
-        MATCH (offer:Offer { id: $offerId })
-        MATCH (port:Port { id: $portId })
-        CREATE (offer)-[:BINDS $properties]->(port)
-      `;
-    const params = {
-      offerId: offer,
-      portId: port,
-      properties: SchemaBINDS.parse(edgeBINDS),
-    };
-    await tx.run(cypher, params);
-  }
-
   static async canBind(tx: GraphTransaction, port: Port): Promise<boolean> {
-    if (!PortRepository.isPublished(port)) return false;
+    if (!PortRepository.isPublished(port) || PortRepository.isExpired(port))
+      return false;
     return await PortRepository.hasOpenBindings(tx, port);
-  }
-
-  static async getRef(tx: GraphTransaction, port: Port): Promise<Port | null> {
-    if (!port.ref) return null;
-    const ref = await PortRepository.get(tx, port.ref);
-    if (!ref) return null;
-    return ref;
   }
 
   static async countBindings(
@@ -75,7 +50,11 @@ export class PortRepository {
     return res?.get("count") ?? 0;
   }
 
-  private static async hasOpenBindings(
+  static isRef(port: Port): port is Port & { ref: Port["id"] } {
+    return port.ref !== undefined;
+  }
+
+  static async hasOpenBindings(
     tx: GraphTransaction,
     port: Port
   ): Promise<boolean> {
@@ -84,11 +63,11 @@ export class PortRepository {
     );
   }
 
-  private static isPublished(port: Port): boolean {
+  static isPublished(port: Port): port is Port & { status: "published" } {
     return port.status === "published";
   }
 
-  static isRef(port: Port): boolean {
-    return port.ref !== undefined;
+  static isExpired(port: Port): boolean {
+    return port.ts_expired < Date.now();
   }
 }

@@ -231,8 +231,8 @@ const party = await registerParty({
 
 ```ts
 await extendOffer(
-  { name: "Quote", ts_expired: ... },
   partyId,
+  { name: "Quote", ts_expired: ... },
   optionalPortToBind
 );
 ```
@@ -246,12 +246,15 @@ Creates:
 ### Expose a Port
 
 ```ts
-await exposePort({
-  name: "accept",
-  terminal: true,
-  max_bindings: 1,
-  ts_expired: ...
-}, offerId);
+await exposePort(
+  offerId,
+  {
+    name: "accept",
+    terminal: true,
+    max_bindings: 1,
+    ts_expired: ...
+  }
+);
 ```
 
 Creates:
@@ -279,26 +282,26 @@ const vendor = await registerParty({ name: "Vendor123" });
 
 // RFQ
 await extendOffer(
-  { name: "rfq", ts_expired: ... },
-  acme.id
+  acme.id,
+  { name: "rfq", ts_expired: ... }
 );
 
 // Expose RFQ affordance
 await exposePort(
+  rfqOfferId,
   {
     name: "submit_quote",
     status: "published",
     terminal: false,
     max_bindings: 1,
     ts_expired: ...,
-  },
-  rfqOfferId
+  }
 );
 
 // Vendor submits quote
 await extendOffer(
-  { name: "quote", ts_expired: ... },
   vendor.id,
+  { name: "quote", ts_expired: ... },
   submitQuotePortId
 );
 ```

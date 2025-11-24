@@ -1,6 +1,6 @@
 import type { GraphTransaction } from "../graph";
-import type { EXPOSES, EXTENDS, Offer, Party, Port } from "../schema";
-import { SchemaEXPOSES, SchemaEXTENDS, SchemaOffer } from "../schema";
+import type { BINDS, EXPOSES, Offer, Port } from "../schema";
+import { SchemaBINDS, SchemaEXPOSES, SchemaOffer } from "../schema";
 
 export class OfferRepository {
   static async get(
@@ -32,40 +32,40 @@ export class OfferRepository {
     return SchemaOffer.parse(node);
   }
 
-  static async extend(
+  static async exposePort(
     tx: GraphTransaction,
     offer: Offer["id"],
-    party: Party["id"],
-    edgeEXTENDS: EXTENDS
-  ): Promise<void> {
-    const cypher = `
-        MATCH (party:Party { id: $partyId })
-        MATCH (offer:Offer { id: $offerId })
-        CREATE (party)-[:EXTENDS $properties]->(offer)
-      `;
-    const params = {
-      partyId: party,
-      offerId: offer,
-      properties: SchemaEXTENDS.parse(edgeEXTENDS),
-    };
-    await tx.run(cypher, params);
-  }
-
-  static async expose(
-    tx: GraphTransaction,
-    offer: Offer["id"],
-    port: Port["id"],
-    edgeEXPOSES: EXPOSES
+    edgeEXPOSES: EXPOSES,
+    port: Port["id"]
   ): Promise<void> {
     const cypher = `
         MATCH (offer:Offer { id: $offerId })
         MATCH (port:Port { id: $portId })
-        CREATE (offer)-[:EXPOSES $properties]->(port)
+        CREATE (offer)-[:EXPOSES $edge]->(port)
       `;
     const params = {
       offerId: offer,
       portId: port,
-      properties: SchemaEXPOSES.parse(edgeEXPOSES),
+      edge: SchemaEXPOSES.parse(edgeEXPOSES),
+    };
+    await tx.run(cypher, params);
+  }
+
+  static async bindPort(
+    tx: GraphTransaction,
+    offer: Offer["id"],
+    edgeBINDS: BINDS,
+    port: Port["id"]
+  ): Promise<void> {
+    const cypher = `
+        MATCH (offer:Offer { id: $offerId })
+        MATCH (port:Port { id: $portId })
+        CREATE (offer)-[:BINDS $edge]->(port)
+      `;
+    const params = {
+      offerId: offer,
+      portId: port,
+      edge: SchemaBINDS.parse(edgeBINDS),
     };
     await tx.run(cypher, params);
   }

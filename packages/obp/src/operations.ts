@@ -24,14 +24,12 @@ const graph = new Graph();
 
 export async function registerParty(party: NewParty) {
   SchemaNewParty.parse(party);
-  const tx = await graph.spawnTransaction();
+  const tx = await graph.transaction();
   try {
-    const completeParty = initializeWithSystemFields(
-      "party",
-      SchemaNewParty,
-      party
+    const gParty = await PartyRepository.insert(
+      tx,
+      initializeWithSystemFields("party", SchemaNewParty, party)
     );
-    const gParty = await PartyRepository.insert(tx, completeParty);
     await tx.commit();
     return gParty;
   } catch (error) {
@@ -43,35 +41,29 @@ export async function registerParty(party: NewParty) {
 }
 
 export async function extendOffer(
-  offer: NewOffer,
   party: Party["id"],
+  offer: NewOffer,
   port?: Port["id"]
 ): Promise<void> {
   SchemaNewOffer.parse(offer);
-  const tx = await graph.spawnTransaction();
+  const tx = await graph.transaction();
   try {
     const gParty = await PartyRepository.get(tx, party);
     if (!gParty) throw new Error(`Party ${party} not found`);
 
-    const completeOffer = initializeWithSystemFields(
-      "offer",
-      SchemaNewOffer,
-      offer
+    const gOffer = await OfferRepository.insert(
+      tx,
+      initializeWithSystemFields("offer", SchemaNewOffer, offer)
     );
-    const gOffer = await OfferRepository.insert(tx, completeOffer);
 
-    const edgeEXTENDS = initializeWithSystemFields(
-      "extends",
-      SchemaNewEXTENDS,
-      {}
+    await PartyRepository.extendOffer(
+      tx,
+      party,
+      initializeWithSystemFields("extends", SchemaNewEXTENDS, {}),
+      gOffer.id
     );
-    await OfferRepository.extend(tx, gOffer.id, party, edgeEXTENDS);
 
-    if (port) {
-      const gPort = await PortRepository.get(tx, port);
-      if (!gPort) throw new Error(`Port ${port} not found`);
-      await bindPort(tx, gPort, gOffer.id);
-    }
+    if (port) await bindPort(tx, gOffer.id, port);
 
     await tx.commit();
   } catch (error) {
@@ -83,28 +75,26 @@ export async function extendOffer(
 }
 
 export async function exposePort(
-  port: NewPort,
-  offer: Offer["id"]
+  offer: Offer["id"],
+  port: NewPort
 ): Promise<void> {
   SchemaNewPort.parse(port);
-  const tx = await graph.spawnTransaction();
+  const tx = await graph.transaction();
   try {
     const gOffer = await OfferRepository.get(tx, offer);
     if (!gOffer) throw new Error(`Offer ${offer} not found`);
 
-    const completePort = initializeWithSystemFields(
-      "port",
-      SchemaNewPort,
-      port
+    const gPort = await PortRepository.insert(
+      tx,
+      initializeWithSystemFields("port", SchemaNewPort, port)
     );
-    const gPort = await PortRepository.insert(tx, completePort);
 
-    const edgeEXPOSES = initializeWithSystemFields(
-      "exposes",
-      SchemaNewEXPOSES,
-      {}
+    await OfferRepository.exposePort(
+      tx,
+      gOffer.id,
+      initializeWithSystemFields("exposes", SchemaNewEXPOSES, {}),
+      gPort.id
     );
-    await OfferRepository.expose(tx, gOffer.id, gPort.id, edgeEXPOSES);
 
     await tx.commit();
   } catch (error) {
@@ -117,41 +107,29 @@ export async function exposePort(
 
 export async function bindPort(
   tx: GraphTransaction,
-  port: Port,
-  offer: Offer["id"]
+  offer: Offer["id"],
+  port: Port["id"],
+  visited: Set<Port["id"]> = new Set()
 ): Promise<void> {
-  // If port is a ref, recursively resolve and bind the referenced port first, then bind this ref port
-  if (PortRepository.isRef(port)) {
-    const refPort = await PortRepository.getRef(tx, port);
-    if (!refPort) {
-      throw new Error(`Referenced port ${port.ref} not found`);
-    }
-
-    // Validate both ports can be bound before binding either
-    const canBindRefPort = await PortRepository.canBind(tx, refPort);
-    if (!canBindRefPort) {
-      throw new Error(`Referenced port ${port.ref} cannot be bound`);
-    }
-
-    const canBindTargetPort = await PortRepository.canBind(tx, port);
-    if (!canBindTargetPort) {
-      throw new Error(`Port ${port.id} cannot be bound`);
-    }
-
-    // Recursively bind the referenced port (handles nested refs if any)
-    await bindPort(tx, refPort, offer);
-
-    // Bind the ref port itself
-    const edgeBINDS = initializeWithSystemFields("binds", SchemaNewBINDS, {});
-    await PortRepository.bind(tx, offer, port.id, edgeBINDS);
-  } else {
-    // Not a ref, validate and bind the port
-    const canBindPort = await PortRepository.canBind(tx, port);
-    if (!canBindPort) {
-      throw new Error(`Port ${port.id} cannot be bound`);
-    }
-
-    const edgeBINDS = initializeWithSystemFields("binds", SchemaNewBINDS, {});
-    await PortRepository.bind(tx, offer, port.id, edgeBINDS);
+  if (visited.has(port)) {
+    throw new Error(
+      `Circular reference detected: port ${port} is already in the binding chain`
+    );
   }
+  visited.add(port);
+
+  const gPort = await PortRepository.get(tx, port);
+  if (!gPort) throw new Error(`Port ${port} not found`);
+  const canBindTargetPort = await PortRepository.canBind(tx, gPort);
+  if (!canBindTargetPort) throw new Error(`Port ${port} cannot be bound`);
+
+  if (PortRepository.isRef(gPort))
+    await bindPort(tx, offer, gPort.ref, visited);
+
+  await OfferRepository.bindPort(
+    tx,
+    offer,
+    initializeWithSystemFields("binds", SchemaNewBINDS, {}),
+    port
+  );
 }

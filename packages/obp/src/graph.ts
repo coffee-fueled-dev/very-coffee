@@ -119,7 +119,7 @@ export class Graph {
     await this.driver.close();
   }
 
-  async spawnTransaction(): Promise<GraphTransaction> {
+  async transaction(): Promise<GraphTransaction> {
     return new GraphTransaction(this.driver);
   }
 }
