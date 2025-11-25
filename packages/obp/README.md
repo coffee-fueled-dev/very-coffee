@@ -25,7 +25,7 @@ OBP defines **3 entities** and **3 relationships**:
 
 ### **Party**
 
-Represents an actor: a brand, provider, system agent, or internal actor.
+Represents an actor: a company, system agent, or internal actor.
 
 ```ts
 {
