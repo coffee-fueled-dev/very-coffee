@@ -1,0 +1,61 @@
+Party:Company_1
+	EXTENDS Offer
+		EXPOSES Port:Terminal:employment_agreement, // Terminal goal of the workflow
+				Port:role_opening
+
+Party:Candidate_1
+	EXTENDS Offer
+		BINDS Port:role_opening
+		EXPOSES Port:application_submitted
+
+Party:Company_1
+	EXTENDS Offer
+		BINDS Port:application_submitted
+		EXPOSES Port:phone_screen_invite
+
+Party:Candidate_1
+	EXTENDS Offer
+		BINDS Port:phone_screen_invite
+		EXPOSES Port:phone_screen_accept,
+				Port:phone_screen_decline
+
+Party:Company_1
+	EXTENDS Offer
+		BINDS Port:phone_screen_accept
+		EXPOSES Port:interview_loop_invite
+
+Party:Candidate_1
+	EXTENDS Offer
+		BINDS Port:interview_loop_invite
+		EXPOSES Port:interview_loop_accept,
+				Port:interview_loop_reschedule,
+				Port:interview_loop_decline
+
+Party:Company_1
+	EXTENDS Offer
+		BINDS Port:interview_loop_accept
+		EXPOSES Port:offer_issued,
+				Port:rejection_sent // optional “no hire” terminal in this workflow
+
+Party:Candidate_1
+	EXTENDS Offer
+		BINDS Port:offer_issued
+		EXPOSES Port:counter_offer,
+				Port:ref$Terminal:employment_agreement,
+				Port:offer_rejected
+
+Party:Company_1
+	EXTENDS Offer
+		BINDS Port:counter_offer
+		EXPOSES Port:revised_offer_issued,
+				Port:offer_withdrawn
+
+Party:Candidate_1
+	EXTENDS Offer
+		BINDS Port:revised_offer_issued
+		EXPOSES Port:ref$Terminal:employment_agreement,
+				Port:offer_rejected
+
+Party:Company_1
+	EXTENDS Offer
+		BINDS ref$Terminal:employment_agreement

@@ -1,4 +1,4 @@
-import { Graph, GraphTransaction } from "./graph";
+import { Graph } from "./graph";
 import { OfferRepository } from "./offer/repository";
 import { PartyRepository } from "./party/repository";
 import { handleBind } from "./port/handle-bind";
