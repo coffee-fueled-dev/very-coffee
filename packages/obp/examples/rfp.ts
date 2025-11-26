@@ -24,12 +24,12 @@ export async function runRfpExample() {
   //     EXPOSES Port:Terminal:work_agreement
   //             Port:expression_of_interest
   const offer1 = await api.offer.extend(hb1.id, {
-    name: "HB_1: workflow root",
+    type: "workflow_root",
     ts_expired: futureTs(),
   });
 
   const workAgreementTerminal = await api.port.expose(offer1.id, {
-    name: "work_agreement",
+    type: "work_agreement",
     ts_expired: futureTs(),
     status: "published",
     max_bindings: 1,
@@ -37,7 +37,7 @@ export async function runRfpExample() {
   });
 
   const expressionOfInterest = await api.port.expose(offer1.id, {
-    name: "expression_of_interest",
+    type: "expression_of_interest",
     ts_expired: futureTs(),
     status: "published",
     max_bindings: 10,
@@ -51,14 +51,14 @@ export async function runRfpExample() {
   const offer2 = await api.offer.extend(
     sp1.id,
     {
-      name: "SP_1: responds with interest",
+      type: "responds_with_interest",
       ts_expired: futureTs(),
     },
     expressionOfInterest.id
   );
 
   const requestForQuote = await api.port.expose(offer2.id, {
-    name: "request_for_quote",
+    type: "request_for_quote",
     ts_expired: futureTs(),
     status: "published",
     max_bindings: 10,
@@ -72,14 +72,14 @@ export async function runRfpExample() {
   const offer3 = await api.offer.extend(
     hb1.id,
     {
-      name: "HB_1: sends quote",
+      type: "sends_quote",
       ts_expired: futureTs(),
     },
     requestForQuote.id
   );
 
   const quote = await api.port.expose(offer3.id, {
-    name: "quote",
+    type: "quote",
     ts_expired: futureTs(),
     status: "published",
     max_bindings: 10,
@@ -94,14 +94,14 @@ export async function runRfpExample() {
   const offer4 = await api.offer.extend(
     sp1.id,
     {
-      name: "SP_1: counter-offers",
+      type: "counter-offers",
       ts_expired: futureTs(),
     },
     quote.id
   );
 
   const counterFromSp1 = await api.port.expose(offer4.id, {
-    name: "counter",
+    type: "counter",
     ts_expired: futureTs(),
     status: "published",
     max_bindings: 10,
@@ -109,7 +109,7 @@ export async function runRfpExample() {
   });
 
   const workAgreementRefFromSp1 = await api.port.expose(offer4.id, {
-    name: "ref$work_agreement",
+    type: "ref$work_agreement",
     ts_expired: futureTs(),
     status: "published",
     max_bindings: 10,
@@ -125,14 +125,14 @@ export async function runRfpExample() {
   const offer5 = await api.offer.extend(
     hb1.id,
     {
-      name: "HB_1: responds to counter",
+      type: "responds_to_counter",
       ts_expired: futureTs(),
     },
     counterFromSp1.id
   );
 
   const counterFromHb1 = await api.port.expose(offer5.id, {
-    name: "counter",
+    type: "counter",
     ts_expired: futureTs(),
     status: "published",
     max_bindings: 10,
@@ -140,7 +140,7 @@ export async function runRfpExample() {
   });
 
   const workAgreementRefFromHb1 = await api.port.expose(offer5.id, {
-    name: "ref$work_agreement",
+    type: "ref$work_agreement",
     ts_expired: futureTs(),
     status: "published",
     max_bindings: 10,
@@ -154,7 +154,7 @@ export async function runRfpExample() {
   const offer6 = await api.offer.extend(
     sp1.id,
     {
-      name: "SP_1: accepts work_agreement",
+      type: "accepts_work_agreement",
       ts_expired: futureTs(),
     },
     workAgreementRefFromHb1.id
@@ -180,7 +180,6 @@ export async function runRfpExample() {
   };
 }
 
-// Run when invoked as a script with `bun examples/rfp.ts`
 runRfpExample()
   .then((result) => {
     console.log("[rfp] Workflow created:", {

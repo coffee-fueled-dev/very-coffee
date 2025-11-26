@@ -4,7 +4,7 @@ import { withSystemFields, id, SchemaExternal } from "./schema-helpers";
 export type NewOffer = z.infer<typeof SchemaNewOffer>;
 export const SchemaNewOffer = z.object({
   ts_expired: z.number(),
-  name: z.string(),
+  type: z.string(),
   external: z.optional(SchemaExternal),
 });
 export type Offer = z.infer<typeof SchemaOffer>;
@@ -21,7 +21,7 @@ export const SchemaParty = withSystemFields("party", SchemaNewParty.shape);
 export type NewPort = z.infer<typeof SchemaNewPort>;
 export const SchemaNewPort = z.object({
   ts_expired: z.number(),
-  name: z.string(),
+  type: z.string(),
   status: z.enum(["draft", "published", "archived"]),
   max_bindings: z.int(),
   terminal: z.boolean(),
