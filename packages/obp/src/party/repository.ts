@@ -1,4 +1,4 @@
-import type { Session } from "neo4j-driver";
+import type { Integer, Node, Session } from "neo4j-driver";
 import type { GraphTransaction } from "../graph";
 import type { EXTENDS, Offer, Party } from "../schema";
 import { SchemaEXTENDS, SchemaParty } from "../schema";
@@ -10,13 +10,13 @@ export class PartyRepository {
   ): Promise<Party | null> {
     const cypher = "MATCH (n:Party { id: $id }) RETURN n";
     const params = { id };
-    const result = await ctx.run<{ n: Party }>(cypher, params);
+    const result = await ctx.run<{ n: Node<Integer, Party> }>(cypher, params);
     if (result.records.length === 0) return null;
     if (result.records.length > 1)
       throw new Error("Multiple parties found for id");
     const node = result.records[0]?.get("n");
     if (!node) throw new Error("No party found");
-    return SchemaParty.parse(node);
+    return SchemaParty.parse(node.properties);
   }
 
   static async insert(
@@ -27,14 +27,14 @@ export class PartyRepository {
         CREATE (n:Party $properties)
         RETURN n
       `;
-    const params = { properties: SchemaParty.parse(party) };
-    const result = await ctx.run<{ n: Party }>(cypher, params);
+    const params = { properties: party };
+    const result = await ctx.run<{ n: Node<Integer, Party> }>(cypher, params);
 
     if (result.records.length === 0) throw new Error("No party created");
     if (result.records.length > 1) throw new Error("Multiple parties created");
     const node = result.records[0]?.get("n");
     if (!node) throw new Error("No party created");
-    return SchemaParty.parse(node);
+    return SchemaParty.parse(node.properties);
   }
 
   static async extendOffer(

@@ -1,4 +1,4 @@
-import type { Session } from "neo4j-driver";
+import type { Integer, Node, Session } from "neo4j-driver";
 import type { GraphTransaction } from "../graph";
 import type { BINDS, EXPOSES, Offer, Port } from "../schema";
 import { SchemaBINDS, SchemaEXPOSES, SchemaOffer } from "../schema";
@@ -10,13 +10,13 @@ export class OfferRepository {
   ): Promise<Offer | null> {
     const cypher = "MATCH (n:Offer { id: $id }) RETURN n";
     const params = { id };
-    const result = await ctx.run<{ n: Offer }>(cypher, params);
+    const result = await ctx.run<{ n: Node<Integer, Offer> }>(cypher, params);
     if (result.records.length === 0) return null;
     if (result.records.length > 1)
       throw new Error("Multiple offers found for id");
     const node = result.records[0]?.get("n");
     if (!node) throw new Error("No offer found");
-    return SchemaOffer.parse(node);
+    return SchemaOffer.parse(node.properties);
   }
 
   static async insert(
@@ -28,12 +28,12 @@ export class OfferRepository {
         RETURN n
       `;
     const params = { properties: SchemaOffer.parse(offer) };
-    const result = await ctx.run<{ n: Offer }>(cypher, params);
+    const result = await ctx.run<{ n: Node<Integer, Offer> }>(cypher, params);
     if (result.records.length === 0) throw new Error("No offer created");
     if (result.records.length > 1) throw new Error("Multiple offers created");
     const node = result.records[0]?.get("n");
     if (!node) throw new Error("No offer created");
-    return SchemaOffer.parse(node);
+    return SchemaOffer.parse(node.properties);
   }
 
   static async exposePort(

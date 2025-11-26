@@ -12,7 +12,7 @@ export const SchemaExternal = z.object({
 export const systemFields = <TEntity extends string>(entityName: TEntity) =>
   z.object({
     id: id(entityName),
-    ts_created: z.int64(),
+    ts_created: z.number(),
   });
 
 export type WithSystemFields<
