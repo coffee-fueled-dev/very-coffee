@@ -30,8 +30,13 @@ export async function handleBind(
 
   await PortRepository.validateBind(ctx, gPort);
 
-  if (PortRepository.isRef(gPort))
-    await handleBind(ctx, offer, gPort.ref, visited);
+  // If this is a ref port, bind to the referenced port first (if not already bound)
+  if (PortRepository.isRef(gPort)) {
+    const alreadyBound = await OfferRepository.hasBoundPort(ctx, offer, gPort.ref);
+    if (!alreadyBound) {
+      await handleBind(ctx, offer, gPort.ref, visited);
+    }
+  }
 
   await OfferRepository.bindPort(
     ctx,

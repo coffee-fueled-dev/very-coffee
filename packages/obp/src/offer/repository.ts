@@ -75,6 +75,21 @@ export class OfferRepository {
     await ctx.run(cypher, params);
   }
 
+  static async hasBoundPort(
+    ctx: GraphTransaction | Session,
+    offer: Offer["id"],
+    port: Port["id"]
+  ): Promise<boolean> {
+    const cypher = `
+        MATCH (offer:Offer { id: $offerId })-[:BINDS]->(port:Port { id: $portId })
+        RETURN COUNT(offer) as count
+      `;
+    const params = { offerId: offer, portId: port };
+    const result = await ctx.run<{ count: number }>(cypher, params);
+    const res = result.records[0];
+    return (res?.get("count") ?? 0) > 0;
+  }
+
   static isExpired(offer: Offer): boolean {
     return offer.ts_expired < Date.now();
   }
