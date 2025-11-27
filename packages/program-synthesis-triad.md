@@ -109,7 +109,7 @@ $$
 Each $p \in \mathsf{Ports}(O)$ is a port endowed with an affordance-map interpretation
 
 $$
-\llbracket p \rrbracket : X \times \mathsf{Context} \to \mathcal{P}(\mathcal{T}(X)).
+[\![p]\!] : X \times \mathsf{Context} \to \mathcal{P}(\mathcal{T}(X)).
 $$
 
 For notational simplicity, this interpretation is identified with $p$ itself when no confusion arises.
@@ -389,9 +389,9 @@ $$
 
 $$
 A \bowtie B
-= \bigl{ [a] \frown h \mid h \in A' \bowtie B \bigr}
+= \bigl\{ [a] \frown h \mid h \in A' \bowtie B \bigr\}
 \cup
-\bigl{ [b] \frown h \mid h \in A \bowtie B' \bigr}.
+\bigl\{ [b] \frown h \mid h \in A \bowtie B' \bigr\}.
 $$
 
 This yields all interleavings that preserve the relative order of actions within each component sequence.
