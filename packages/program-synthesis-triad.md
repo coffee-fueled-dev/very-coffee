@@ -6,7 +6,17 @@ This document formally defines a closed-loop framework for adaptive program synt
 2. **The TKN Online Morpheme Learner:** Extracts high-utility, reusable pattern sequences (_morphemes_) from OBP execution traces (Online Learning).
 3. **The Program Synthesis Engine ($\mathcal{P}$):** Uses the learned morphemes as macro-actions to perform optimal graph search, synthesizing goal-directed programs (Formal Planning).
 
-The framework operates as a self-improving cycle: $\mathcal{W}$ generates execution data, TKN abstracts this data into $\mathsf{MacroAction}\text{s}$, and $\mathcal{P}$ uses the $\mathsf{MacroAction}\text{s}$ to synthesize new, optimized programs for execution by $\mathcal{W}$.
+The framework operates as a self-improving cycle: $\mathcal{W}$ generates execution data, TKN abstracts this data into $\mathsf{MacroAction}\text{s}$, and $\mathcal{P}$ uses the $\mathsf{MacroAction}\text{s}$ to synthesize new, optimized programs for execution by $\mathcal{W}$. A structured treatment of failure (an exception hierarchy and the failure trace functor $\mathrm{Tr}_{\bot}$) is built into this cycle, so that the system can learn from errors and implement fault-tolerant recovery strategies in real-world deployments.
+
+# Framework Usage Modes
+
+Because the three components have orthogonal responsibilities, they can be composed in several usage modes without changing their formal definitions:
+
+- **OBP as Causal Log Schema (Observation-Only):** An external workflow is instrumented into $\mathcal{W}$; $\mathrm{Tr}$ and $\mathrm{Tr}_{\bot}$ are used purely to extract (failure-aware) action traces, and TKN operates as an online learner over these logs, with no planner in the loop.
+- **Learning-Enhanced Planning on Historical Data:** OBP provides the abstract execution semantics and trace schema, but traces are collected offline (from observation or simulation). TKN builds a morpheme lattice from this corpus, and $\mathcal{P}$ plans over $\mathcal{S}$ using the learned $\mathsf{MacroAction}\text{s}$, without necessarily driving live OBP execution.
+- **Closed-Loop Autonomous Execution:** OBP serves as the runtime executor under transactional semantics, $\mathrm{Tr}$ and $\mathrm{Tr}_{\bot}$ feed TKN in real time, and $\mathcal{P}$ uses the evolving morpheme set to synthesize and adapt programs that are immediately executed in $\mathcal{W}$.
+
+In all modes, OBP defines the causal structure, TKN learns patterns from the induced traces, and $\mathcal{P}$ reasons over these patterns; only the control boundary between “observation” and “execution” changes.
 
 # The Offer--Bind--Port Calculus (OBP)
 
@@ -275,6 +285,16 @@ The validity of a binding is governed by the admissibility of the cone $p(x_O,C)
 
 These constraints are internalized into the definition of $\mathcal{T}(X)$ and into the computation of $p(x_O,C)$ via $\mathsf{Context}$.
 
+### Transactional Execution Semantics
+
+At the execution level, OBP is run under **transactional semantics** that govern how bindings and actions affect the concrete workflow state:
+
+- **Binding as reservation:** $\mathsf{Bind}$ is implemented as a time-bounded reservation rather than an irreversible commit, so failed actions can be rolled back without contaminating unrelated ports.
+- **Two-phase commit for critical actions:** commit-style ports use a prepare/commit protocol so that failures in the prepare phase remain safely recoverable.
+- **Checkpointing:** global states $X$ (or planning states $S$) are checkpointed at $\mathsf{MacroAction}$ boundaries, allowing the system to resume planning from the last successful prefix instead of restarting from $S_0$.
+
+These transactional semantics are part of the core OBP execution model and are used by the failure-handling and learning machinery described below.
+
 ### Evaluation Semantics (Deterministic Local Effects)
 
 The OBP calculus has **deterministic local evaluation**: for a fixed action $a$, the successor offer and its port structure are uniquely determined.
@@ -323,6 +343,17 @@ $$
 $$
 
 This convention models failure as a transition into the failure sink $\bot$, after which no further ports are exposed.
+
+### Structured Failure and Transactional Semantics
+
+The OBP execution semantics includes a **structured exception hierarchy** associated with the sink $\bot$. The OBP Execution Service distinguishes, for example:
+
+- **Terminal failure (hard $\bot$):** violation of a core invariant or non-recoverable external error.
+- **Recoverable failure ($\bot_{\mathbf{R}}$):** violation of a transient constraint (e.g.\ temporary resource unavailability).
+- **Contention failure ($\bot_{\mathbf{C}}$):** violation due to concurrency (e.g.\ another $\mathsf{Party}$ claimed a contested resource first).
+
+Categorically, these exception classes are all represented by the single object $\bot$; the hierarchy is carried as additional structure used by the planner and learner.
+In combination with the transactional execution semantics of OBP, this structured view of failure defines a fault-tolerant substrate that supports robust exception handling and automatic recovery.
 
 ## The Symmetric Monoidal Category $\mathcal{W}$ (SMC)
 
@@ -454,6 +485,21 @@ $$
 
 Thus, $C(h)$ ensures that $h$ is a valid global execution path.
 
+### Failure Functor and Partial Traces
+
+Not all executions reach a successful terminal state; some transition into a failure sink. The trace semantics therefore includes, in addition to $\mathrm{Tr}$, a **failure trace functor**:
+
+$$
+\mathrm{Tr}_{\bot} : \mathcal{W} \to \mathsf{Action}^* \cdot \bot_i,
+$$
+
+where $\bot_i$ records the type and point of failure (e.g.\ $\bot_{\mathbf{R}}$ or $\bot_{\mathbf{C}}$). $\mathrm{Tr}_{\bot}$ coincides with $\mathrm{Tr}$ on the successful prefix of an execution and then appends the tagged failure event.
+
+By construction, these failure-annotated traces allow downstream learners (TKN) and planners ($\mathcal{P}$) to:
+
+- extract **useful prefixes** of failed runs as candidate morphemes, and
+- associate distinct penalty profiles with different failure types, rather than treating all failures as equally bad.
+
 ### Significance for TKN
 
 The concurrent shuffle induces:
@@ -551,7 +597,7 @@ TKN is an online, LZ-style pattern discovery mechanism that learns _morphemes_ �
 
 ## Input: Action Traces from OBP
 
-The input stream for TKN is derived from the causal execution category $\mathcal{W}$. The trace functor $\mathrm{Tr} : \mathcal{W} \to \mathrm{List}(\mathsf{Action})$ provides the sequence of executed actions.
+The input stream for TKN is derived from the causal execution category $\mathcal{W}$. The trace functor $\mathrm{Tr} : \mathcal{W} \to \mathrm{List}(\mathsf{Action})$ provides the sequences of successful actions, while the failure trace functor $\mathrm{Tr}_{\bot}$ exposes prefixes of executions that terminate in structured failures.
 
 An alphabet $\Sigma$ of observable symbols is assumed. The symbol stream $x_1 x_2 \dots x_T \in \Sigma^{\ast}$ is obtained by applying a projection-based labeling map $\mathsf{lab}$ to the trace sequence:
 
@@ -852,7 +898,8 @@ where:
 - $\mathsf{Length}(\mathrm{Tr}(m))$ is the number of atomic OBP actions in the underlying trace of $m$ (favoring shorter programs),
 - $\mathrm{hub}(v_p)$ is the TKN hub score of the morpheme $p$ corresponding to $m$ (favoring high-utility, reusable patterns),
 - $\epsilon > 0$ is a regularization constant to avoid division by zero,
-- $\mathsf{FixedOverhead}$ is a nominal cost assigned to each macro-action.
+- $\mathsf{FixedOverhead}$ is a nominal cost assigned to each macro-action,
+- and additional **failure penalties** can be added based on statistics derived from $\mathrm{Tr}_{\bot}$ (e.g.\ higher cost for prefixes that frequently end in $\bot_{\mathbf{C}}$ than for those that occasionally hit $\bot_{\mathbf{R}}$).
 
 Optimality is defined as:
 
