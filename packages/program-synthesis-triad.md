@@ -1,11 +1,10 @@
-```latex
 \section{Executive Summary: The Program Synthesis Triad}
 
 This document formally defines a closed-loop framework for adaptive program synthesis, built upon a triad of causality modeling, online learning, and formal planning. The system is composed of three interconnected formalisms:
 \begin{enumerate}
-    \item \textbf{The Offer--Bind--Port Calculus (OBP, $\mathcal{W}$):} Establishes the rigorous, concurrent, resource-aware execution semantics (Causal Modeling).
-    \item \textbf{The TKN Online Morpheme Learner:} Extracts high-utility, reusable pattern sequences (\emph{morphemes}) from OBP execution traces (Online Learning).
-    \item \textbf{The Program Synthesis Engine ($\mathcal{P}$):} Uses the learned morphemes as macro-actions to perform optimal graph search, synthesizing goal-directed programs (Formal Planning).
+\item \textbf{The Offer--Bind--Port Calculus (OBP, $\mathcal{W}$):} Establishes the rigorous, concurrent, resource-aware execution semantics (Causal Modeling).
+\item \textbf{The TKN Online Morpheme Learner:} Extracts high-utility, reusable pattern sequences (\emph{morphemes}) from OBP execution traces (Online Learning).
+\item \textbf{The Program Synthesis Engine ($\mathcal{P}$):} Uses the learned morphemes as macro-actions to perform optimal graph search, synthesizing goal-directed programs (Formal Planning).
 \end{enumerate}
 The framework operates as a self-improving cycle: $\mathcal{W}$ generates execution data, TKN abstracts this data into $\mathsf{MacroAction}$s, and $\mathcal{P}$ uses the $\mathsf{MacroAction}$s to synthesize new, optimized programs for execution by $\mathcal{W}$.
 
@@ -24,7 +23,7 @@ The calculus is founded upon the following **primitive sorts**:
 \paragraph{Port Structure.}
 The port structure of an offer is defined by the function $\mathsf{Ports}$, which maps an offer to an ordered sequence of ports:
 \[
-\mathsf{Ports} : \mathsf{Offer} \to \mathsf{Port}^*.
+\mathsf{Ports} : \mathsf{Offer} \to \mathsf{Port}^\*.
 \]
 
 \paragraph{Failure Sink ($\bot$).}
@@ -62,7 +61,7 @@ The **binding function** $\mathsf{Bind}$ is a partial function that constructs a
 \paragraph{Evaluation Semantics (Deterministic).}
 The OBP is a **deterministic calculus**. The evaluation function $\mathsf{Eval}$ maps an action to its unique successor offer and the sequence of ports it exposes:
 \[
-\mathsf{Eval} : \mathsf{Action} \to \mathsf{Offer} \times \mathsf{Port}^*.
+\mathsf{Eval} : \mathsf{Action} \to \mathsf{Offer} \times \mathsf{Port}^\*.
 \]
 For a defined action $a$, the evaluation is defined by its associated result offer and port sequence:
 \[
@@ -72,7 +71,7 @@ For a defined action $a$, the evaluation is defined by its associated result off
 \paragraph{Failure Transition Rule.}
 The violation of binding constraints results in a transition to the sink. If the binding $\mathsf{Bind}(O, p, \mathcal{C})$ is invalid, the resulting action $a_{\mathsf{fail}}$ satisfies:
 \[
-\mathsf{ResultOffer}(a_{\mathsf{fail}}) = \bot.
+\mathsf{ResultOffer}(a\_{\mathsf{fail}}) = \bot.
 \]
 
 \subsection{The Symmetric Monoidal Category $\mathcal{W}$ (SMC)}
@@ -101,10 +100,10 @@ The trace functor $\mathrm{Tr}$ is a monoidal natural transformation that maps a
 \]
 The functor is defined inductively:
 \begin{itemize}
-    \item \textbf{Atomic Action:} $\mathrm{Tr}(a) = [a]$.
-    \item \textbf{Identity/Symmetry:} $\mathrm{Tr}(\mathrm{id}_X) = \epsilon$; $\mathrm{Tr}(\sigma_{X,Y}) = \epsilon$.
-    \item \textbf{Sequential Composition:} $\mathrm{Tr}(g \circ f) = \mathrm{Tr}(f) \frown \mathrm{Tr}(g)$, where $\frown$ is sequence concatenation.
-    \item \textbf{Parallel Composition:} $\mathrm{Tr}(f \otimes g) = \mathrm{Tr}(f) \parallel \mathrm{Tr}(g)$, where $\parallel$ is a **concurrent shuffle** (a partial order consistent merge of two sequences).
+\item \textbf{Atomic Action:} $\mathrm{Tr}(a) = [a]$.
+\item \textbf{Identity/Symmetry:} $\mathrm{Tr}(\mathrm{id}_X) = \epsilon$; $\mathrm{Tr}(\sigma_{X,Y}) = \epsilon$.
+\item \textbf{Sequential Composition:} $\mathrm{Tr}(g \circ f) = \mathrm{Tr}(f) \frown \mathrm{Tr}(g)$, where $\frown$ is sequence concatenation.
+\item \textbf{Parallel Composition:} $\mathrm{Tr}(f \otimes g) = \mathrm{Tr}(f) \parallel \mathrm{Tr}(g)$, where $\parallel$ is a **concurrent shuffle** (a partial order consistent merge of two sequences).
 \end{itemize}
 The output $\mathrm{Tr}(f)$ constitutes the concrete, recorded **execution log** or **trace** of the workflow $f$.
 
@@ -114,7 +113,7 @@ The trace extraction functor establishes a formal link between the two primary a
 \[
 \text{Operadic Tree} \quad\xrightarrow{\text{Evaluates to}} \quad \text{SMC Braid/Net} \quad\xrightarrow{\mathrm{Tr}} \quad \text{Concrete Database Log}
 \]
-The **Symmetric Operad $\mathcal{O}_{\mathrm{OBP}}$** constitutes the abstract specification for *compositional interface patterns*, and the SMC $\mathcal{W}$ provides the concrete *execution semantics*.
+The **Symmetric Operad $\mathcal{O}_{\mathrm{OBP}}$** constitutes the abstract specification for _compositional interface patterns_, and the SMC $\mathcal{W}$ provides the concrete _execution semantics_.
 
 \section{The TKN Online Morpheme Learner}
 
@@ -136,16 +135,16 @@ The core streaming engine is the \emph{Sequencer}, which contains an \emph{LZGat
 
 The LZ-style inclusion heuristic is implemented by a dictionary interface $\mathsf{merge}$, which returns the novelty status of a key:
 \[
-\mathsf{merge} : \Sigma^* \to \{ \mathsf{known},\ \mathsf{novel} \}.
+\mathsf{merge} : \Sigma^\* \to \{ \mathsf{known},\ \mathsf{novel} \}.
 \]
 
 \begin{definition}[LZGate Evaluation]
 Given previous key $w_t$ and new symbol $x_{t+1}$, the candidate pattern is $w_{t+1}^{\mathrm{cand}} = w_t x_{t+1}$. The LZGate determines the segmentation boundary:
 \[
-\mathsf{LZGate}(w_{t+1}^{\mathrm{cand}}) =
+\mathsf{LZGate}(w*{t+1}^{\mathrm{cand}}) =
 \begin{cases}
-\mathsf{continue} & \text{if }\mathsf{merge}(w_{t+1}^{\mathrm{cand}}) = \mathsf{known},\\[4pt]
-\mathsf{segment} & \text{if }\mathsf{merge}(w_{t+1}^{\mathrm{cand}}) = \mathsf{novel}.
+\mathsf{continue} & \text{if }\mathsf{merge}(w*{t+1}^{\mathrm{cand}}) = \mathsf{known},\\[4pt]
+\mathsf{segment} & \text{if }\mathsf{merge}(w\_{t+1}^{\mathrm{cand}}) = \mathsf{novel}.
 \end{cases}
 \]
 \end{definition}
@@ -174,9 +173,9 @@ Global structure over discovered patterns is captured by the **Lattice**, compos
 \paragraph{Nodes and Edges.}
 Each distinct pattern $p \in \Sigma^+$ corresponds to a node $v_p \in V$. The ingestion of the pattern stream $(p_1, p_2, \dots, p_N)$ accumulates transitions:
 \[
-(p_i, p_{i+1}) \mapsto \text{edge } e_{i} = (v_{p_i} \to v_{p_{i+1}}).
+(p*i, p*{i+1}) \mapsto \text{edge } e*{i} = (v*{p*i} \to v*{p*{i+1}}).
 \]
-The weight $w(p \to q)$ of an edge is defined as the empirical count of the transition, $w(p \to q) = \#\{ i \mid p_i = p,\ p_{i+1} = q \}$.
+The weight $w(p \to q)$ of an edge is defined as the empirical count of the transition, $w(p \to q) = \#\{ i \mid p_i = p,\ p*{i+1} = q \}$.
 
 \paragraph{Trie Layer.}
 The prefix trie $\mathcal{T}$ stores the character decomposition of each pattern $p$, linking its terminal node to the corresponding graph node $v_p$.
@@ -188,7 +187,7 @@ Pattern importance is ranked by a **hub scoring** algorithm applied to the graph
 \begin{definition}[Degree-Based Hub Scoring]
 For each node $v \in V$, the weighted out-degree is defined as:
 \[
-\deg^+(v) = \sum_{(v \to u) \in E} w(v \to u).
+\deg^+(v) = \sum\_{(v \to u) \in E} w(v \to u).
 \]
 The degree-based hub score provides a fast, online approximation of importance:
 \[
@@ -200,12 +199,11 @@ The degree-based hub score provides a fast, online approximation of importance:
 The lattice exposes a query $\mathsf{TopTokens}(k)$ returning the $k$ patterns with the highest hub scores. These high-scoring patterns are designated as **morphemes** (stable, high-utility units):
 \[
 \mathsf{TopTokens}(k) =
-\operatorname*{arg\,top}_k\limits_{p \in \Sigma^+}
+\operatorname\*{arg\,top}_k\limits_{p \in \Sigma^+}
 \mathrm{hub}(v_p).
 \]
 The result is a pair $(\text{pattern}, \text{confidence})$, where $\text{confidence} = \mathrm{hub}(v_p)$.
 \end{definition}
-
 
 \subsection{TKN as Morpheme Learning over the Causal Graph}
 
@@ -213,9 +211,9 @@ TKN discovers reusable pattern units induced by OBP workflows and ranks them acc
 \[
 \mathcal{W}
 \;\xrightarrow{\ \mathrm{Tr}\ }\;
-\mathsf{Action}^*
+\mathsf{Action}^_
 \;\xrightarrow{\ \text{labeling}\ }\;
-\Sigma^*
+\Sigma^_
 \;\xrightarrow{\ \text{LZ-based TKN}\ }\;
 (p_1,\dots,p_N)
 \;\xrightarrow{\ \text{Lattice}\ }\;
@@ -264,14 +262,11 @@ The sequence must satisfy the transition requirements: $S_0 \xrightarrow{m_1} S_
 \paragraph{Cost and Optimality.}
 Each $\mathsf{MacroAction}$ $m \in \mathcal{M}$ possesses an assigned $\mathsf{Cost}(m)$. This cost is typically derived from the TKN $\mathrm{hub}$ score or the length of the underlying OBP trace. The Synthesis Engine $\mathcal{P}$ utilizes graph search algorithms (e.g., A*, Dijkstra) to determine the **optimal plan** $\Pi^*$ that minimizes the total path cost:
 \[
-\Pi^* = \operatorname*{arg\,min}_{\Pi} \sum_{m \in \Pi} \mathsf{Cost}(m).
+\Pi^_ = \operatorname_{arg\,min}_{\Pi} \sum_{m \in \Pi} \mathsf{Cost}(m).
 \]
 
-
 [Image of a graph search algorithm finding an optimal path]
-
 
 \subsection{Synthesis Loop Closure}
 
 The execution of the synthesized plan $\Pi^*$ closes the self-improving loop of the system. The sequence of $\mathsf{MacroAction}$s $\Pi^*$ is unrolled into its full OBP $\mathsf{Action}$ trace $\mathrm{Tr}(\Pi^*)$, which serves as the template for subsequent executions, providing new, optimized data for the TKN Online Learner.
-```
