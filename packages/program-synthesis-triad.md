@@ -887,10 +887,17 @@ with $S_0$ an initial state and $S_k$ a goal state such that $\mathsf{Goal}(S_k)
 
 Each $\mathsf{MacroAction}$ $m \in \mathcal{M}$ is assigned a cost $\mathsf{Cost}(m)$. The Synthesis Engine $\mathcal{P}$ uses graph search algorithms (e.g., A*, Dijkstra) to determine an **optimal plan** $\Pi^*$ minimizing total cost.
 
-A typical multi-criteria cost function is:
+A typical multi-criteria cost function decomposes into a structural term and a failure-penalty term:
 
 $$
-\mathsf{Cost}(m) = \frac{\mathsf{Length}(\mathrm{Tr}(m))}{\mathrm{hub}(v_p) + \epsilon} - \mathsf{FixedOverhead},
+\mathsf{Cost}(m) = \mathsf{Cost}_{\mathrm{struct}}(m) + \mathsf{P}_{\mathrm{fail}}(m),
+$$
+
+with
+
+$$
+\mathsf{Cost}_{\mathrm{struct}}(m)
+= \frac{\mathsf{Length}(\mathrm{Tr}(m))}{\mathrm{hub}(v_p) + \epsilon} - \mathsf{FixedOverhead},
 $$
 
 where:
@@ -898,8 +905,37 @@ where:
 - $\mathsf{Length}(\mathrm{Tr}(m))$ is the number of atomic OBP actions in the underlying trace of $m$ (favoring shorter programs),
 - $\mathrm{hub}(v_p)$ is the TKN hub score of the morpheme $p$ corresponding to $m$ (favoring high-utility, reusable patterns),
 - $\epsilon > 0$ is a regularization constant to avoid division by zero,
-- $\mathsf{FixedOverhead}$ is a nominal cost assigned to each macro-action,
-- and additional **failure penalties** can be added based on statistics derived from $\mathrm{Tr}_{\bot}$ (e.g.\ higher cost for prefixes that frequently end in $\bot_{\mathbf{C}}$ than for those that occasionally hit $\bot_{\mathbf{R}}$).
+- $\mathsf{FixedOverhead}$ is a nominal cost assigned to each macro-action.
+
+The **failure penalty term** $\mathsf{P}_{\mathrm{fail}}(m)$ is defined from the statistics of the failure trace functor $\mathrm{Tr}_{\bot}$:
+
+$$
+\mathsf{P}_{\mathrm{fail}}(m)
+= \sum_{i \in \mathcal{I}} \mathsf{W}_i \cdot \mathsf{Risk}_i(m),
+$$
+
+where:
+
+- $\mathcal{I}$ is the set of failure classes exposed by the exception hierarchy (e.g.\ recoverable $\bot_{\mathbf{R}}$, contention $\bot_{\mathbf{C}}$, terminal),
+- $\mathsf{W}_i > 0$ is an administratively chosen weight reflecting the real-world cost or severity of failures of class $i$ (typically ordered by severity so that $\mathsf{W}_{\mathbf{R}} \ll \mathsf{W}_{\mathbf{C}} \ll \mathsf{W}_{\bot_{\text{hard}}}$; e.g.\ $\mathsf{W}_{\mathbf{R}} = 10$, $\mathsf{W}_{\mathbf{C}} = 100$, $\mathsf{W}_{\bot_{\text{hard}}} = 10000$),
+- $\mathsf{Risk}_i(m)$ is the empirical frequency with which executions whose trace matches $m$ (as a prefix) terminate in a failure of class $i$, estimated from $\mathrm{Tr}_{\bot}$.
+
+Formally, if $\#\mathrm{Tr}_{\bot}(m \leadsto \bot_i)$ denotes the number of failure traces whose prefix matches $m$ and end in class $i$, and $\#\mathrm{Tr}_{\bot}(m \leadsto \ast)$ the total number of (successful or failed) traces whose prefix matches $m$, then
+
+$$
+\mathsf{Risk}_i(m)
+= \frac{\#\mathrm{Tr}_{\bot}(m \leadsto \bot_i)}{\#\mathrm{Tr}_{\bot}(m \leadsto \ast)}.
+$$
+
+Operationally, TKN is responsible for maintaining these statistics: by extracting and indexing prefixes from $\mathrm{Tr}_{\bot}$, it computes the counts $\#\mathrm{Tr}_{\bot}(m \leadsto \bot_i)$ and $\#\mathrm{Tr}_{\bot}(m \leadsto \ast)$ for each learned morpheme $m$ and failure class $i$.
+
+**Example (Failure-aware choice of plan).** Suppose two plans $\Pi_A$ and $\Pi_B$ reach the same goal:
+
+- $\Pi_A$ has lower structural cost but a contention risk of $\mathsf{Risk}_{\mathbf{C}}(\Pi_A) = 0.10$, yielding $\mathsf{P}_{\mathrm{fail}}(\Pi_A) \approx \mathsf{W}_{\mathbf{C}} \cdot 0.10 = 10$ when $\mathsf{W}_{\mathbf{C}} = 100$.
+- $\Pi_B$ has slightly higher structural cost but no observed contention, so $\mathsf{Risk}_{\mathbf{C}}(\Pi_B) = 0$ and $\mathsf{P}_{\mathrm{fail}}(\Pi_B) = 0$.
+
+If the structural costs are $\mathsf{Cost}_{\mathrm{struct}}(\Pi_A) = 5$ and $\mathsf{Cost}_{\mathrm{struct}}(\Pi_B) = 10$, then
+$\mathsf{Cost}(\Pi_A) = 15$ and $\mathsf{Cost}(\Pi_B) = 10$, so $\mathcal{P}$ prefers $\Pi_B$, explicitly trading a longer but safer plan for a shorter, higher-risk one.
 
 Optimality is defined as:
 
