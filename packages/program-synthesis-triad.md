@@ -2,11 +2,11 @@
 
 This document formally defines a closed-loop framework for adaptive program synthesis, built upon a triad of causality modeling, online learning, and formal planning. The system is composed of three interconnected formalisms:
 
-1. **The Offer–Bind–Port Calculus (OBP, (\mathcal{W}))**: Establishes the rigorous, concurrent, resource-aware execution semantics (Causal Modeling).
-2. **The TKN Online Morpheme Learner**: Extracts high-utility, reusable pattern sequences (_morphemes_) from OBP execution traces (Online Learning).
-3. **The Program Synthesis Engine ((\mathcal{P}))**: Uses the learned morphemes as macro-actions to perform optimal graph search, synthesizing goal-directed programs (Formal Planning).
+1. **The Offer–Bind–Port Calculus (OBP, $\mathcal{W}$):** Establishes the rigorous, concurrent, resource-aware execution semantics (Causal Modeling).
+2. **The TKN Online Morpheme Learner:** Extracts high-utility, reusable pattern sequences (_morphemes_) from OBP execution traces (Online Learning).
+3. **The Program Synthesis Engine ($\mathcal{P}$):** Uses the learned morphemes as macro-actions to perform optimal graph search, synthesizing goal-directed programs (Formal Planning).
 
-The framework operates as a self-improving cycle: (\mathcal{W}) generates execution data, TKN abstracts this data into (\mathsf{MacroAction})s, and (\mathcal{P}) uses the (\mathsf{MacroAction})s to synthesize new, optimized programs for execution by (\mathcal{W}).
+The framework operates as a self-improving cycle: $\mathcal{W}$ generates execution data, TKN abstracts this data into $\mathsf{MacroAction}$s, and $\mathcal{P}$ uses the $\mathsf{MacroAction}$s to synthesize new, optimized programs for execution by $\mathcal{W}$.
 
 ---
 
@@ -16,303 +16,297 @@ The framework operates as a self-improving cycle: (\mathcal{W}) generates execut
 
 The calculus is founded upon the following **primitive sorts**:
 
-[
+$$
 \mathsf{Party},\qquad
 \mathsf{Offer},\qquad
 \mathsf{Port},\qquad
 \mathsf{Action}.
-]
+$$
 
 ### Port Structure
 
-The port structure of an offer is defined by the function (\mathsf{Ports}), which maps an offer to an ordered sequence of ports:
+The port structure of an offer is defined by the function $\mathsf{Ports}$, which maps an offer to an ordered sequence of ports:
 
-[
+$$
 \mathsf{Ports} : \mathsf{Offer} \to \mathsf{Port}^*.
-]
+$$
 
-### Failure Sink ((\bot))
+### Failure Sink ($\bot$)
 
-The set of all offers is defined as the union of valid offers (\mathsf{Offer}^+) and the distinguished **failure sink** (\bot):
+The set of all offers is the union of valid offers $\mathsf{Offer}^+$ and the distinguished failure sink $\bot$:
 
-[
+$$
 \mathsf{Offer} = \mathsf{Offer}^+ \cup { \bot }.
-]
+$$
 
-The sink (\bot) exposes the empty sequence of ports: (\mathsf{Ports}(\bot) = \epsilon).
+The sink $\bot$ exposes the empty sequence of ports:
+
+$$
+\mathsf{Ports}(\bot) = \epsilon.
+$$
 
 ### The Action-Morphism Constructor
 
-An **action** (\mathsf{Action}) is a subset of the Cartesian product of offers:
+An **action** is a subset of the Cartesian product:
 
-[
+$$
 \mathsf{Action} \subseteq \mathsf{Offer} \times \mathsf{Offer}.
-]
+$$
 
-The associated input and result offers are defined by:
+Associated maps:
 
-[
+$$
 \mathsf{InOffer} : \mathsf{Action} \to \mathsf{Offer},\qquad
 \mathsf{ResultOffer} : \mathsf{Action} \to \mathsf{Offer}.
-]
+$$
 
-An action (a) is the morphism constructor (a: O \to O'), where (O=\mathsf{InOffer}(a)) and (O'=\mathsf{ResultOffer}(a)).
+Hom-sets:
 
-The **Hom-sets** are:
-
-[
+$$
 \mathrm{Hom}(O,O') = { a \in \mathsf{Action} \mid \mathsf{InOffer}(a)=O,\ \mathsf{ResultOffer}(a)=O' }.
-]
+$$
+
+---
 
 ## Structural Functions and Semantics
 
 ### Binding (Multi-Party)
 
-The **binding function** (\mathsf{Bind}) constructs an action from an initial offer, a chosen port, and a coalition of parties (\mathcal{P}(\mathsf{Party})):
-
-[
+$$
 \mathsf{Bind} : \mathsf{Offer}^+ \times \mathsf{Port} \times \mathcal{P}(\mathsf{Party}) \rightharpoonup \mathsf{Action}.
-]
+$$
 
-### Evaluation Semantics (Deterministic)
+### Deterministic Evaluation Semantics
 
-OBP is a **deterministic calculus**. The evaluation function (\mathsf{Eval}) maps an action to its unique successor offer and its port sequence:
-
-[
+$$
 \mathsf{Eval} : \mathsf{Action} \to \mathsf{Offer} \times \mathsf{Port}^*.
-]
+$$
 
-[
+$$
 \mathsf{Eval}(a) = (\mathsf{ResultOffer}(a),\ \mathsf{Ports}(\mathsf{ResultOffer}(a))).
-]
+$$
 
 ### Failure Transition Rule
 
-If a binding (\mathsf{Bind}(O,p,\mathcal{C})) is invalid, the resulting action (a\_{\mathsf{fail}}) satisfies:
+If a binding is invalid:
 
-[
+$$
 \mathsf{ResultOffer}(a_{\mathsf{fail}}) = \bot.
-]
+$$
 
-## The Symmetric Monoidal Category (\mathcal{W}) (SMC)
+---
+
+# The Symmetric Monoidal Category $\mathcal{W}$ (SMC)
 
 ### Objects and Tensor Product
 
-Objects are distributed states represented by the tensor product (X = O_1 \otimes \dots \otimes O_n).
-The tensor product is symmetric and associative.
+Objects are distributed states: $X = O_1 \otimes \dots \otimes O_n$.
 
 ### Axiom (A6): Strict Absorbing Element
 
-[
+$$
 \forall O \in \mathsf{Offer},\quad O \otimes \bot = \bot \otimes O = \bot.
-]
+$$
 
 ### Morphisms
 
-Morphisms are generated by sequential composition ((\circ)), parallel composition ((\otimes)), identity maps, and symmetry maps (\sigma).
+Generated by:
 
-## Trace Semantics and Trace Extraction
+- sequential composition ($\circ$)
+- parallel composition ($\otimes$)
+- identity maps
+- symmetry maps $\sigma$
 
-A canonical method for extracting atomic-action histories is defined by the trace functor.
+---
 
-### Trace Functor (\mathrm{Tr})
+# Trace Semantics and Trace Extraction
 
-[
-\mathrm{Tr} : \mathcal{W} \to \mathrm{List}(\mathsf{Action}).
-]
+### Trace Functor
+
+$$
+\mathrm{Tr} : \mathcal{W} \to \mathrm{List}(\mathsf{Action})
+$$
 
 Inductively:
 
-- Atomic: (\mathrm{Tr}(a) = [a])
-- Identity/Symmetry: (\mathrm{Tr}(\mathrm{id}_X) = \epsilon), (\mathrm{Tr}(\sigma_{X,Y}) = \epsilon)
-- Sequential: (\mathrm{Tr}(g \circ f) = \mathrm{Tr}(f) \frown \mathrm{Tr}(g))
-- Parallel: (\mathrm{Tr}(f \otimes g) = \mathrm{Tr}(f) \parallel \mathrm{Tr}(g)), where (\parallel) is a concurrent shuffle
+- $\mathrm{Tr}(a) = [a]$
+- $\mathrm{Tr}(\mathrm{id}*X) = \epsilon$; $\mathrm{Tr}(\sigma*{X,Y}) = \epsilon$
+- $\mathrm{Tr}(g \circ f) = \mathrm{Tr}(f) \frown \mathrm{Tr}(g)$
+- $\mathrm{Tr}(f \otimes g) = \mathrm{Tr}(f) \parallel \mathrm{Tr}(g)$ (a concurrent shuffle)
 
-The output (\mathrm{Tr}(f)) is the **execution log**.
+---
 
-## Relationship to Operadic Structure
+# Relationship to Operadic Structure
 
-[
-\text{Operadic Tree} \to \text{SMC Braid/Net} \xrightarrow{\mathrm{Tr}} \text{Concrete Database Log}
-]
+$$
+\text{Operadic Tree}
+;\to;
+\text{SMC Braid/Net}
+;\xrightarrow{\mathrm{Tr}};
+\text{Concrete Database Log}
+$$
 
-The **Symmetric Operad (\mathcal{O}\_{\mathrm{OBP}})** provides compositional interface patterns;
-the SMC (\mathcal{W}) provides execution semantics.
+The **Symmetric Operad $\mathcal{O}_{\mathrm{OBP}}$** describes compositional interface patterns;
+the SMC $\mathcal{W}$ describes execution semantics.
 
 ---
 
 # The TKN Online Morpheme Learner
 
-TKN is an online, LZ-style pattern discovery mechanism that learns _morphemes_—reusable subsequences—from OBP execution traces.
+TKN is an online, LZ-style mechanism that learns **morphemes** from OBP traces.
 
 ## Input: Action Traces from OBP
 
-The input stream is obtained via:
+$$
+\mathrm{Tr} : \mathcal{W} \to \mathrm{List}(\mathsf{Action})
+$$
 
-[
-\mathrm{Tr} : \mathcal{W} \to \mathrm{List}(\mathsf{Action}).
-]
+Labeling map:
 
-A labeling map produces a symbol stream:
-
-[
+$$
 \mathsf{lab} : \mathsf{Action} \to \Sigma.
-]
+$$
 
-## Local LZ-Style Segmentation
-
-The Sequencer maintains:
-
-- dictionary (D_t \subseteq \Sigma^\*)
-- current key (w_t \in \Sigma^\*)
-
-Novelty check:
-
-[
-\mathsf{merge} : \Sigma^* \to { \mathsf{known},\ \mathsf{novel} }.
-]
-
-### LZGate Evaluation
-
-Candidate: (w*{t+1}^{\mathrm{cand}} = w_t x*{t+1}).
-
-[
-\mathsf{LZGate}(w_{t+1}^{\mathrm{cand}})=
-\begin{cases}
-\mathsf{continue} & \text{if merge = known},\
-\mathsf{segment} & \text{if merge = novel}.
-\end{cases}
-]
-
-This yields patterns:
-
-[
-p_1, p_2, \dots, p_N \in \Sigma^+,\qquad p_1 p_2 \dots p_N = x_1 x_2 \dots x_T.
-]
-
-## Queue and Resegmentation
-
-Patterns pass through resegmenters:
-
-[
-\mathsf{Resegmenter} : (p_1,\dots,p_k) \mapsto \text{transformed segments}.
-]
-
-## Global Context: The Lattice
-
-A directed graph (G) and prefix trie (\mathcal{T}) capture global structure.
-
-### Nodes and Edges
-
-Each pattern (p) becomes a node (v_p).
-Edges reflect transitions:
-
-[
-(p_i, p_{i+1}) \mapsto e_i = (v_{p_i} \to v_{p_{i+1}}).
-]
-
-Edge weight:
-
-[
-w(p \to q) = #{ i \mid p_i=p,\ p_{i+1}=q }.
-]
-
-### Trie Layer
-
-(\mathcal{T}) stores the character decomposition of each pattern.
-
-## Hub Scoring and Morpheme Confidence
-
-### Degree-Based Hub Scoring
-
-[
-\deg^+(v) = \sum_{(v\to u)\in E} w(v\to u),
-]
-
-[
-\mathrm{hub}(v) = \log(1 + \deg^+(v)).
-]
-
-### Top Tokens
-
-[
-\mathsf{TopTokens}(k) =
-\operatorname*{arg,top}*k\limits*{p\in \Sigma^+} \mathrm{hub}(v_p).
-]
-
-Outputs ((\text{pattern},\ \text{confidence})).
-
-## TKN as Morpheme Learning over the Causal Graph
-
-[
-\mathcal{W}
-\xrightarrow{\mathrm{Tr}}
-\mathsf{Action}^*
-\xrightarrow{\text{labeling}}
-\Sigma^*
-\xrightarrow{\text{LZ-based TKN}}
-(p_1,\dots,p_N)
-\xrightarrow{\text{Lattice}}
-G,\ \mathcal{T},\ \mathrm{hub}.
-]
+Symbol stream: $x_1 x_2 \dots x_T$.
 
 ---
 
-# The Program Synthesis Engine ((\mathcal{P}))
+# Local LZ-Style Segmentation
 
-(\mathcal{P}) uses TKN morphemes to perform **graph search** over the OBP state space (\mathcal{W}).
+Dictionary $D_t$, current key $w_t$.
 
-## The Planning State Space ((\mathcal{S}))
+Novelty check:
 
-### State Representation
+$$
+\mathsf{merge} : \Sigma^* \to { \mathsf{known},\ \mathsf{novel} }.
+$$
 
-A planning state (S \in \mathcal{S}) is a serialized OBP global state.
+### LZGate Evaluation
 
-### Goal Condition
+Candidate:
 
-A predicate:
+$$
+w_{t+1}^{\mathrm{cand}} = w_t x_{t+1}
+$$
 
-[
+Rule:
+
+$$
+\mathsf{LZGate}(w_{t+1}^{\mathrm{cand}})=
+\begin{cases}
+\mathsf{continue} & \text{if known},\
+\mathsf{segment} & \text{if novel}.
+\end{cases}
+$$
+
+Segmentation:
+
+$$
+p_1 p_2 \dots p_N = x_1 x_2 \dots x_T.
+$$
+
+---
+
+# Queue and Resegmentation
+
+$$
+\mathsf{Resegmenter} : (p_1,\dots,p_k) \mapsto \text{transformed segments}.
+$$
+
+---
+
+# Global Lattice Structure
+
+Graph $G$ and prefix trie $\mathcal{T}$.
+
+Edges:
+
+$$
+w(p \to q) = #{ i \mid p_i = p,\ p_{i+1} = q }.
+$$
+
+---
+
+# Hub Scoring
+
+Out-degree:
+
+$$
+\deg^+(v) = \sum_{(v \to u) \in E} w(v \to u)
+$$
+
+Hub score:
+
+$$
+\mathrm{hub}(v) = \log(1 + \deg^+(v)).
+$$
+
+Top morphemes:
+
+$$
+\mathsf{TopTokens}(k)=\operatorname*{arg,top}*k\limits*{p\in\Sigma^+}\mathrm{hub}(v_p).
+$$
+
+---
+
+# TKN as Morpheme Learning over the Causal Graph
+
+$$
+\mathcal{W}
+;\xrightarrow{\mathrm{Tr}};
+\mathsf{Action}^*
+;\xrightarrow{\text{labeling}};
+\Sigma^*
+;\xrightarrow{\text{LZ-based TKN}};
+(p_1,\dots,p_N)
+;\xrightarrow{\text{Lattice}};
+G,\mathcal{T},\mathrm{hub}
+$$
+
+---
+
+# The Program Synthesis Engine ($\mathcal{P}$)
+
+## Planning State Space ($\mathcal{S}$)
+
+States are serialized OBP global states.
+
+Goal predicate:
+
+$$
 \mathsf{Goal} : \mathcal{S} \to \mathsf{Bool}.
-]
+$$
 
-## The Planner's Operations ((\mathcal{M}))
+---
 
-### MacroAction ((\mathsf{MA}))
+# Planner Operations ($\mathcal{M}$)
 
-A macro-action (m : S_i \to S_j) corresponds to a TKN morpheme:
+MacroAction:
 
-[
+$$
 \mathsf{MA} : S \times \mathcal{M} \rightharpoonup \mathcal{S}.
-]
+$$
 
-### Deterministic Effects and Constraints
+Effects and constraints determine state transitions.
 
-Each (\mathsf{MA}) has:
+---
 
-- deterministic (\mathsf{Effect})
-- validity (\mathsf{Constraints})
+# Program Synthesis as Optimal Search
 
-## Program Synthesis as Optimal Search
+Plan:
 
-A plan:
+$$
+\Pi = [m_1, m_2, \dots, m_k]
+$$
 
-[
-\Pi = [m_1, m_2, \dots, m_k],
-]
+Cost-minimizing objective:
 
-with state transitions:
+$$
+\Pi^* = \operatorname*{arg,min}*\Pi \sum*{m \in \Pi} \mathsf{Cost}(m).
+$$
 
-[
-S_0 \xrightarrow{m_1} S_1 \xrightarrow{m_2} \dots \xrightarrow{m_k} S_k.
-]
+---
 
-### Cost and Optimality
+# Synthesis Loop Closure
 
-[
-\Pi^* = \operatorname*{arg,min}*\Pi \sum*{m\in\Pi} \mathsf{Cost}(m).
-]
-
-## Synthesis Loop Closure
-
-Executing (\Pi^_) yields an OBP action trace (\mathrm{Tr}(\Pi^_)), providing new data for TKN.
+Executing $\Pi^*$ yields an OBP action trace $\mathrm{Tr}(\Pi^*)$, providing new training data for TKN.
