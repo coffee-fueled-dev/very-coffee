@@ -98,6 +98,41 @@ This definition uniformly subsumes a range of affordance regimes:
 - **Continuous manifolds:** $P(x,C) = {\tau_\alpha : \alpha \in \Omega}$ for a region $\Omega \subseteq \mathbb{R}^n$.
 - **Vector fields and control flows:** $P(x,C)$ is the set of integral curves of a controlled vector field under admissible controls.
 
+### Stochastic Action Cones
+
+The action-cone semantics admits a probabilistic generalization. In the deterministic setting, a port $P$ exposes, at each state $x \in X$, a set $P(x) \subseteq \mathcal{T}(X)$ of admissible trajectories. The stochastic formulation replaces this set-valued assignment with a probability measure over trajectories.
+
+#### Definition (Stochastic Action Cone)
+
+A stochastic action cone is a map
+
+$$
+P_{\mathsf{stoch}} : X \to \mathsf{Prob}(\mathcal{T}(X)),
+$$
+
+where $\mathsf{Prob}(\mathcal{T}(X))$ denotes the set of probability measures on the trajectory space. For each state $x$, the value $P_{\mathsf{stoch}}(x)$ is a probability distribution whose support consists precisely of the admissible trajectories originating at $x$.
+
+The deterministic cone model is recovered as the special case in which each cone is a Dirac measure:
+
+$$
+P_{\mathsf{det}}(x)(\tau) = \begin{cases}
+1, & \tau = \tau^{\ast}, \\
+0, & \text{otherwise},
+\end{cases}
+$$
+
+for some trajectory $\tau^{\ast} \in \mathcal{T}(X)$. Thus the deterministic semantics corresponds to the degenerate subclass of stochastic cones with unit mass on a single trajectory.
+
+#### Binding Semantics
+
+Under the stochastic formulation, a binding operation selects a trajectory by sampling
+
+$$
+\tau \sim P_{\mathsf{stoch}}(x_O),
+$$
+
+and advances the workflow to the resulting endpoint state $x_O' = \tau(T)$. All remaining components of the OBP calculus, including the definition of actions, evaluation semantics, and the categorical and operadic interpretations, remain unchanged.
+
 ### Port Structure of Offers
 
 The port structure of an offer is defined by the function $\mathsf{Ports}$, which maps an offer to an ordered sequence of ports:
