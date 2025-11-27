@@ -513,4 +513,4 @@ $$
 
 ## Synthesis Loop Closure
 
-The execution of the synthesized plan $\Pi^*$ closes the self-improving loop of the system. The sequence of $\mathsf{MacroAction}\mathrm{s}$ in $\Pi^*$ is unrolled into its full OBP $\mathsf{Action}$ trace $\mathrm{Tr}(\Pi^*)$, which serves as the template for subsequent executions, providing new, optimized data for the TKN Online Learner.
+The execution of the synthesized plan $\Pi^*$ closes the self-improving loop of the system. The sequence of MacroActions in $\Pi^*$ is unrolled into its full OBP Action trace $\mathrm{Tr}(\Pi^*)$, which serves as the template for subsequent executions, providing new, optimized data for the TKN Online Learner.
