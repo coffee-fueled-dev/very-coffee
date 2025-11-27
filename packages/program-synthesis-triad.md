@@ -389,9 +389,9 @@ $$
 
 $$
 A \bowtie B
-= \bigl\{ [a] \frown h \mid h \in A' \bowtie B \bigr\}
+= \left\{ [a] \frown h \mid h \in A' \bowtie B \right\}
 \cup
-\bigl\{ [b] \frown h \mid h \in A \bowtie B' \bigr\}.
+\left\{ [b] \frown h \mid h \in A \bowtie B' \right\}.
 $$
 
 This yields all interleavings that preserve the relative order of actions within each component sequence.
