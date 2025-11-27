@@ -177,20 +177,20 @@ The concurrent shuffle $\parallel$ is an operation on two sequences (lists) of a
 
 #### Definition (Unconstrained Shuffle)
 
-The unconstrained shuffle (or perfect shuffle) $A \sqcup\!\!\!\sqcup B$ of two sequences $A$ and $B$ is the set of all sequences $H$ such that $H$ is a permutation of the concatenation $A \frown B$, and the elements of $A$ (and $B$) appear in $H$ in the same relative order as they did in $A$ (and $B$).
+The unconstrained shuffle (or perfect shuffle) $A \bowtie B$ of two sequences $A$ and $B$ is the set of all sequences $H$ such that $H$ is a permutation of the concatenation $A \frown B$, and the elements of $A$ (and $B$) appear in $H$ in the same relative order as they did in $A$ (and $B$).
 
 We define it inductively on the sequences $A$ and $B$:
 
 **Base Case:** If one sequence is empty:
 
 $$
-A \sqcup\!\!\!\sqcup \epsilon = \epsilon \sqcup\!\!\!\sqcup A = \{A\}.
+A \bowtie \epsilon = \epsilon \bowtie A = \{A\}.
 $$
 
 **Inductive Step:** For non-empty sequences $A = [a] \frown A'$ and $B = [b] \frown B'$:
 
 $$
-A \sqcup\!\!\!\sqcup B = \bigl( [a] \frown (A' \sqcup\!\!\!\sqcup B) \bigr) \cup \bigl( [b] \frown (A \sqcup\!\!\!\sqcup B') \bigr).
+A \bowtie B = \bigl( [a] \frown (A' \bowtie B) \bigr) \cup \bigl( [b] \frown (A \bowtie B') \bigr).
 $$
 
 This yields all possible interleavings.
@@ -200,7 +200,7 @@ This yields all possible interleavings.
 The concurrent shuffle $\parallel$ is a subset of the unconstrained shuffle, filtered by a causal validity predicate $C$:
 
 $$
-\mathrm{Tr}(f) \parallel \mathrm{Tr}(g) = \{ h \in \mathrm{Tr}(f) \sqcup\!\!\!\sqcup \mathrm{Tr}(g) \mid C(h) = \mathsf{True} \}.
+\mathrm{Tr}(f) \parallel \mathrm{Tr}(g) = \{ h \in \mathrm{Tr}(f) \bowtie \mathrm{Tr}(g) \mid C(h) = \mathsf{True} \}.
 $$
 
 The predicate $C(h)$ ensures that the resulting sequence $h$ is a valid execution path in the OBP category $\mathcal{W}$—meaning the input requirements for every action are satisfied at its point of execution in the trace.
