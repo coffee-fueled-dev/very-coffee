@@ -389,9 +389,9 @@ $$
 
 $$
 A \bowtie B
-= \left\{ [a] \frown h \mid h \in A' \bowtie B \right\}
+= \{ [a] \frown h \mid h \in A' \bowtie B \}
 \cup
-\left\{ [b] \frown h \mid h \in A \bowtie B' \right\}.
+\{ [b] \frown h \mid h \in A \bowtie B' \}.
 $$
 
 This yields all interleavings that preserve the relative order of actions within each component sequence.
@@ -518,7 +518,7 @@ TKN is an online, LZ-style pattern discovery mechanism that learns _morphemes_ â
 
 The input stream for TKN is derived from the causal execution category $\mathcal{W}$. The trace functor $\mathrm{Tr} : \mathcal{W} \to \mathrm{List}(\mathsf{Action})$ provides the sequence of executed actions.
 
-An alphabet $\Sigma$ of observable symbols is assumed. The symbol stream $x_1 x_2 \dots x_T \in \Sigma^*$ is obtained by applying a projection-based labeling map $\mathsf{lab}$ to the trace sequence:
+An alphabet $\Sigma$ of observable symbols is assumed. The symbol stream $x_1 x_2 \dots x_T \in \Sigma^{\ast}$ is obtained by applying a projection-based labeling map $\mathsf{lab}$ to the trace sequence:
 
 $$
 \mathsf{lab} : \mathsf{Action} \to \Sigma,
@@ -530,7 +530,7 @@ The symbol stream $x_1 x_2 \dots x_T$ is processed online, one symbol at a time.
 
 ## Local LZ-Style Segmentation
 
-The core streaming engine is the _Sequencer_, which contains an _LZGate_ and manages pattern discovery. At any time $t$, the Sequencer is defined by a **dictionary** $D_t \subseteq \Sigma^*$ of known patterns and a **current key** $w_t \in \Sigma^*$, representing the candidate pattern.
+The core streaming engine is the _Sequencer_, which contains an _LZGate_ and manages pattern discovery. At any time $t$, the Sequencer is defined by a **dictionary** $D_t \subseteq \Sigma^{\ast}$ of known patterns and a **current key** $w_t \in \Sigma^{\ast}$, representing the candidate pattern.
 
 The LZ-style inclusion heuristic is implemented by a dictionary interface $\mathsf{merge}$, which returns the novelty status of a key:
 
@@ -809,10 +809,7 @@ Each $\mathsf{MacroAction}$ $m \in \mathcal{M}$ is assigned a cost $\mathsf{Cost
 A typical multi-criteria cost function is:
 
 $$
-\mathsf{Cost}(m) =
-\frac{\mathsf{Length}(\mathrm{Tr}(m))}{\mathrm{hub}(v_p) + \epsilon}
-
-- \mathsf{FixedOverhead},
+\mathsf{Cost}(m) = \frac{\mathsf{Length}(\mathrm{Tr}(m))}{\mathrm{hub}(v_p) + \epsilon} - \mathsf{FixedOverhead},
 $$
 
 where:
