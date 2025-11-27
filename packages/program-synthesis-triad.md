@@ -291,7 +291,7 @@ $$
 The lattice exposes a query $\mathsf{TopTokens}(k)$ returning the $k$ patterns with the highest hub scores. These high-scoring patterns are designated as **morphemes** (stable, high-utility units). Informally,
 
 $$
-\mathsf{TopTokens}(k) = \left\{ p \in \Sigma^+ \ \middle|\ p \text{ is among the $k$ highest-scoring patterns under } \mathrm{hub} \right\}.
+\mathsf{TopTokens}(k) = \{ p \in \Sigma^+ \mid p \text{ is among the $k$ highest-scoring patterns under } \mathrm{hub} \}.
 $$
 
 The result is a pair $(\text{pattern}, \text{confidence})$, where $\text{confidence} = \mathrm{hub}(v_p)$.
