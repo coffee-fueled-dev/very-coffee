@@ -6,7 +6,7 @@ This document formally defines a closed-loop framework for adaptive program synt
 2. **The TKN Online Morpheme Learner:** Extracts high-utility, reusable pattern sequences (_morphemes_) from OBP execution traces (Online Learning).
 3. **The Program Synthesis Engine ($\mathcal{P}$):** Uses the learned morphemes as macro-actions to perform optimal graph search, synthesizing goal-directed programs (Formal Planning).
 
-The framework operates as a self-improving cycle: $\mathcal{W}$ generates execution data, TKN abstracts this data into $\mathsf{MacroAction}$s, and $\mathcal{P}$ uses the $\mathsf{MacroAction}$s to synthesize new, optimized programs for execution by $\mathcal{W}$.
+The framework operates as a self-improving cycle: $\mathcal{W}$ generates execution data, TKN abstracts this data into $\mathsf{MacroAction}\text{s}$, and $\mathcal{P}$ uses the $\mathsf{MacroAction}\text{s}$ to synthesize new, optimized programs for execution by $\mathcal{W}$.
 
 # The Offer--Bind--Port Calculus (OBP)
 
@@ -177,20 +177,20 @@ The concurrent shuffle $\parallel$ is an operation on two sequences (lists) of a
 
 #### Definition (Unconstrained Shuffle)
 
-The unconstrained shuffle (or perfect shuffle) $A \shuffle B$ of two sequences $A$ and $B$ is the set of all sequences $H$ such that $H$ is a permutation of the concatenation $A \frown B$, and the elements of $A$ (and $B$) appear in $H$ in the same relative order as they did in $A$ (and $B$).
+The unconstrained shuffle (or perfect shuffle) $A \sqcup\!\!\!\sqcup B$ of two sequences $A$ and $B$ is the set of all sequences $H$ such that $H$ is a permutation of the concatenation $A \frown B$, and the elements of $A$ (and $B$) appear in $H$ in the same relative order as they did in $A$ (and $B$).
 
 We define it inductively on the sequences $A$ and $B$:
 
 **Base Case:** If one sequence is empty:
 
 $$
-A \shuffle \epsilon = \epsilon \shuffle A = \{A\}.
+A \sqcup\!\!\!\sqcup \epsilon = \epsilon \sqcup\!\!\!\sqcup A = \{A\}.
 $$
 
 **Inductive Step:** For non-empty sequences $A = [a] \frown A'$ and $B = [b] \frown B'$:
 
 $$
-A \shuffle B = \bigl( [a] \frown (A' \shuffle B) \bigr) \cup \bigl( [b] \frown (A \shuffle B') \bigr).
+A \sqcup\!\!\!\sqcup B = \bigl( [a] \frown (A' \sqcup\!\!\!\sqcup B) \bigr) \cup \bigl( [b] \frown (A \sqcup\!\!\!\sqcup B') \bigr).
 $$
 
 This yields all possible interleavings.
@@ -200,14 +200,14 @@ This yields all possible interleavings.
 The concurrent shuffle $\parallel$ is a subset of the unconstrained shuffle, filtered by a causal validity predicate $C$:
 
 $$
-\mathrm{Tr}(f) \parallel \mathrm{Tr}(g) = \{ h \in \mathrm{Tr}(f) \shuffle \mathrm{Tr}(g) \mid C(h) = \mathsf{True} \}.
+\mathrm{Tr}(f) \parallel \mathrm{Tr}(g) = \{ h \in \mathrm{Tr}(f) \sqcup\!\!\!\sqcup \mathrm{Tr}(g) \mid C(h) = \mathsf{True} \}.
 $$
 
 The predicate $C(h)$ ensures that the resulting sequence $h$ is a valid execution path in the OBP category $\mathcal{W}$—meaning the input requirements for every action are satisfied at its point of execution in the trace.
 
 #### Causal Validity Predicate $C(h)$
 
-For a combined trace $h = [h_1, h_2, \dots, h_{m+n}]$, the predicate $C(h)$ is satisfied if, for every action $h_k$ in the trace, the set of $\mathsf{Offer}$s and $\mathsf{Port}$s required by the action $h_k$ is present in the global state $S_{k-1}$ resulting from the execution of the prefix $[h_1, \dots, h_{k-1}]$.
+For a combined trace $h = [h_1, h_2, \dots, h_{m+n}]$, the predicate $C(h)$ is satisfied if, for every action $h_k$ in the trace, the set of $\mathsf{Offer}\text{s}$ and $\mathsf{Port}\text{s}$ required by the action $h_k$ is present in the global state $S_{k-1}$ resulting from the execution of the prefix $[h_1, \dots, h_{k-1}]$.
 
 More formally, let $\mathsf{State}(h_1, \dots, h_k)$ be the object (distributed state) $X \in \mathrm{Ob}(\mathcal{W})$ resulting from sequentially composing the actions $h_1 \circ \cdots \circ h_k$.
 
@@ -215,9 +215,9 @@ $C(h) = \mathsf{True}$ if and only if for all $k \in \{1, \dots, m+n\}$:
 
 - The $\mathsf{InOffer}$ required by the action $h_k$ (i.e., $\mathsf{InOffer}(h_k)$) is a component of the preceding state:
 
-  $$
-  \mathsf{InOffer}(h_k) \in \mathsf{Offers}(\mathsf{State}(h_1, \dots, h_{k-1})).
-  $$
+$$
+\mathsf{InOffer}(h_k) \in \mathsf{Offers}(\mathsf{State}(h_1, \dots, h_{k-1})).
+$$
 
 - All resource and state constraints for $h_k$ (governed by the $\mathsf{Bind}$ function) are met in the context of $\mathsf{State}(h_1, \dots, h_{k-1})$.
 
@@ -229,7 +229,7 @@ The concurrent shuffle has two major implications:
 
 - **Data Generation:** The execution of $f \otimes g$ may result in any of the traces within the set $\mathrm{Tr}(f) \parallel \mathrm{Tr}(g)$, depending on the runtime scheduler. The trace functor $\mathrm{Tr}$ extracts one of these valid linearizations, providing the input stream $\Sigma^*$ to TKN.
 
-- **Robustness:** Since TKN learns patterns from any valid concurrent trace, the learned $\mathsf{MacroAction}$s implicitly encode sequences that are robust to variations in concurrent execution order, as long as the underlying causal dependencies are respected.
+- **Robustness:** Since TKN learns patterns from any valid concurrent trace, the learned $\mathsf{MacroAction}\text{s}$ implicitly encode sequences that are robust to variations in concurrent execution order, as long as the underlying causal dependencies are respected.
 
 The output $\mathrm{Tr}(f)$ constitutes the concrete, recorded **execution log** or **trace** of the workflow $f$.
 
@@ -444,9 +444,9 @@ A planning state $S \in \mathcal{S}$ is defined as a structured, declarative ser
 
 The state abstraction $X \to S$ preserves all properties relevant to the $\mathsf{MacroAction}$ pre-conditions and effects, specifically:
 
-- **Offer Topology:** The set of available $\mathsf{Offer}$s and their exposed $\mathsf{Port}$ sequences $\mathsf{Ports}(O_i)$.
+- **Offer Topology:** The set of available $\mathsf{Offer}\text{s}$ and their exposed $\mathsf{Port}$ sequences $\mathsf{Ports}(O_i)$.
 - **Resource Inventories:** The current resource counts for all $\mathsf{Party}$ entities.
-- **Port Metadata:** The state (published, draft, $\dots$) and capacity ($\max\text{bindings}$) of all exposed $\mathsf{Port}$s.
+- **Port Metadata:** The state (published, draft, $\dots$) and capacity ($\max\text{bindings}$) of all exposed $\mathsf{Port}\text{s}$.
 
 ### Goal Condition ($\mathsf{Goal}$)
 
@@ -458,11 +458,11 @@ $$
 
 ## The Planner's Operations ($\mathcal{M}$)
 
-The elementary operations available to the planner are the $\mathsf{MacroAction}$s, which are compiled from the high-utility patterns discovered by TKN.
+The elementary operations available to the planner are the $\mathsf{MacroAction}\text{s}$, which are compiled from the high-utility patterns discovered by TKN.
 
 ### MacroAction ($\mathsf{MA}$)
 
-A $\mathsf{MacroAction}$ $m : S_i \to S_j$ is a transition in the planning state space $\mathcal{S}$. Each $\mathsf{MA}$ corresponds to a compiled TKN morpheme $p$, representing a sequence of atomic OBP actions. The set of available $\mathsf{MacroAction}$s $\mathcal{M}$ is derived directly from the TKN $\mathsf{TopTokens}$ output:
+A $\mathsf{MacroAction}$ $m : S_i \to S_j$ is a transition in the planning state space $\mathcal{S}$. Each $\mathsf{MA}$ corresponds to a compiled TKN morpheme $p$, representing a sequence of atomic OBP actions. The set of available $\mathsf{MacroAction}\text{s}$ $\mathcal{M}$ is derived directly from the TKN $\mathsf{TopTokens}$ output:
 
 $$
 \mathsf{MA} : \mathcal{S} \times \mathcal{M} \rightharpoonup \mathcal{S}.
@@ -478,7 +478,7 @@ The synthesis task is the search for a path in $\mathcal{S}$ from a given initia
 
 ### The Plan (Program)
 
-A **Plan** $\Pi$ is a finite, ordered sequence of composable $\mathsf{MacroAction}$s that defines the synthesized program:
+A **Plan** $\Pi$ is a finite, ordered sequence of composable $\mathsf{MacroAction}\text{s}$ that defines the synthesized program:
 
 $$
 \Pi = [m_1, m_2, \dots, m_k].
@@ -513,4 +513,4 @@ $$
 
 ## Synthesis Loop Closure
 
-The execution of the synthesized plan $\Pi^*$ closes the self-improving loop of the system. The sequence of $\mathsf{MacroAction}$s $\Pi^*$ is unrolled into its full OBP $\mathsf{Action}$ trace $\mathrm{Tr}(\Pi^*)$, which serves as the template for subsequent executions, providing new, optimized data for the TKN Online Learner.
+The execution of the synthesized plan $\Pi^*$ closes the self-improving loop of the system. The sequence of $\mathsf{MacroAction}\text{s}$ $\Pi^*$ is unrolled into its full OBP $\mathsf{Action}$ trace $\mathrm{Tr}(\Pi^*)$, which serves as the template for subsequent executions, providing new, optimized data for the TKN Online Learner.
