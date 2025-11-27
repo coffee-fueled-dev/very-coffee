@@ -442,11 +442,85 @@ The engine $\mathcal{P}$ operates over the **Planning State Space** $\mathcal{S}
 
 A planning state $S \in \mathcal{S}$ is defined as a structured, declarative serialization of an OBP global state $X \in \mathrm{Ob}(\mathcal{W})$. $S$ adheres to a formal schema, enabling validation and immutable manipulation during the search process.
 
-The state abstraction $X \to S$ preserves all properties relevant to the $\mathsf{MacroAction}$ pre-conditions and effects, specifically:
+The Planning State $S$ is a formal, declarative serialization of an OBP distributed state $X \in \mathrm{Ob}(\mathcal{W})$, defined as a tuple of four key components:
 
-- **Offer Topology:** The set of available $\mathsf{Offer}\text{s}$ and their exposed $\mathsf{Port}$ sequences $\mathsf{Ports}(O_i)$.
-- **Resource Inventories:** The current resource counts for all $\mathsf{Party}$ entities.
-- **Port Metadata:** The state (published, draft, $\dots$) and capacity ($\max\text{bindings}$) of all exposed $\mathsf{Port}\text{s}$.
+$$
+S = (\mathsf{OfferSet}, \mathsf{PartyState}, \mathsf{Topology}, \mathsf{ResourcePool}).
+$$
+
+#### 1. The Offer Set ($\mathsf{OfferSet}$)
+
+This component maintains the identity and status of all currently available offers in the system.
+
+$$
+\mathsf{OfferSet} \subseteq \mathsf{Offer}^+ \times \mathsf{OfferMetadata}
+$$
+
+where $\mathsf{OfferMetadata}$ includes:
+
+- **ID:** A unique identifier (required for tracking the offer across $\mathsf{MacroAction}$ compositions).
+- **Type:** The offer's abstract type (e.g., $\mathsf{DataService}$, $\mathsf{ComputationRequest}$, $\dots$).
+- **OwnerParty:** The $\mathsf{Party}$ responsible for the offer.
+- **CurrentState:** An element from $\{\mathsf{Active}, \mathsf{Consumed}, \mathsf{Expired}, \dots\}$.
+
+#### 2. The Party State ($\mathsf{PartyState}$)
+
+This component tracks the critical mutable state for each participating $\mathsf{Party}$.
+
+$$
+\mathsf{PartyState} \subseteq \mathsf{Party} \times \mathsf{PartyMetadata}
+$$
+
+where $\mathsf{PartyMetadata}$ includes:
+
+- **ID:** Unique $\mathsf{Party}$ identifier.
+- **CurrentInventory:** A mapping of resource type to available quantity (e.g., $\{\mathsf{CPU} \to 12, \mathsf{Storage} \to 512\}$).
+- **Permissions:** The set of $\mathsf{Action}$ types the party is authorized to initiate.
+
+#### 3. The Topology ($\mathsf{Topology}$)
+
+This component is the most critical for planning, as it explicitly links $\mathsf{Offer}\text{s}$ to their exposed $\mathsf{Port}\text{s}$ and defines the pre-conditions for binding. This is the planning abstraction of the $\mathsf{Ports}$ function.
+
+$$
+\mathsf{Topology} \subseteq \mathsf{OfferSet} \times \mathrm{List}(\mathsf{PortMetadata})
+$$
+
+where $\mathsf{PortMetadata}$ tracks the state of an individual port:
+
+- **PortID:** Unique port identifier.
+- **PortType:** The required input for a successful bind (e.g., $\mathsf{InputSignal}$, $\mathsf{Payment}$, $\dots$).
+- **BindingState:** The port's availability state (must be $\mathsf{published}$ for binding).
+- **MaxBindings:** The global capacity constraint for the port.
+- **ResourceCost:** The resource consumption/production delta required by the binding.
+
+#### 4. The Resource Pool ($\mathsf{ResourcePool}$)
+
+A global, aggregated view of any system-wide resources or non-party-specific environmental variables that influence $\mathsf{MacroAction}$ validity.
+
+$$
+\mathsf{ResourcePool} : \mathsf{GlobalResourceType} \to \mathbb{N}
+$$
+
+### $\mathsf{MacroAction}$ Pre-condition and Effect
+
+The formal schema $S$ is precisely what is required to define the $\mathsf{MacroAction}$ transition function $m : S_i \to S_j$.
+
+#### Pre-Condition ($\mathsf{Constraints}$)
+
+A $\mathsf{MacroAction}$ $m$ is executable in state $S_i$ if and only if:
+
+- **Topology Match:** The $\mathsf{Topology}$ in $S_i$ contains the specific $\mathsf{Offer}$ and $\mathsf{Port}$ sequence required by the underlying TKN morpheme $p$.
+- **Binding Validity:** For all bindings implied by $p$:
+  - The port's $\mathsf{BindingState}$ in $S_i$ is $\mathsf{published}$.
+  - The $\mathsf{MaxBindings}$ constraint is not violated.
+  - The $\mathsf{PartyState}$ in $S_i$ shows sufficient $\mathsf{CurrentInventory}$ to satisfy the $\mathsf{ResourceCost}$ of the binding.
+
+#### Effect
+
+The $\mathsf{Effect}$ function of $m$ computes the successor state $S_j$ by applying the net change of the morpheme's sequence of OBP actions:
+
+- **Topology Update:** The initial $\mathsf{Offer}\text{s}$ are moved to $\mathsf{Consumed}$ or $\mathsf{Expired}$. New $\mathsf{Offer}\text{s}$ and their corresponding $\mathsf{Port}\text{s}$ (as defined by $\mathsf{ResultOffer}$ and $\mathsf{Ports}$) are added to $\mathsf{OfferSet}$ and $\mathsf{Topology}$.
+- **Resource Update:** The total $\mathsf{ResourceCost}$ (consumption and production) across all atomic actions in $m$ is applied to the relevant $\mathsf{PartyState}$ inventories and the $\mathsf{ResourcePool}$.
 
 ### Goal Condition ($\mathsf{Goal}$)
 
