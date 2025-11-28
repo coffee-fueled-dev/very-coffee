@@ -104,7 +104,7 @@ In this way, Subjective OBP uses the **deterministic rigor of OBP** to define an
 
 ## 6. Relationship to the Base OBP Model
 
-Subjective OBP does **not** introduce new operators or axioms; it is a _view_ of the existing calculus from the standpoint of a single actor:
+Subjective OBP does not introduce new operators or axioms; it is a _view_ of the existing calculus from the standpoint of a single actor.
 
 - **Preserved structure:**
 
