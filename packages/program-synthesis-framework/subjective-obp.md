@@ -8,27 +8,13 @@ In this usage, all formal structure (offers, ports, actions, binding, traces) re
 
 Subjective OBP admits two complementary deployment patterns:
 
-- **Embedded subjective usage (view of global $\mathcal{W}$):** There is a global execution category $\mathcal{W}$ (the "real world" calculus). Actor $A$ maintains its subjective state:
+### Embedded subjective usage (view of global $\mathcal{W}$):
 
-$$
-\mathbf{S}_{\mathrm{Self}}
-$$
+There is a global execution category $\mathcal{W}$ (the "real world" calculus). Actor $A$ maintains its subjective state $\mathcal{S}_{\mathrm{Self}}$ and internal causal graph $\mathcal{G}_{\mathrm{Self}}$ as a belief-annotated slice or projection of this global structure. External events are morphisms in $\mathcal{W}$; Subjective OBP describes how $A$ interprets and predicts them, and how expectation violations feed back into TKN and $\mathcal{P}$.
 
-and internal causal graph
+### Isolated subjective usage (stand-alone internal category):
 
-$$
-\mathcal{G}_{\mathrm{Self}}
-$$
-
-as a belief-annotated slice or projection of this global structure. External events are morphisms in $\mathcal{W}$; Subjective OBP describes how $A$ interprets and predicts them, and how expectation violations feed back into TKN and $\mathcal{P}$.
-
-- **Isolated subjective usage (stand-alone internal category):** No shared ground-truth $\mathcal{W}$ is assumed. Instead, $A$ maintains its own internal OBP category
-
-$$
-\mathcal{W}_{\mathrm{Self}}
-$$
-
-with OBP syntax (offers, ports, binds, traces), whose semantics are purely relative to its observations. External stimuli are treated as an untyped event stream, and an encoder maps those events into this internal category, building an entirely internal causal graph. In this setting, OBP is a self-contained modeling language for causal structure; any global OBP is optional context.
+No shared ground-truth $\mathcal{W}$ is assumed. Instead, $A$ maintains its own internal OBP category $\mathcal{W}_{\mathrm{Self}}$ with OBP syntax (offers, ports, binds, traces), whose semantics are purely relative to its observations. External stimuli are treated as an untyped event stream, and an encoder maps those events into this internal category, building an entirely internal causal graph. In this setting, OBP is a self-contained modeling language for causal structure; any global OBP is optional context.
 
 ## 1. Subjective State for an Actor
 
