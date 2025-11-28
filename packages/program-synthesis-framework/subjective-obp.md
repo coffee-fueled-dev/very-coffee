@@ -10,7 +10,7 @@ Subjective OBP admits two complementary deployment patterns:
 
 #### Embedded subjective usage (view of global $\mathcal{W}$):
 
-There is a global execution category $\mathcal{W}$ (the "real world" calculus). Actor $A$ maintains its subjective state $\mathcal{S}_{\mathrm{Self}}$ and internal causal graph $\mathcal{G}_{\mathrm{Self}}$ as a belief-annotated slice or projection of this global structure. External events are morphisms in $\mathcal{W}$; Subjective OBP describes how $A$ interprets and predicts them, and how expectation violations feed back into TKN and $\mathcal{P}$.
+There is a global execution category $\mathcal{W}$ (the "real world" calculus). Actor $A$ maintains its subjective state $\mathcal{S}\_{\mathrm{Self}}$ and internal causal graph $\mathcal{G}\_{\mathrm{Self}}$ as a belief-annotated slice or projection of this global structure. External events are morphisms in $\mathcal{W}$; Subjective OBP describes how $A$ interprets and predicts them, and how expectation violations feed back into TKN and $\mathcal{P}$.
 
 #### Isolated subjective usage (stand-alone internal category):
 
