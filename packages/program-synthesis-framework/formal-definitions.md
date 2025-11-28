@@ -159,6 +159,10 @@ $$
 
 For notational simplicity, this interpretation is identified with $p$ itself when no confusion arises.
 
+### Ad-Hoc and Observed Offers and Ports
+
+The calculus does not require a closed, statically declared catalog of offers and ports. New elements of $\mathsf{Offer}$ and $\mathsf{Port}$ may be **introduced dynamically** as execution proceeds or **inferred observationally** from external systems and logs. The only requirement is that, at any given step, the currently referenced offers and ports live in the state space $X$ and respect the admissibility and context constraints defined above.
+
 ### Failure Sink ($\bot$)
 
 The set of all offers is defined as the union of valid offers $\mathsf{Offer}^+$ and the distinguished **failure sink** $\bot$:
@@ -313,6 +317,11 @@ $$
 
 Global nondeterminism arises from the existence of **multiple admissible bindings** (multiple cones and trajectories) and from the scheduling of concurrent actions, not from the evaluation of a specific action once chosen.
 
+In particular, OBP actions specify **abstract state transitions** in $X$ and the induced causal structure; they do **not** mandate how concrete side effects are implemented. In practice, each action is associated with an external handler (e.g.\ an API call or service) that performs the real-world mutation, while $\mathcal{W}$ records and constrains the resulting causal graph. OBP therefore serves equally well as:
+
+- a **purely observational schema** for causal event logs, and
+- an **execution orchestrator** when combined with effectful handlers and the planner $\mathcal{P}$ driving which actions to realize.
+
 ### Trajectory Concatenation
 
 For trajectories
@@ -352,8 +361,11 @@ The OBP execution semantics includes a **structured exception hierarchy** associ
 - **Recoverable failure ($\bot_{\mathbf{R}}$):** violation of a transient constraint (e.g.\ temporary resource unavailability).
 - **Contention failure ($\bot_{\mathbf{C}}$):** violation due to concurrency (e.g.\ another $\mathsf{Party}$ claimed a contested resource first).
 
-Categorically, these exception classes are all represented by the single object $\bot$; the hierarchy is carried as additional structure used by the planner and learner.
-In combination with the transactional execution semantics of OBP, this structured view of failure defines a fault-tolerant substrate that supports robust exception handling and automatic recovery.
+Categorically, these exception classes are all represented by the single object $\bot$; the hierarchy is carried as additional structure used by the planner and learner, and may be instantiated both when OBP acts as an executor and when it is used purely as an observational schema over external systems.
+
+Separately from these **outcome-level** failure classes, the platform may annotate individual (otherwise successful) actions with **model-consistency diagnostics** such as “policy mismatch” when an external system performs a bind that, according to the current OBP policy model, should have been rejected. Such events are treated as _successful morphisms_ in $\mathcal{W}$ with an attached diagnostic label, and are not mapped to $\bot$.
+
+In combination with the transactional execution semantics of OBP, this structured view of failure and model diagnostics defines a fault-tolerant substrate that supports robust exception handling, monitoring, and automatic recovery.
 
 ## The Symmetric Monoidal Category $\mathcal{W}$ (SMC)
 
@@ -916,7 +928,7 @@ $$
 
 where:
 
-- $\mathcal{I}$ is the set of failure classes exposed by the exception hierarchy (e.g.\ recoverable $\bot_{\mathbf{R}}$, contention $\bot_{\mathbf{C}}$, terminal),
+- $\mathcal{I}$ is the set of outcome-level failure classes exposed by the exception hierarchy (e.g.\ recoverable $\bot_{\mathbf{R}}$, contention $\bot_{\mathbf{C}}$, terminal),
 - $\mathsf{W}_i > 0$ is an administratively chosen weight reflecting the real-world cost or severity of failures of class $i$ (typically ordered by severity so that $\mathsf{W}_{\mathbf{R}} \ll \mathsf{W}_{\mathbf{C}} \ll \mathsf{W}_{\bot_{\text{hard}}}$; e.g.\ $\mathsf{W}_{\mathbf{R}} = 10$, $\mathsf{W}_{\mathbf{C}} = 100$, $\mathsf{W}_{\bot_{\text{hard}}} = 10000$),
 - $\mathsf{Risk}_i(m)$ is the empirical frequency with which executions whose trace matches $m$ (as a prefix) terminate in a failure of class $i$, estimated from $\mathrm{Tr}_{\bot}$.
 
