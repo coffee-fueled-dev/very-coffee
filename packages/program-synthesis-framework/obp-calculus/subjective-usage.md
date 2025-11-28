@@ -1,4 +1,4 @@
-## Subjective OBP as First-Person Usage
+# **First-Person Usage of OBP to Form a Subjective Worldview**
 
 This document describes **Subjective OBP** as a particular way of using the OBP calculus from the first-person perspective of an actor $A$: either as a view of the global execution category $\mathcal{W}$ or as a stand-alone OBP graph built from external observations, using OBP to maintain a belief-consistent internal plan and to learn from expectation violations.
 
@@ -136,4 +136,3 @@ Subjective OBP does not itself mutate the external world; it formalizes how $A$ 
 
 - purely as an **interpretive lens** over externally generated events (embedded in or projected from a global $\mathcal{W}$), or
 - as a **decision engine** on top of a self-contained internal graph, when combined with $\mathcal{P}$ and effectful handlers that execute the chosen actions on behalf of $A$.
-  $$
