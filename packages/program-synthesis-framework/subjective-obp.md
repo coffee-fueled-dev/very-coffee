@@ -50,8 +50,9 @@ $$
 
 where:
 
-- $\mathcal{O}_{\mathrm{Exp}} \in \mathcal{O}_{\mathrm{Self}}$ is the **expected offer** (known or predicted) that $A$ anticipates binding at this port,
-- $\mathrm{SuccessState}, \mathrm{FailureState} \in \mathbf{S}_{\mathrm{Self}}$ describe how $A$'s _subjective_ state should change if the expected binding occurs (or fails to occur).
+$\mathcal{O}_{\mathrm{Exp}} \in \mathcal{O}_{\mathrm{Self}}$ is the **expected offer** (known or predicted) that $A$ anticipates binding at this port,
+
+$\mathrm{SuccessState}, \mathrm{FailureState} \in \mathbf{S}_{\mathrm{Self}}$ describe how $A$'s _subjective_ state should change if the expected binding occurs (or fails to occur).
 
 From these ports and offers, $A$ builds an **internal causal graph**:
 
