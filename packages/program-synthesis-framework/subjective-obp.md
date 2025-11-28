@@ -1,9 +1,15 @@
-## Subjective OBP as an Interaction Mode
+## Subjective OBP as First-Person Usage
 
-This document defines **Subjective OBP** as a _usage mode_ or _interaction pattern_ of the existing OBP calculus, not as a new calculus.  
-It describes how a single actor $A$ can interpret the global execution category $\mathcal{W}$ **from its own point of view**, using OBP to maintain a belief-consistent internal plan and to learn from expectation violations.
+This document describes **Subjective OBP** as a particular way of using the OBP calculus from the first-person perspective of an actor $A$: either as a view of the global execution category $\mathcal{W}$ or as a stand-alone OBP graph built from external observations, using OBP to maintain a belief-consistent internal plan and to learn from expectation violations.
 
-In this mode, all formal structure (offers, ports, actions, binding, traces) remains that of $\mathcal{W}$. The difference is in **what state is tracked** and **how external observations are interpreted**.
+In this usage, all formal structure (offers, ports, actions, binding, traces) remains that of $\mathcal{W}$. The difference is in **what state is tracked** and **how external observations are interpreted**.
+
+### Subjective Deployment Patterns
+
+Subjective OBP admits two complementary deployment patterns:
+
+- **Embedded subjective usage (view of global $\mathcal{W}$):** There is a global execution category $\mathcal{W}$ (the “real world” calculus). Actor $A$ maintains $\mathbf{S}_{\mathrm{Self}}$ and $\mathcal{G}_{\mathrm{Self}}$ as a belief-annotated slice or projection of this global structure. External events are morphisms in $\mathcal{W}$; Subjective OBP describes how $A$ interprets and predicts them, and how expectation violations feed back into TKN and $\mathcal{P}$.
+- **Isolated subjective usage (stand-alone $\mathcal{W}_{\mathrm{Self}}$):** No shared ground-truth $\mathcal{W}$ is assumed. Instead, $A$ maintains its own internal category $\mathcal{W}_{\mathrm{Self}}$ with OBP syntax (offers, ports, binds, traces), whose semantics are purely relative to its observations. External stimuli are treated as an untyped event stream, and an encoder maps those events into $\mathcal{W}_{\mathrm{Self}}$, building an entirely internal causal graph. In this setting, OBP is a self-contained modeling language for causal structure; any global OBP is optional context.
 
 ## 1. Subjective State for an Actor
 
@@ -18,11 +24,11 @@ where:
 - $\mathbf{S}_{A}$ is $A$'s **locally verifiable state** (its resources, offers, policies, and any state it can directly inspect or control),
 - $\mathcal{M}_{B}$ is a **prediction model** of the counterparty (or environment) $B$, i.e.\ a learned probability distribution or structured model over $B$'s likely state, constraints, and future actions (informed by TKN and past traces).
 
-Operationally, $\mathbf{S}_{\mathrm{Self}}$ is **not** a new OBP state space; it is $A$'s _slice_ of the global OBP state plus its learned beliefs about others.
+Operationally, $\mathbf{S}_{\mathrm{Self}}$ may be structured as $A$'s _slice_ of the global OBP state, or a completely separate OBP graph.
 
 ## 2. Subjective Offers
 
-An OBP **Offer** is a proposition about resources and policy. In the subjective interaction mode, $A$ classifies offers by how they are known:
+An OBP **Offer** is a proposition about resources and policy. When used from the first-party perspective, $A$ classifies offers by how they are known:
 
 $$
 \mathcal{O}_{\mathrm{Self}} = \mathcal{O}_{\mathrm{Known}} \cup \mathcal{O}_{\mathrm{Predicted}}.
@@ -35,7 +41,7 @@ Subjective OBP thus treats some offers as **tested facts** and others as **testa
 
 ## 3. Subjective Ports and the Internal Causal Graph
 
-Ports in OBP are loci for transactions (bindings). In the subjective interaction mode, $A$ uses ports to encode **internal expectations**:
+Ports in OBP are loci for transactions (bindings). In this first-person usage, $A$ uses ports to encode **internal expectations**:
 
 $$
 \mathcal{P}_{\mathrm{Self}}
@@ -44,7 +50,7 @@ $$
 
 where:
 
-- $\mathcal{O}_{\mathrm{Exp}} \in \mathcal{O}_{\mathrm{Self}}$ is the **expected offer** (known or predicted) that $A$ anticipates binding at this port,
+- $\mathcal{O}_E \in \mathcal{O}_S$ (where $E$ denotes "expected" and $S$ denotes "self") is the **expected offer** (known or predicted) that $A$ anticipates binding at this port,
 - $\mathrm{SuccessState}, \mathrm{FailureState} \in \mathbf{S}_{\mathrm{Self}}$ describe how $A$'s _subjective_ state should change if the expected binding occurs (or fails to occur).
 
 From these ports and offers, $A$ builds an **internal causal graph**:
@@ -58,7 +64,7 @@ where edges in $E_{\mathrm{Self}}$ correspond to bindings and actions that are:
 - admissible with respect to $A$’s own policies and resources, and
 - consistent with $A$’s current prediction model $\mathcal{M}_{B}$.
 
-The planning engine $\mathcal{P}$, when used in subjective mode, searches for paths in $\mathcal{G}_{\mathrm{Self}}$ that are **internally consistent** for $A$.
+The planning engine $\mathcal{P}$ searches for paths in $\mathcal{G}_{\mathrm{Self}}$ that adhere to policy constraints, but in this case, those policies would be **internally consistent** from the perspective of $A$, not necessarily globally true.
 
 ## 4. Expectation vs. Observation: Violation Types
 
@@ -98,7 +104,7 @@ Subjective OBP does **not** introduce new operators or axioms; it is a _view_ of
   - In the **global** reading of OBP, the key property is transactional **admissibility** with respect to a shared state space and shared policies.
   - In the **subjective** reading, the key property is **internal planning consistency** with respect to $A$'s belief state $\mathbf{S}_{\mathrm{Self}}$ and prediction model $\mathcal{M}_{B}$.
 
-Conceptually, Subjective OBP is best understood as an **interaction mode of OBP** in which an actor:
+Conceptually, Subjective OBP is best understood as a **first-person usage of OBP** in which an actor:
 
 - uses OBP to encode a belief-consistent internal plan,
 - treats external OBP executions as tests of that plan, and
@@ -106,7 +112,7 @@ Conceptually, Subjective OBP is best understood as an **interaction mode of OBP*
 
 The underlying formal model remains the same; only the _interpretation_ and _usage_ pattern change.
 
-## 7. Ad-Hoc Structure and External Effects in Subjective Mode
+## 7. Ad-Hoc Structure and External Effects in Subjective Usage
 
 As in the global formulation, there is no requirement that all offers and ports be declared up front. Actor $A$ may:
 
@@ -114,7 +120,7 @@ As in the global formulation, there is no requirement that all offers and ports 
 - add ports **port-by-port** when it refines or extends its expectations, and
 - discover offers and ports **observationally** by reading external event streams and reconstructing them into elements of $\mathsf{Offer}$ and $\mathsf{Port}$.
 
-Subjective OBP does not itself mutate the external world; it formalizes how $A$ organizes and interprets causal structure. When $A$ chooses to act, each selected action is realized by an external effect handler (e.g.\ API call), and OBP records the resulting transitions. Thus, in subjective mode, OBP can be used:
+Subjective OBP does not itself mutate the external world; it formalizes how $A$ organizes and interprets causal structure. When $A$ chooses to act, each selected action is realized by an external effect handler (e.g.\ API call), and OBP records the resulting transitions. Thus, in first-person usage, OBP can be used:
 
-- purely as an **interpretive lens** over externally generated events, or
-- as a **decision engine** when combined with $\mathcal{P}$ and effectful handlers that execute the chosen actions on behalf of $A$.
+- purely as an **interpretive lens** over externally generated events (embedded in or projected from a global $\mathcal{W}$), or
+- as a **decision engine** on top of a self-contained internal graph, when combined with $\mathcal{P}$ and effectful handlers that execute the chosen actions on behalf of $A$.
