@@ -92,13 +92,13 @@ Comparing $O_{\mathrm{Ext}}$ to the current expected binding at a subjective por
 
 These labels do not modify OBP itself; they are **annotations on traces** that describe how external reality diverges from $A$’s internal expectations.
 
-## 5. Self-Correction Loop in Subjective Mode
+## 5. Self-Correction Loop in First-Person Usage
 
 When a violation (PM, PN, or OF) is detected, $A$ uses the same triad machinery to self-correct:
 
-1. **State update:** $\mathbf{S}_{\mathrm{Self}}$ is updated based on the actual observation $O_{\mathrm{Ext}}$, creating a new branch in $A$'s internal causal graph $\mathcal{G}_{\mathrm{Self}}$.
-2. **TKN feedback:** The violation event, its type (PM/PN/OF), and its context are fed into TKN via $\mathrm{Tr}_{\bot}$-annotated traces, enriching $\mathcal{M}_{B}$ with evidence about counterparty behavior.
-3. **Plan re-synthesis:** The planner $\mathcal{P}$ is invoked to re-synthesize a new plan $\Pi'$ from the updated $\mathbf{S}_{\mathrm{Self}}$, using the updated morphemes and metrics from TKN.
+1. **State update:** $\mathbf{S}\_{\mathrm{Self}}$ is updated based on the actual observation $O_{\mathrm{Ext}}$, creating a new branch in $A$'s internal causal graph $\mathcal{G}\_{\mathrm{Self}}$.
+2. **TKN feedback:** The violation event, its type (PM/PN/OF), and its context are fed into TKN via $\mathrm{Tr}\_{\bot}$-annotated traces, enriching $\mathcal{M}\_{B}$ with evidence about counterparty behavior.
+3. **Plan re-synthesis:** The planner $\mathcal{P}$ is invoked to re-synthesize a new plan $\Pi'$ from the updated $\mathbf{S}\_{\mathrm{Self}}$, using the updated morphemes and metrics from TKN.
 
 In this way, Subjective OBP uses the **deterministic rigor of OBP** to define an internally sound plan, then uses **deviations from that plan** as structured training signals for TKN and $\mathcal{P}$.
 
