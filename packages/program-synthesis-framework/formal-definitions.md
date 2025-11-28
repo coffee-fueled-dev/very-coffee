@@ -2,23 +2,23 @@
 
 This document formally defines a closed-loop framework for adaptive program synthesis, built upon a triad of causality modeling, online learning, and formal planning. The system is composed of three interconnected formalisms:
 
-1. **The Offer--Bind--Port Calculus (OBP, $\mathcal{W}$):** Establishes the rigorous, concurrent, resource-aware execution semantics (Causal Modeling).
-2. **The TKN Online Morpheme Learner:** Extracts high-utility, reusable pattern sequences (_morphemes_) from OBP execution traces (Online Learning).
+1. **The Offer-Bind-Port Calculus (OBP, $\mathcal{W}$):** Establishes the rigorous, concurrent, resource-aware execution semantics (Causal Modeling).
+2. **The Probabilistic Learning Module ($\mathcal{L}$):** Extracts high-utility, reusable pattern sequences (_morphemes_) from OBP execution traces (Online Learning).
 3. **The Program Synthesis Engine ($\mathcal{P}$):** Uses the learned morphemes as macro-actions to perform optimal graph search, synthesizing goal-directed programs (Formal Planning).
 
-The framework operates as a self-improving cycle: $\mathcal{W}$ generates execution data, TKN abstracts this data into $\mathsf{MacroAction}\text{s}$, and $\mathcal{P}$ uses the $\mathsf{MacroAction}\text{s}$ to synthesize new, optimized programs for execution by $\mathcal{W}$. A structured treatment of failure (an exception hierarchy and the failure trace functor $\mathrm{Tr}_{\bot}$) is built into this cycle, so that the system can learn from errors and implement fault-tolerant recovery strategies in real-world deployments.
+The framework operates as a self-improving cycle: $\mathcal{W}$ generates execution data, the Learning Module $\mathcal{L}$ abstracts this data into $\mathsf{MacroAction}\text{s}$, and $\mathcal{P}$ uses the $\mathsf{MacroAction}\text{s}$ to synthesize new, optimized programs for execution by $\mathcal{W}$. A structured treatment of failure (an exception hierarchy and the failure trace functor $\mathrm{Tr}_{\bot}$) is built into this cycle, so that the system can learn from errors and implement fault-tolerant recovery strategies in real-world deployments.
 
 # Framework Usage Modes
 
 Because the three components have orthogonal responsibilities, they can be composed in several usage modes without changing their formal definitions:
 
-- **OBP as Causal Log Schema (Observation-Only):** An external workflow is instrumented into $\mathcal{W}$; $\mathrm{Tr}$ and $\mathrm{Tr}_{\bot}$ are used purely to extract (failure-aware) action traces, and TKN operates as an online learner over these logs, with no planner in the loop.
-- **Learning-Enhanced Planning on Historical Data:** OBP provides the abstract execution semantics and trace schema, but traces are collected offline (from observation or simulation). TKN builds a morpheme lattice from this corpus, and $\mathcal{P}$ plans over $\mathcal{S}$ using the learned $\mathsf{MacroAction}\text{s}$, without necessarily driving live OBP execution.
-- **Closed-Loop Autonomous Execution:** OBP serves as the runtime executor under transactional semantics, $\mathrm{Tr}$ and $\mathrm{Tr}_{\bot}$ feed TKN in real time, and $\mathcal{P}$ uses the evolving morpheme set to synthesize and adapt programs that are immediately executed in $\mathcal{W}$.
+- **OBP as Causal Log Schema (Observation-Only):** An external workflow is instrumented into $\mathcal{W}$; $\mathrm{Tr}$ and $\mathrm{Tr}_{\bot}$ are used purely to extract (failure-aware) action traces, and the Learning Module $\mathcal{L}$ operates as an online learner over these logs, with no planner in the loop.
+- **Learning-Enhanced Planning on Historical Data:** OBP provides the abstract execution semantics and trace schema, but traces are collected offline (from observation or simulation). The Learning Module $\mathcal{L}$ builds a morpheme lattice from this corpus, and $\mathcal{P}$ plans over $\mathcal{S}$ using the learned $\mathsf{MacroAction}\text{s}$, without necessarily driving live OBP execution.
+- **Closed-Loop Autonomous Execution:** OBP serves as the runtime executor under transactional semantics, $\mathrm{Tr}$ and $\mathrm{Tr}_{\bot}$ feed the Learning Module $\mathcal{L}$ in real time, and $\mathcal{P}$ uses the evolving morpheme set to synthesize and adapt programs that are immediately executed in $\mathcal{W}$.
 
-In all modes, OBP defines the causal structure, TKN learns patterns from the induced traces, and $\mathcal{P}$ reasons over these patterns; only the control boundary between “observation” and “execution” changes.
+In all modes, OBP defines the causal structure, the Learning Module $\mathcal{L}$ learns patterns from the induced traces, and $\mathcal{P}$ reasons over these patterns; only the control boundary between "observation" and "execution" changes.
 
-# The Offer--Bind--Port Calculus (OBP)
+# The Offer-Bind-Port Calculus (OBP)
 
 ## Primitive Sorts and Core Definitions
 
@@ -507,17 +507,17 @@ $$
 
 where $\bot_i$ records the type and point of failure (e.g.\ $\bot_{\mathbf{R}}$ or $\bot_{\mathbf{C}}$). $\mathrm{Tr}_{\bot}$ coincides with $\mathrm{Tr}$ on the successful prefix of an execution and then appends the tagged failure event.
 
-By construction, these failure-annotated traces allow downstream learners (TKN) and planners ($\mathcal{P}$) to:
+By construction, these failure-annotated traces allow downstream learners (the Learning Module $\mathcal{L}$) and planners ($\mathcal{P}$) to:
 
 - extract **useful prefixes** of failed runs as candidate morphemes, and
 - associate distinct penalty profiles with different failure types, rather than treating all failures as equally bad.
 
-### Significance for TKN
+### Significance for the Learning Module
 
 The concurrent shuffle induces:
 
 - **Data Generation:** The execution of $f \otimes g$ may yield any interleaving in $\mathrm{Tr}(f) \parallel \mathrm{Tr}(g)$, depending on scheduling and concurrency. The trace functor $\mathrm{Tr}$ extracts one such valid linearization as an action sequence $\mathsf{Action}^*$.
-- **Robustness:** TKN operates on these traces; its learned $\mathsf{MacroAction}\text{s}$ are therefore robust to variations in concurrent execution order that respect underlying causal dependencies.
+- **Robustness:** The Learning Module $\mathcal{L}$ operates on these traces; its learned $\mathsf{MacroAction}\text{s}$ are therefore robust to variations in concurrent execution order that respect underlying causal dependencies.
 
 The output $\mathrm{Tr}(f)$ is the concrete, recorded **execution log** or **trace** of the workflow $f$.
 
@@ -603,13 +603,13 @@ Semantically, each port in an operadic interface corresponds to an action cone. 
 
 The operadic structure thus provides a syntactic blueprint for generating valid OBP workflows, while the SMC $\mathcal{W}$ instantiates their concrete execution via trajectories and action cones. The trace functor $\mathrm{Tr}$ closes the loop by mapping executed operadic compositions into concrete logs for learning.
 
-# The TKN Online Morpheme Learner
+# The Learning Module ($\mathcal{L}$)
 
-TKN is an online, LZ-style pattern discovery mechanism that learns _morphemes_ — reusable subsequences — from execution traces induced by OBP. The mechanism operates via two components: a fast, greedy local segmenter and a global lattice for structural analysis.
+The Learning Module $\mathcal{L}$ is an online, greedy pattern-discovery learner that extracts reusable sequence patterns (_morphemes_) from OBP execution traces. It operates via two interacting components: a fast, greedy local segmenter that processes traces incrementally using LZ-style compression heuristics, and a global lattice (composed of a transition graph and prefix trie) for structural analysis and confidence scoring of discovered morphemes.
 
 ## Input: Action Traces from OBP
 
-The input stream for TKN is derived from the causal execution category $\mathcal{W}$. The trace functor $\mathrm{Tr} : \mathcal{W} \to \mathrm{List}(\mathsf{Action})$ provides the sequences of successful actions, while the failure trace functor $\mathrm{Tr}_{\bot}$ exposes prefixes of executions that terminate in structured failures.
+The input stream for the Learning Module $\mathcal{L}$ is derived from the causal execution category $\mathcal{W}$. The trace functor $\mathrm{Tr} : \mathcal{W} \to \mathrm{List}(\mathsf{Action})$ provides the sequences of successful actions, while the failure trace functor $\mathrm{Tr}_{\bot}$ exposes prefixes of executions that terminate in structured failures.
 
 An alphabet $\Sigma$ of observable symbols is assumed. The symbol stream $x_1 x_2 \dots x_T \in \Sigma^{\ast}$ is obtained by applying a projection-based labeling map $\mathsf{lab}$ to the trace sequence:
 
@@ -722,9 +722,9 @@ $$
 
 Each morpheme is associated with a confidence score $\mathrm{hub}(v_p)$.
 
-## TKN as Morpheme Learning over the Causal Graph
+## The Learning Module as Morpheme Learning over the Causal Graph
 
-TKN discovers reusable pattern units induced by OBP workflows and ranks them according to their structural roles in the transition network. The overall data flow is:
+The Learning Module $\mathcal{L}$ discovers reusable pattern units induced by OBP workflows and ranks them according to their structural roles in the transition network. When using an online greedy sequencer with a global lattice, the overall data flow is:
 
 $$
 \mathcal{W}
@@ -732,17 +732,17 @@ $$
 \mathsf{Action}^*
 ;\xrightarrow{\ \text{labeling}\ };
 \Sigma^*
-;\xrightarrow{\ \text{LZ-based TKN}\ };
+;\xrightarrow{\ \text{LZ-based segmentation}\ };
 (p_1,\dots,p_N)
 ;\xrightarrow{\ \text{Lattice}\ };
 G,\ \mathcal{T},\ \mathrm{hub}.
 $$
 
-OBP establishes the causal execution structure ($\mathcal{W}$), and TKN applies online sequence analysis and graph theory to extract hierarchical knowledge (morphemes) from the resulting trace data.
+OBP establishes the causal execution structure ($\mathcal{W}$), and the Learning Module $\mathcal{L}$ applies online sequence analysis and graph theory to extract hierarchical knowledge (morphemes) from the resulting trace data.
 
 # The Program Synthesis Engine ($\mathcal{P}$)
 
-The Program Synthesis Engine $\mathcal{P}$ utilizes the learned TKN morphemes to perform **graph search** over the OBP state space $\mathcal{W}$. $\mathcal{P}$ acts as the formal planner, finding an optimal path (a program) that satisfies a specified goal condition.
+The Program Synthesis Engine $\mathcal{P}$ utilizes the morphemes learned by the Learning Module $\mathcal{L}$ to perform **graph search** over the OBP state space $\mathcal{W}$. $\mathcal{P}$ acts as the formal planner, finding an optimal path (a program) that satisfies a specified goal condition.
 
 ## The Planning State Space ($\mathcal{S}$)
 
@@ -821,7 +821,7 @@ The state schema $S$ is precisely what is required to define the transition func
 
 A $\mathsf{MacroAction}$ $m$ is executable in state $S_i$ if and only if:
 
-- **Topology Match:** The topology in $S_i$ contains the specific $\mathsf{Offer}$ and $\mathsf{Port}$ configuration required by the underlying TKN morpheme $p$ (which compiles to a sequence of OBP actions and port bindings).
+- **Topology Match:** The topology in $S_i$ contains the specific $\mathsf{Offer}$ and $\mathsf{Port}$ configuration required by the underlying morpheme $p$ learned by $\mathcal{L}$ (which compiles to a sequence of OBP actions and port bindings).
 - **Binding Validity:** For all bindings implied by $p$:
 
   - The port's $\mathsf{BindingState}$ in $S_i$ is $\mathsf{published}$.
@@ -853,7 +853,7 @@ indicating that the synthesis requirements have been met.
 
 ## The Planner's Operations ($\mathcal{M}$)
 
-The elementary operations available to the planner are the $\mathsf{MacroAction}\text{s}$, which are compiled from the high-utility patterns discovered by TKN.
+The elementary operations available to the planner are the $\mathsf{MacroAction}\text{s}$, which are compiled from the high-utility patterns discovered by the Learning Module $\mathcal{L}$.
 
 ### MacroAction ($\mathsf{MA}$)
 
@@ -863,9 +863,9 @@ $$
 m : S_i \to S_j
 $$
 
-is a transition in the planning state space $\mathcal{S}$. Each $\mathsf{MacroAction}$ $m$ corresponds to a compiled TKN morpheme $p$, representing a sequence of atomic OBP actions and bindings.
+is a transition in the planning state space $\mathcal{S}$. Each $\mathsf{MacroAction}$ $m$ corresponds to a compiled morpheme $p$ learned by $\mathcal{L}$, representing a sequence of atomic OBP actions and bindings.
 
-The set of available macro-actions $\mathcal{M}$ is derived directly from the TKN $\mathsf{TopTokens}$ output, together with a compilation process from morphemes to OBP action sequences:
+The set of available macro-actions $\mathcal{M}$ is derived directly from the Learning Module $\mathcal{L}$'s high-utility pattern output (e.g., the top-ranked morphemes by hub score from the lattice's transition graph), together with a compilation process from morphemes to OBP action sequences:
 
 $$
 \mathsf{MA} : \mathcal{S} \times \mathcal{M} \rightharpoonup \mathcal{S}.
@@ -915,7 +915,7 @@ $$
 where:
 
 - $\mathsf{Length}(\mathrm{Tr}(m))$ is the number of atomic OBP actions in the underlying trace of $m$ (favoring shorter programs),
-- $\mathrm{hub}(v_p)$ is the TKN hub score of the morpheme $p$ corresponding to $m$ (favoring high-utility, reusable patterns),
+- $\mathrm{hub}(v_p)$ is the hub score of the morpheme $p$ corresponding to $m$ (favoring high-utility, reusable patterns; computed via the lattice's hub scoring algorithm over the transition graph),
 - $\epsilon > 0$ is a regularization constant to avoid division by zero,
 - $\mathsf{FixedOverhead}$ is a nominal cost assigned to each macro-action.
 
@@ -939,7 +939,7 @@ $$
 = \frac{\#\mathrm{Tr}_{\bot}(m \leadsto \bot_i)}{\#\mathrm{Tr}_{\bot}(m \leadsto \ast)}.
 $$
 
-Operationally, TKN is responsible for maintaining these statistics: by extracting and indexing prefixes from $\mathrm{Tr}_{\bot}$, it computes the counts $\#\mathrm{Tr}_{\bot}(m \leadsto \bot_i)$ and $\#\mathrm{Tr}_{\bot}(m \leadsto \ast)$ for each learned morpheme $m$ and failure class $i$.
+Operationally, the Learning Module $\mathcal{L}$ is responsible for maintaining these statistics: by extracting and indexing prefixes from $\mathrm{Tr}_{\bot}$, it computes the counts $\#\mathrm{Tr}_{\bot}(m \leadsto \bot_i)$ and $\#\mathrm{Tr}_{\bot}(m \leadsto \ast)$ for each learned morpheme $m$ and failure class $i$.
 
 **Example (Failure-aware choice of plan).** Suppose two plans $\Pi_A$ and $\Pi_B$ reach the same goal:
 
@@ -959,13 +959,13 @@ subject to the constraint that $\Pi$ transforms $S_0$ into a state satisfying $\
 
 ## Synthesis Loop Closure
 
-The execution of the synthesized plan $\Pi^{\ast}$ within the OBP calculus unrolls the sequence of $\mathsf{MacroAction}\text{s}$ into their full OBP $\mathsf{Action}$ traces. The trace functor $\mathrm{Tr}$ records these executions as sequences in $\mathsf{Action}^*$, which are then labeled into symbol streams and ingested by TKN.
+The execution of the synthesized plan $\Pi^{\ast}$ within the OBP calculus unrolls the sequence of $\mathsf{MacroAction}\text{s}$ into their full OBP $\mathsf{Action}$ traces. The trace functor $\mathrm{Tr}$ records these executions as sequences in $\mathsf{Action}^*$, which are then labeled into symbol streams and ingested by the Learning Module $\mathcal{L}$.
 
 This closes the self-improving loop:
 
 1. $\mathcal{W}$ executes workflows via action cones and trajectories.
 2. $\mathrm{Tr}$ extracts concrete traces of actions.
-3. TKN converts traces into morphemes and ranks them via the lattice and hub scores.
+3. The Learning Module $\mathcal{L}$ converts traces into morphemes using greedy segmentation and ranks them via hub scores computed over the lattice's transition graph.
 4. $\mathcal{P}$ compiles morphemes into $\mathsf{MacroAction}\text{s}$ and searches for optimal plans.
 5. New plans are executed in $\mathcal{W}$, generating improved traces for subsequent learning.
 

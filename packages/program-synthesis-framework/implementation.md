@@ -1,17 +1,17 @@
 ## Practical Integration: Turning the Triad into a Usable Platform
 
-This document describes how to turn the OBP–TKN–$\mathcal{P}$ triad into a realizable system that an engineer can adopt without learning the underlying formal methods. The goal is to expose simple services and configuration points, while the platform enforces the formal semantics internally.
+This document describes how to turn the OBP–$\mathcal{L}$–$\mathcal{P}$ triad (calculus–learner–planner) into a realizable system that an engineer can adopt without learning the underlying formal methods. The goal is to expose simple services and configuration points, while the platform enforces the formal semantics internally.
 
 ## 1. Abstracting the Calculus: The Causal Execution Engine
 
 The complexity of the **OBP Calculus ($\mathcal{W}$) and its SMC foundation** lives inside a core service: the **Causal Execution Engine**.
 
-| **Formal Concept**                                      | **Developer Interface**        | **How it is Simplified**                                                                                                                                                                              |
-| :------------------------------------------------------ | :----------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Symmetric Monoidal Category ($\otimes, \circ$)          | `obp.execute(program)`         | The developer never manipulates morphisms directly. They submit a plan or program; the Engine handles concurrency, sequencing, and state transitions according to OBP’s categorical semantics.        |
-| Trace Functors ($\mathrm{Tr}$, $\mathrm{Tr}_{\bot}$)    | Automatic logging              | Every state change and failure is automatically logged and serialized. The Engine pushes traces to TKN; developers do not call $\mathrm{Tr}$ or reason about traces explicitly.                       |
-| State space / invariants ($X$, $\mathcal{T}(X)$, types) | Type definitions / schemas     | Developers define schemas for $\mathsf{Party}$, $\mathsf{Offer}$ metadata, and $\mathsf{ResourcePool}$ using familiar tools (e.g. Zod/TypeScript). The Engine guarantees that mutations respect them. |
-| Transactional semantics of $\mathsf{Bind}$              | Idempotent API calls / retries | The Engine implements reservations, 2PC, and checkpoints. From the developer’s view, `execute` is safe to retry; rollback and failure semantics are handled by the runtime.                           |
+| **Formal Concept**                                      | **Developer Interface**        | **How it is Simplified**                                                                                                                                                                                                                                                                         |
+| :------------------------------------------------------ | :----------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Symmetric Monoidal Category ($\otimes, \circ$)          | `obp.execute(program)`         | The developer never manipulates morphisms directly. They submit a plan or program; the Engine handles concurrency, sequencing, and state transitions according to OBP’s categorical semantics.                                                                                                   |
+| Trace Functors ($\mathrm{Tr}$, $\mathrm{Tr}_{\bot}$)    | Automatic logging              | Every state change and failure is automatically logged and serialized. The Engine pushes traces to the Learning Module $\mathcal{L}$ (an online greedy sequencer with a global lattice for morpheme confidence scoring); developers do not call $\mathrm{Tr}$ or reason about traces explicitly. |
+| State space / invariants ($X$, $\mathcal{T}(X)$, types) | Type definitions / schemas     | Developers define schemas for $\mathsf{Party}$, $\mathsf{Offer}$ metadata, and $\mathsf{ResourcePool}$ using familiar tools (e.g. Zod/TypeScript). The Engine guarantees that mutations respect them.                                                                                            |
+| Transactional semantics of $\mathsf{Bind}$              | Idempotent API calls / retries | The Engine implements reservations, 2PC, and checkpoints. From the developer’s view, `execute` is safe to retry; rollback and failure semantics are handled by the runtime.                                                                                                                      |
 
 The developer sees a robust “workflow runtime with logging,” not a process calculus.
 
@@ -49,9 +49,9 @@ The mathematically heavy notion of an **admissible trajectory** through an actio
 
 ## 4. Abstracting Learning and Planning: Metrics and Cost Interface
 
-TKN (morpheme learner) and $\mathcal{P}$ (planner) are exposed only through dashboards and a **cost function interface**.
+The Learning Module $\mathcal{L}$ (probabilistic learner) and $\mathcal{P}$ (planner) are exposed only through dashboards and a **cost function interface**.
 
-- **TKN insights dashboard:** Visualizes morphemes, transition graph, and **hub scores**. Engineers treat the hub score as a metric of **reusability/structure** for protocols, without touching the underlying graph algorithms.
+- **Learning Module insights dashboard:** Visualizes morphemes, transition graph, and **hub scores** computed from the lattice's transition network. Engineers treat the hub score as a metric of **reusability/structure** for protocols, without touching the underlying graph algorithms.
 - **Cost function API:** Rather than re-implementing $\mathsf{Cost}(m)$ from the formal document, implementers configure three intuitive weights:
 
   1. **Efficiency weight** $\mathsf{W}_{\text{length}}$ – importance of program shortness.
@@ -128,7 +128,7 @@ In practice, an engineer adopting the triad-enabled platform would:
 
 3. **Activate Learning and Planning**
 
-   - Turn on TKN trace ingestion and morpheme discovery.
+   - Turn on the Learning Module $\mathcal{L}$ trace ingestion and morpheme discovery (an online greedy sequencer processes traces incrementally and maintains a global lattice for pattern confidence).
    - Enable $\mathcal{P}$ to propose plans for selected goals.
 
 4. **Configure objectives, not formulas**

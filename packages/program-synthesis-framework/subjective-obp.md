@@ -10,7 +10,7 @@ Subjective OBP admits two complementary deployment patterns:
 
 #### Embedded subjective usage (view of global $\mathcal{W}$):
 
-There is a global execution category $\mathcal{W}$ (the "real world" calculus). Actor $A$ maintains its subjective state $\mathcal{S}\_{\mathrm{Self}}$ and internal causal graph $\mathcal{G}\_{\mathrm{Self}}$ as a belief-annotated slice or projection of this global structure. External events are morphisms in $\mathcal{W}$; Subjective OBP describes how $A$ interprets and predicts them, and how expectation violations feed back into TKN and $\mathcal{P}$.
+There is a global execution category $\mathcal{W}$ (the "real world" calculus). Actor $A$ maintains its subjective state $\mathcal{S}\_{\mathrm{Self}}$ and internal causal graph $\mathcal{G}\_{\mathrm{Self}}$ as a belief-annotated slice or projection of this global structure. External events are morphisms in $\mathcal{W}$; Subjective OBP describes how $A$ interprets and predicts them, and how expectation violations feed back into the Learning Module $\mathcal{L}$ and $\mathcal{P}$.
 
 #### Isolated subjective usage (stand-alone internal category):
 
@@ -27,7 +27,7 @@ $$
 where:
 
 - $\mathbf{S}_{A}$ is $A$'s **locally verifiable state** (its resources, offers, policies, and any state it can directly inspect or control),
-- $\mathcal{M}_{B}$ is a **prediction model** of the counterparty (or environment) $B$, i.e.\ a learned probability distribution or structured model over $B$'s likely state, constraints, and future actions (informed by TKN and past traces).
+- $\mathcal{M}_{B}$ is a **prediction model** of the counterparty (or environment) $B$, i.e.\ a learned probability distribution or structured model over $B$'s likely state, constraints, and future actions (informed by the Learning Module $\mathcal{L}$ and past traces).
 
 Operationally, $\mathbf{S}_{\mathrm{Self}}$ may be structured as $A$'s _slice_ of the global OBP state, or a completely separate OBP graph.
 
@@ -82,7 +82,7 @@ The planning engine $\mathcal{P}$ searches for paths in $\mathcal{G}_{\mathrm{Se
 
 As $A$ executes a subjective plan, it observes **external actions** $O_{\mathrm{Ext}}$ performed by $B$ (or the environment). These are ordinary OBP actions that appear in traces under $\mathrm{Tr}$ / $\mathrm{Tr}_{\bot}$, but for $A$ they are also **tests** of its predictions.
 
-Comparing $O_{\mathrm{Ext}}$ to the current expected binding at a subjective port yields several useful violation types (inputs to TKN):
+Comparing $O_{\mathrm{Ext}}$ to the current expected binding at a subjective port yields several useful violation types (inputs to the Learning Module $\mathcal{L}$):
 
 | **Violation Type**            | **Condition (from $A$'s view)**                                                                                                          | **Interpretation**                                                                               |
 | :---------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------- |
@@ -97,10 +97,10 @@ These labels do not modify OBP itself; they are **annotations on traces** that d
 When a violation (PM, PN, or OF) is detected, $A$ uses the same triad machinery to self-correct:
 
 1. **State update:** $\mathbf{S}\_{\mathrm{Self}}$ is updated based on the actual observation $O_{\mathrm{Ext}}$, creating a new branch in $A$'s internal causal graph $\mathcal{G}\_{\mathrm{Self}}$.
-2. **TKN feedback:** The violation event, its type (PM/PN/OF), and its context are fed into TKN via $\mathrm{Tr}\_{\bot}$-annotated traces, enriching $\mathcal{M}\_{B}$ with evidence about counterparty behavior.
-3. **Plan re-synthesis:** The planner $\mathcal{P}$ is invoked to re-synthesize a new plan $\Pi'$ from the updated $\mathbf{S}\_{\mathrm{Self}}$, using the updated morphemes and metrics from TKN.
+2. **Learning Module feedback:** The violation event, its type (PM/PN/OF), and its context are fed into the Learning Module $\mathcal{L}$ via $\mathrm{Tr}\_{\bot}$-annotated traces, enriching $\mathcal{M}\_{B}$ with evidence about counterparty behavior. The Learning Module processes these traces through its greedy sequencer, updating the morpheme lattice (transition graph and prefix trie) and recomputing hub scores for pattern confidence.
+3. **Plan re-synthesis:** The planner $\mathcal{P}$ is invoked to re-synthesize a new plan $\Pi'$ from the updated $\mathbf{S}\_{\mathrm{Self}}$, using the updated morphemes and metrics from the Learning Module $\mathcal{L}$.
 
-In this way, Subjective OBP uses the **deterministic rigor of OBP** to define an internally sound plan, then uses **deviations from that plan** as structured training signals for TKN and $\mathcal{P}$.
+In this way, Subjective OBP uses the **deterministic rigor of OBP** to define an internally sound plan, then uses **deviations from that plan** as structured training signals for the Learning Module $\mathcal{L}$ and $\mathcal{P}$.
 
 ## 6. Relationship to the Base OBP Model
 
@@ -120,7 +120,7 @@ Conceptually, Subjective OBP is best understood as a **first-person usage of OBP
 
 - uses OBP to encode a belief-consistent internal plan,
 - treats external OBP executions as tests of that plan, and
-- feeds discrepancies between plan and reality back into TKN and $\mathcal{P}$ to refine both its beliefs and its future plans.
+- feeds discrepancies between plan and reality back into the Learning Module $\mathcal{L}$ and $\mathcal{P}$ to refine both its beliefs and its future plans.
 
 The underlying formal model remains the same; only the _interpretation_ and _usage_ pattern change.
 

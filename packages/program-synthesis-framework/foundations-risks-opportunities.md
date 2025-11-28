@@ -4,9 +4,9 @@
 
 This document synthesizes the deep mathematical and theoretical frameworks that underpin the **Program Synthesis Triad**—the combination of:
 
-- **OBP / (\mathcal W)**: an operadic, symmetric monoidal process calculus for distributed workflows.
-- **TKN**: a temporal knowledge network using compression-based segmentation to discover morphemes.
-- **(\mathcal P)**: a risk-sensitive, hierarchical planner operating on learned abstractions.
+- **OBP Calculus / (\mathcal W)**: an operadic, symmetric monoidal process calculus for distributed workflows.
+- **Probabilistic Learning Module (\mathcal L)**: an online probabilistic learning module that extracts reusable pattern sequences (morphemes) from execution traces via an online, greedy sequencer with LZ-style compression heuristics, maintaining a global lattice (transition graph and prefix trie) for morpheme confidence scoring.
+- **Program Synthesis Engine (\mathcal P)**: a risk-sensitive, hierarchical planner operating on learned abstractions.
 
 It also introduces a **new conceptual layer**: **intent-based compression**, where OBP graphs are incrementally collapsed into latent representational units that can be decoded at runtime. This enables compact internal world models without losing semantic depth.
 
@@ -95,9 +95,9 @@ This gives a direct bridge between categorical workflows and control-theoretic p
 
 ---
 
-## 5. TKN and Information-Theoretic Segmentation
+## 5. The Learning Module (\mathcal L) and Information-Theoretic Segmentation
 
-TKN discovers morphemes using greedy, Lempel–Ziv–style segmentation. This places it squarely within:
+The Learning Module $\mathcal{L}$ discovers morphemes from execution traces using an online greedy sequencer with LZ-style compression heuristics, performing greedy, Lempel–Ziv–style segmentation. This places it squarely within:
 
 ### **5.1 Compression-Based Structure Discovery**
 
@@ -109,7 +109,7 @@ LZ methods approximate Kolmogorov complexity, providing:
 
 ### **5.2 Grammar Induction / Automata Learning**
 
-The TKN lattice functions as a proto-automaton over learned morphemes, aligning with:
+The global lattice (composed of a transition graph and prefix trie) functions as a proto-automaton over learned morphemes, aligning with:
 
 - state-merging algorithms (ALERGIA, RPNI)
 - variable-order Markov models
@@ -119,7 +119,7 @@ These literatures support guarantees about stabilization, bounded growth, and ab
 
 ---
 
-## 6. Planner (\mathcal P): Hierarchical and Risk-Aware Optimization
+## 6. Program Synthesis Engine (\mathcal P): Hierarchical and Risk-Aware Optimization
 
 The planner operates over a morpheme-derived macro-action space, matching:
 
@@ -223,7 +223,7 @@ The architecture touches many deep areas where subtle issues can arise:
 - coherence between operad and SMC structures,
 - measure-theoretic subtleties in stochastic traces,
 - abstraction safety (avoiding unsafe macros),
-- stabilization of learned structures (TKN),
+- stabilization of learned structures (the Learning Module $\mathcal{L}$),
 - complexity bounds in hierarchical planning.
 
 Identifying these frameworks makes it possible to apply known results—reducing risk and anchoring the system in proven mathematical ground.
@@ -232,7 +232,7 @@ Identifying these frameworks makes it possible to apply known results—reducing
 
 ## 10. Conclusion and Outlook
 
-By anchoring OBP, TKN, and (\mathcal P) within:
+By anchoring OBP, the Learning Module $\mathcal{L}$, and $\mathcal{P}$ within:
 
 - category theory,
 - operad theory,
