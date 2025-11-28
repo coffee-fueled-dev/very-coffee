@@ -93,6 +93,8 @@ Your cost functional combining structural cost and failure risk resembles classi
 
 This gives a direct bridge between categorical workflows and control-theoretic planning.
 
+> **Remark (Ports as neural fields / adapters).** Informally, one can view each port $P$ as defining a _local field_ over a global learned world-model: the cone $P(x, C)$ plays the role of a localized conditional distribution over trajectories, analogous to a neural field centered on a particular region of state–context space. In implementation terms, a port-specific adapter (e.g.\ a LoRA-style module) can specialize a large neural world-model to behave consistently with the admissible trajectories in $P(x, C)$, allowing macro-actions to “unwind” learned behaviors along previously successful causal paths. The adapter does not constitute part of the port’s formal definition; it is merely an implementation detail for realizing the stochastic action cone at scale.
+
 ---
 
 ## 5. The Learning Module (\mathcal L) and Information-Theoretic Segmentation

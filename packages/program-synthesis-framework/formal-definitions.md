@@ -108,6 +108,39 @@ This definition uniformly subsumes a range of affordance regimes:
 - **Continuous manifolds:** $P(x,C) = {\tau_\alpha : \alpha \in \Omega}$ for a region $\Omega \subseteq \mathbb{R}^n$.
 - **Vector fields and control flows:** $P(x,C)$ is the set of integral curves of a controlled vector field under admissible controls.
 
+### Ports as Symbolic Trajectories and Evidence
+
+The same port $P$ admits a complementary **symbolic** reading:
+
+- **Semantic view (action cone):** For each state–context pair $(x, C)$, the cone
+
+$$
+P(x, C) \subseteq \mathcal{T}(X)
+$$
+
+is the set of admissible trajectories that can be launched by binding at $P$ in state $x$ under context $C$.
+
+- **Symbolic view (causal trajectory schema):** The port $P$ also serves as a **symbolic trajectory** through the causal graph of $\mathcal{W}$: it names a family of admissible paths from a neighborhood of $(x, C)$ in OBP causal space to a set of reachable states.
+
+When a binding
+
+$$
+\mathsf{Bind}(O, P, \mathcal{C})
+$$
+
+is successfully defined and executed, the resulting offer $O'$ is **evidence** that there exists at least one realized trajectory $\tau \in P(x\_O, C)$ in the corresponding cone, where
+
+$$
+x_O = \mathsf{StateOf}(O), \qquad C = \mathsf{Ctx}(O, P, \mathcal{C}).
+$$
+
+In particular:
+
+- each **successful binding at port $P$** witnesses the existence of a realized trajectory in $P(x\_O, C)$ for some concrete $(x\_O, C)$, and
+- each **resulting offer $O'$** in the current OBP state space is an artifact of a **past successful commitment** that lay inside some port’s admissible action cone.
+
+Thus, ports are not only affordances; they are also **indices into a body of empirical evidence** about which causal trajectories have in fact been achievable. The evolving web of offers and ports in $\mathcal{W}$ is therefore a compressed record of **witnessed trajectories** that the Program Synthesis Engine $\mathcal{P}$ can exploit when searching for new plans.
+
 ### Stochastic Action Cones
 
 The action-cone semantics admits a probabilistic generalization. In the deterministic setting, a port $P$ exposes, at each state $x \in X$, a set $P(x) \subseteq \mathcal{T}(X)$ of admissible trajectories. The stochastic formulation replaces this set-valued assignment with a probability measure over trajectories.
@@ -853,7 +886,12 @@ indicating that the synthesis requirements have been met.
 
 ## The Planner's Operations ($\mathcal{M}$)
 
-The elementary operations available to the planner are the $\mathsf{MacroAction}\text{s}$, which are compiled from the high-utility patterns discovered by the Learning Module $\mathcal{L}$.
+The elementary operations available to the planner are the $\mathsf{MacroAction}\text{s}$, which are compiled from the high-utility patterns discovered by the Learning Module $\mathcal{L}$. At the OBP level, each $\mathsf{MacroAction}$ corresponds to a **patterned trajectory** through causal space, represented as a sequence of port-bindings:
+
+- symbolically, a macro names a composable path through the OBP causal graph,
+- semantically, it reuses a **witnessed family of trajectories** supported by prior successful bindings at the ports along that path.
+
+When $\mathcal{P}$ selects a macro, it can therefore **shortcut local admissibility checks** at each port in the sequence by relying on the existence of past bindings that lie inside the relevant action cones $P(x, C)$. If execution of a macro fails at some port, the engine can fall back to the underlying **action-cone semantics** at that port, exploring alternative trajectories in $P(x, C)$ to recover or re-route toward the goal.
 
 ### MacroAction ($\mathsf{MA}$)
 
