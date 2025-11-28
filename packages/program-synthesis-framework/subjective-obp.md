@@ -10,7 +10,7 @@ In this mode, all formal structure (offers, ports, actions, binding, traces) rem
 Consider an actor $A$ participating in OBP workflows. From $A$'s perspective, the relevant state splits into:
 
 $$
-\mathbf{S}_{\text{Self}} = \mathbf{S}_{A} \times \mathcal{M}_{B},
+\mathbf{S}_{\mathrm{Self}} = \mathbf{S}_{A} \times \mathcal{M}_{B},
 $$
 
 where:
@@ -18,18 +18,18 @@ where:
 - $\mathbf{S}_{A}$ is $A$'s **locally verifiable state** (its resources, offers, policies, and any state it can directly inspect or control),
 - $\mathcal{M}_{B}$ is a **prediction model** of the counterparty (or environment) $B$, i.e.\ a learned probability distribution or structured model over $B$'s likely state, constraints, and future actions (informed by TKN and past traces).
 
-Operationally, $\mathbf{S}_{\text{Self}}$ is **not** a new OBP state space; it is $A$'s _slice_ of the global OBP state plus its learned beliefs about others.
+Operationally, $\mathbf{S}_{\mathrm{Self}}$ is **not** a new OBP state space; it is $A$'s _slice_ of the global OBP state plus its learned beliefs about others.
 
 ## 2. Subjective Offers
 
 An OBP **Offer** is a proposition about resources and policy. In the subjective interaction mode, $A$ classifies offers by how they are known:
 
 $$
-\mathcal{O}_{\text{Self}} = \mathcal{O}_{\text{Known}} \cup \mathcal{O}_{\text{Predicted}}.
+\mathcal{O}_{\mathrm{Self}} = \mathcal{O}_{\mathrm{Known}} \cup \mathcal{O}_{\mathrm{Predicted}}.
 $$
 
-- **Known offers $\mathcal{O}_{\text{Known}}$:** Offers actually issued by $A$ (and possibly observed from the environment). These are backed by the usual OBP guarantees: they are concrete elements of $\mathsf{Offer}$ with well-defined ports and policies.
-- **Predicted offers $\mathcal{O}_{\text{Predicted}}$:** Internal hypotheses created by $A$ about what $B$ (or the environment) _will_ or _should_ do next. Formally, these are still elements of $\mathsf{Offer}$ in $\mathcal{W}$, but at the implementation level they carry only a **predicted policy set** rather than a verified one.
+- **Known offers $\mathcal{O}_{\mathrm{Known}}$:** Offers actually issued by $A$ (and possibly observed from the environment). These are backed by the usual OBP guarantees: they are concrete elements of $\mathsf{Offer}$ with well-defined ports and policies.
+- **Predicted offers $\mathcal{O}_{\mathrm{Predicted}}$:** Internal hypotheses created by $A$ about what $B$ (or the environment) _will_ or _should_ do next. Formally, these are still elements of $\mathsf{Offer}$ in $\mathcal{W}$, but at the implementation level they carry only a **predicted policy set** rather than a verified one.
 
 Subjective OBP thus treats some offers as **tested facts** and others as **testable hypotheses** about counterparties, while remaining within the same offer space.
 
@@ -38,39 +38,39 @@ Subjective OBP thus treats some offers as **tested facts** and others as **testa
 Ports in OBP are loci for transactions (bindings). In the subjective interaction mode, $A$ uses ports to encode **internal expectations**:
 
 $$
-\mathcal{P}_{\text{Self}}
-= \bigl\{ \langle \text{PortID}, \mathcal{O}_{\text{Exp}}, \text{SuccessState}, \text{FailureState} \rangle \bigr\},
+\mathcal{P}_{\mathrm{Self}}
+= \{ \langle \mathrm{PortID}, \mathcal{O}_{\mathrm{Exp}}, \mathrm{SuccessState}, \mathrm{FailureState} \rangle \},
 $$
 
 where:
 
-- $\mathcal{O}_{\text{Exp}} \in \mathcal{O}_{\text{Self}}$ is the **expected offer** (known or predicted) that $A$ anticipates binding at this port,
-- $\text{SuccessState}, \text{FailureState} \in \mathbf{S}_{\text{Self}}$ describe how $A$’s _subjective_ state should change if the expected binding occurs (or fails to occur).
+- $\mathcal{O}_{\mathrm{Exp}} \in \mathcal{O}_{\mathrm{Self}}$ is the **expected offer** (known or predicted) that $A$ anticipates binding at this port,
+- $\mathrm{SuccessState}, \mathrm{FailureState} \in \mathbf{S}_{\mathrm{Self}}$ describe how $A$'s _subjective_ state should change if the expected binding occurs (or fails to occur).
 
 From these ports and offers, $A$ builds an **internal causal graph**:
 
 $$
-\mathcal{G}_{\text{Self}} = (\mathbf{S}_{\text{Self}}, E_{\text{Self}}),
+\mathcal{G}_{\mathrm{Self}} = (\mathbf{S}_{\mathrm{Self}}, E_{\mathrm{Self}}),
 $$
 
-where edges in $E_{\text{Self}}$ correspond to bindings and actions that are:
+where edges in $E_{\mathrm{Self}}$ correspond to bindings and actions that are:
 
 - admissible with respect to $A$’s own policies and resources, and
 - consistent with $A$’s current prediction model $\mathcal{M}_{B}$.
 
-The planning engine $\mathcal{P}$, when used in subjective mode, searches for paths in $\mathcal{G}_{\text{Self}}$ that are **internally consistent** for $A$.
+The planning engine $\mathcal{P}$, when used in subjective mode, searches for paths in $\mathcal{G}_{\mathrm{Self}}$ that are **internally consistent** for $A$.
 
 ## 4. Expectation vs. Observation: Violation Types
 
-As $A$ executes a subjective plan, it observes **external actions** $O_{\text{Ext}}$ performed by $B$ (or the environment). These are ordinary OBP actions that appear in traces under $\mathrm{Tr}$ / $\mathrm{Tr}_{\bot}$, but for $A$ they are also **tests** of its predictions.
+As $A$ executes a subjective plan, it observes **external actions** $O_{\mathrm{Ext}}$ performed by $B$ (or the environment). These are ordinary OBP actions that appear in traces under $\mathrm{Tr}$ / $\mathrm{Tr}_{\bot}$, but for $A$ they are also **tests** of its predictions.
 
-Comparing $O_{\text{Ext}}$ to the current expected binding at a subjective port yields several useful violation types (inputs to TKN):
+Comparing $O_{\mathrm{Ext}}$ to the current expected binding at a subjective port yields several useful violation types (inputs to TKN):
 
-| **Violation Type**            | **Condition (from $A$'s view)**                                                                                                        | **Interpretation**                                                                               |
-| :---------------------------- | :------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------- |
-| Port Misuse (PM)              | $O_{\text{Ext}}$ binds at the expected port but with an offer $\mathcal{O}_{\text{Actual}} \neq \mathcal{O}_{\text{Exp}}$              | $B$ achieves the intended transition, but via a different offer/policy than expected.            |
-| Port Neglect (PN)             | $O_{\text{Ext}}$ does **not** bind to the active expected port; instead, a new, unrelated action is observed                           | $B$ is pursuing a different intention; $A$’s planned causal chain is being bypassed.             |
-| Offer Validation Failure (OF) | $A$ attempts to bind to a predicted offer $\mathcal{O}_{\text{Predicted}}$, but external verification fails (the offer was never made) | $A$’s belief $\mathcal{M}_{B}$ was wrong about $B$’s resources or policy (prediction incorrect). |
+| **Violation Type**            | **Condition (from $A$'s view)**                                                                                                          | **Interpretation**                                                                               |
+| :---------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------- |
+| Port Misuse (PM)              | $O_{\mathrm{Ext}}$ binds at the expected port but with an offer $\mathcal{O}_{\mathrm{Actual}} \neq \mathcal{O}_{\mathrm{Exp}}$          | $B$ achieves the intended transition, but via a different offer/policy than expected.            |
+| Port Neglect (PN)             | $O_{\mathrm{Ext}}$ does **not** bind to the active expected port; instead, a new, unrelated action is observed                           | $B$ is pursuing a different intention; $A$'s planned causal chain is being bypassed.             |
+| Offer Validation Failure (OF) | $A$ attempts to bind to a predicted offer $\mathcal{O}_{\mathrm{Predicted}}$, but external verification fails (the offer was never made) | $A$'s belief $\mathcal{M}_{B}$ was wrong about $B$'s resources or policy (prediction incorrect). |
 
 These labels do not modify OBP itself; they are **annotations on traces** that describe how external reality diverges from $A$’s internal expectations.
 
@@ -78,9 +78,9 @@ These labels do not modify OBP itself; they are **annotations on traces** that d
 
 When a violation (PM, PN, or OF) is detected, $A$ uses the same triad machinery to self-correct:
 
-1. **State update:** $\mathbf{S}_{\text{Self}}$ is updated based on the actual observation $O_{\text{Ext}}$, creating a new branch in $A$’s internal causal graph $\mathcal{G}_{\text{Self}}$.
+1. **State update:** $\mathbf{S}_{\mathrm{Self}}$ is updated based on the actual observation $O_{\mathrm{Ext}}$, creating a new branch in $A$'s internal causal graph $\mathcal{G}_{\mathrm{Self}}$.
 2. **TKN feedback:** The violation event, its type (PM/PN/OF), and its context are fed into TKN via $\mathrm{Tr}_{\bot}$-annotated traces, enriching $\mathcal{M}_{B}$ with evidence about counterparty behavior.
-3. **Plan re-synthesis:** The planner $\mathcal{P}$ is invoked to re-synthesize a new plan $\Pi'$ from the updated $\mathbf{S}_{\text{Self}}$, using the updated morphemes and metrics from TKN.
+3. **Plan re-synthesis:** The planner $\mathcal{P}$ is invoked to re-synthesize a new plan $\Pi'$ from the updated $\mathbf{S}_{\mathrm{Self}}$, using the updated morphemes and metrics from TKN.
 
 In this way, Subjective OBP uses the **deterministic rigor of OBP** to define an internally sound plan, then uses **deviations from that plan** as structured training signals for TKN and $\mathcal{P}$.
 
@@ -96,7 +96,7 @@ Subjective OBP does **not** introduce new operators or axioms; it is a _view_ of
 
 - **Shift in guarantee:**
   - In the **global** reading of OBP, the key property is transactional **admissibility** with respect to a shared state space and shared policies.
-  - In the **subjective** reading, the key property is **internal planning consistency** with respect to $A$’s belief state $\mathbf{S}_{\text{Self}}$ and prediction model $\mathcal{M}_{B}$.
+  - In the **subjective** reading, the key property is **internal planning consistency** with respect to $A$'s belief state $\mathbf{S}_{\mathrm{Self}}$ and prediction model $\mathcal{M}_{B}$.
 
 Conceptually, Subjective OBP is best understood as an **interaction mode of OBP** in which an actor:
 
