@@ -1,22 +1,68 @@
-# Executive Summary: The Program Synthesis Triad
+# **A Framework for Intentional, Causally-Grounded Agentic Behavior**
 
-This document formally defines a closed-loop framework for adaptive program synthesis, built upon a triad of causality modeling, online learning, and formal planning. The system is composed of three interconnected formalisms:
+This document defines a closed-loop framework for equipping neural agents with **robust, intentional, and internally consistent causal planning capabilities**. The system is built around a triad of complementary mechanisms that together provide:
 
-1. **The Offer-Bind-Port Calculus (OBP, $\mathcal{W}$):** Establishes the rigorous, concurrent, resource-aware execution semantics (Causal Modeling).
-2. **The Probabilistic Learning Module ($\mathcal{L}$):** Extracts high-utility, reusable pattern sequences (_morphemes_) from OBP execution traces (Online Learning).
-3. **The Program Synthesis Engine ($\mathcal{P}$):** Uses the learned morphemes as macro-actions to perform optimal graph search, synthesizing goal-directed programs (Formal Planning).
+- explicit causal structure,
+- adaptive procedural abstraction,
+- and deliberative goal-directed reasoning.
 
-The framework operates as a self-improving cycle: $\mathcal{W}$ generates execution data, the Learning Module $\mathcal{L}$ abstracts this data into $\mathsf{MacroAction}\text{s}$, and $\mathcal{P}$ uses the $\mathsf{MacroAction}\text{s}$ to synthesize new, optimized programs for execution by $\mathcal{W}$. A structured treatment of failure (an exception hierarchy and the failure trace functor $\mathrm{Tr}_{\bot}$) is built into this cycle, so that the system can learn from errors and implement fault-tolerant recovery strategies in real-world deployments.
+These three components are:
 
-# Framework Usage Modes
+1. **The Offer–Bind–Port Calculus (OBP, $\mathcal{W}$):**
+   A rigorous concurrent execution model defining the **causal, resource-aware, and failure-aware semantics** of interaction. OBP provides agents with a stable symbolic substrate for representing actions, commitments, and state transitions.
 
-Because the three components have orthogonal responsibilities, they can be composed in several usage modes without changing their formal definitions:
+2. **The Probabilistic Learning Module ($\mathcal{L}$):**
+   An online sequence learner that extracts **reusable procedural units** (_morphemes_) from OBP execution traces. These morphemes form the agent’s **procedural memory**, enabling it to generalize from experience and compress recurring causal patterns.
 
-- **OBP as Causal Log Schema (Observation-Only):** An external workflow is instrumented into $\mathcal{W}$; $\mathrm{Tr}$ and $\mathrm{Tr}_{\bot}$ are used purely to extract (failure-aware) action traces, and the Learning Module $\mathcal{L}$ operates as an online learner over these logs, with no planner in the loop.
-- **Learning-Enhanced Planning on Historical Data:** OBP provides the abstract execution semantics and trace schema, but traces are collected offline (from observation or simulation). The Learning Module $\mathcal{L}$ builds a morpheme lattice from this corpus, and $\mathcal{P}$ plans over $\mathcal{S}$ using the learned $\mathsf{MacroAction}\text{s}$, without necessarily driving live OBP execution.
-- **Closed-Loop Autonomous Execution:** OBP serves as the runtime executor under transactional semantics, $\mathrm{Tr}$ and $\mathrm{Tr}_{\bot}$ feed the Learning Module $\mathcal{L}$ in real time, and $\mathcal{P}$ uses the evolving morpheme set to synthesize and adapt programs that are immediately executed in $\mathcal{W}$.
+3. **The Program Synthesis Engine ($\mathcal{P}$):**
+   A deliberative planner that uses learned morphemes as **macro-actions**. It performs optimal graph search over OBP’s symbolic state space, synthesizing **internally consistent, goal-directed programs** that are guaranteed to be causally valid and resource-safe.
 
-In all modes, OBP defines the causal structure, the Learning Module $\mathcal{L}$ learns patterns from the induced traces, and $\mathcal{P}$ reasons over these patterns; only the control boundary between "observation" and "execution" changes.
+Together, these components form a **self-improving causal cognition loop**:
+
+$$
+\mathcal{W} ;\longrightarrow; \mathcal{L} ;\longrightarrow; \mathcal{P} ;\longrightarrow; \mathcal{W}
+$$
+
+- **$\mathcal{W}$** (OBP) generates structured causal experience.
+- **$\mathcal{L}$** converts this experience into reusable procedures.
+- **$\mathcal{P}$** uses these procedures to formulate plans whose execution creates richer causal structure.
+
+A formal exception hierarchy and the failure-trace functor $\mathrm{Tr}\_{\bot}$ ensure that failures are first-class citizens—making the system **fault-tolerant, self-correcting, and capable of learning from error.**
+
+# **Framework Usage Modes**
+
+Because each component has orthogonal responsibilities, the triad supports multiple deployment modes without altering the underlying formalism:
+
+### **1. OBP as a Causal Log Schema (Observation-Only)**
+
+An external workflow is instrumented into $\mathcal{W}$ purely to extract traces via $\mathrm{Tr}$ and $\mathrm{Tr}\_{\bot}$.
+$\mathcal{L}$ learns morphemes from observed data, but no planning or execution is driven by the system.
+
+### **2. Learning-Enhanced Planning on Historical Data**
+
+OBP provides the abstract semantics and trace schema.
+Historical or simulated traces feed $\mathcal{L}$, which constructs a morpheme lattice.
+$\mathcal{P}$ plans using macro-actions derived from these morphemes, without requiring live OBP execution.
+
+### **3. Closed-Loop Autonomous Execution**
+
+OBP acts as the runtime substrate with full transactional semantics.
+$\mathrm{Tr}$ and $\mathrm{Tr}_{\bot}$ continuously feed new experience into $\mathcal{L}$.
+$\mathcal{P}$ uses evolving morphemes to synthesize and refine plans executed immediately by $\mathcal{W}$—closing the loop between **causal modeling**, **learning**, and **intentional action**.
+
+# **Why This Matters**
+
+In all modes, OBP provides a **robust causal backbone**,
+$\mathcal{L}$ provides **procedural generalization**,
+and $\mathcal{P}$ provides **deliberative intentionality**.
+
+Together, they give neural agents:
+
+- stable symbolic commitments,
+- reusable causal knowledge,
+- long-horizon planning,
+- and coherent self-consistent behavior—
+  capabilities that end-to-end neural models lack on their own.
 
 # The Offer-Bind-Port Calculus (OBP)
 
