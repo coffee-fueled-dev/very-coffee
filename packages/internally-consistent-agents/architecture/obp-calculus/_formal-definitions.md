@@ -216,6 +216,16 @@ $$
 
 No admissible trajectories emanate from $\bot$; informally, all action cones at $\bot$ are empty.
 
+#### Placement of Recoverable Failure
+
+Categorically, there is a **single** failure object $\bot$ in $\mathcal{W}$. The richer taxonomy of failure modes (e.g.\ terminal, recoverable, contention) is carried as **additional structure** rather than as distinct objects:
+
+- all hard, globally-fatal failures are represented by morphisms whose codomain is $\bot$ and therefore satisfy the absorbing law $O \otimes \bot = \bot$,
+- recoverable failures and contention events are represented as **ordinary morphisms** whose codomain is some non-failure offer $O' \in \mathsf{Offer}^+$, annotated with diagnostic labels and, when appropriate, by the failure-trace functor $\mathrm{Tr}_{\bot}$ below,
+- **local failures** that should not poison independent concurrent subgraphs are modeled as transitions into diagnostic offers $O' \neq \bot$ on the affected tensor factors; unrelated factors continue to evolve as usual.
+
+Thus, the axiom that $\bot$ is a strict absorbing element applies only once an execution has been classified as terminal and mapped into $\bot$ at the categorical level. All _recoverable_ behavior lives in the ordinary part of the category, with rollback and retry modeled as further morphisms from checkpointed offers, and with the failure taxonomy attached as metadata on traces and/or actions rather than by introducing separate non-absorbing objects $\bot\_{\mathbf{R}}, \bot\_{\mathbf{C}}, \dots$.
+
 ### The Action-Morphism Constructor
 
 An **action** is a subset of the Cartesian product of offers:
@@ -557,6 +567,29 @@ The concurrent shuffle induces:
 - **Robustness:** The Learning Module $\mathcal{L}$ operates on these traces; its learned $\mathsf{MacroAction}\text{s}$ are therefore robust to variations in concurrent execution order that respect underlying causal dependencies.
 
 The output $\mathrm{Tr}(f)$ is the concrete, recorded **execution log** or **trace** of the workflow $f$.
+
+### Logging Contract and Replayability
+
+Concrete runtimes typically produce **persistent logs** rather than direct categorical morphisms. To connect these logs to the OBP semantics, we require a replayability contract:
+
+1. Each runtime execution produces a log value $\ell$ in some implementation-defined log type $\mathsf{Log}$.
+2. There is a decoding function
+
+$$
+\mathsf{Decode} : \mathsf{Log} \to \mathrm{List}(\mathsf{Action})
+$$
+
+that projects $\ell$ to a canonical action sequence.
+
+3. **Replayability Axiom.** For every committed execution log $\ell$ there exists a morphism $f \in \mathcal{W}$ such that
+
+$$
+\mathsf{Decode}(\ell) = \mathrm{Tr}(f),
+$$
+
+where $\mathrm{Tr}$ is the trace functor defined above (including concurrent shuffle and causal filtering). In systems with multiple physical logs (per-service logs, sharded logs, etc.), an implementation-specific merge operator must first assemble a global log $\ell$ that satisfies this axiom.
+
+Operationally, this contract ensures that **whatever logging format the runtime uses** is always replayable into a well-typed OBP morphism whose categorical trace coincides with the stored sequence (up to the usual equivalences induced by associativity and symmetry). The learner $\mathcal{L}$ and planner $\mathcal{P}$ are therefore guaranteed to see traces that respect the causal and typing assumptions baked into $\mathcal{W}$.
 
 ## Relationship to Operadic Structure
 
