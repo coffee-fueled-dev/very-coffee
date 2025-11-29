@@ -1,4 +1,4 @@
-import { ChevronRightIcon, ChevronsUpDown } from "lucide-react";
+import { ChevronRightIcon, ChevronsUpDown, FileText } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import {
   Item,
@@ -13,7 +13,8 @@ import type { ResolvedPost } from "@/lib/post";
 import { Separator } from "../ui/separator";
 import { InlineLink } from "./external-link";
 import { CopyButton } from "./copy-button";
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
+import { Button } from "../ui/button";
 import { Loader } from "./loader";
 import {
   useStaticPost,
@@ -219,8 +220,24 @@ const mdxComponents = {
   a: InlineLink,
 };
 
-export const Post = (post: ResolvedPost) => {
-  const { module } = post;
+export const Post = (post: ResolvedPost & { rawUrl?: string }) => {
+  const { module, rawUrl } = post;
+
+  // Add alternate link to document head for raw source
+  useEffect(() => {
+    if (!rawUrl) return;
+
+    const link = document.createElement("link");
+    link.rel = "alternate";
+    link.type = "text/plain";
+    link.href = rawUrl;
+    link.title = "Raw Markdown Source";
+    document.head.appendChild(link);
+
+    return () => {
+      document.head.removeChild(link);
+    };
+  }, [rawUrl]);
 
   return (
     module?.default && (
@@ -231,7 +248,17 @@ export const Post = (post: ResolvedPost) => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: "easeOut" }}
       >
-        <CopyButton content={module.raw ?? ""} label="Copy" />
+        <div className="flex gap-2 not-prose mb-4 justify-between">
+          <CopyButton content={module.raw ?? ""} label="Copy" />
+          {rawUrl && (
+            <Button variant="outline" size="sm" asChild>
+              <a href={rawUrl} target="_blank" rel="noopener noreferrer">
+                <FileText className="size-4" />
+                View Source
+              </a>
+            </Button>
+          )}
+        </div>
         <module.default components={mdxComponents} />
       </motion.div>
     )

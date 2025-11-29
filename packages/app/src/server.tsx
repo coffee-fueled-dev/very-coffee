@@ -108,7 +108,13 @@ const server = Bun.serve({
         .split("/")
         .filter(Boolean);
 
-      console.log(`[POST API] Request for: ${pathSegments.join("/")}`);
+      const isRaw = url.searchParams.get("raw") === "true";
+
+      console.log(
+        `[POST API] Request for: ${pathSegments.join("/")}${
+          isRaw ? " (raw)" : ""
+        }`
+      );
 
       // Map URL segments to file system paths (handle typo: "architecture" -> "architecure")
       const fsSegments = pathSegments.map((seg) =>
@@ -120,8 +126,6 @@ const server = Bun.serve({
       const blogBase = path.join(baseDir, "blog");
 
       const possiblePaths = [
-        // path.join(blogBase, ...fsSegments) + ".mdx",
-        // path.join(blogBase, ...fsSegments) + ".md",
         path.join(blogBase, ...fsSegments, "post.mdx"),
         path.join(blogBase, ...fsSegments, "post.md"),
       ];
@@ -134,18 +138,18 @@ const server = Bun.serve({
       let file: BunFile | null = null;
       let filePath: string | null = null;
 
-      for (const path of possiblePaths) {
+      for (const filePath_ of possiblePaths) {
         try {
-          const candidate = Bun.file(path);
+          const candidate = Bun.file(filePath_);
           const exists = await candidate.exists();
           if (exists) {
             file = candidate;
-            filePath = path;
-            console.log(`[POST API] ✓ Found file: ${path}`);
+            filePath = filePath_;
+            console.log(`[POST API] ✓ Found file: ${filePath_}`);
             break;
           }
         } catch (e) {
-          console.log(`[POST API] ✗ Error checking ${path}:`, e);
+          console.log(`[POST API] ✗ Error checking ${filePath_}:`, e);
           // Continue to next path
         }
       }
@@ -157,13 +161,30 @@ const server = Bun.serve({
         return new Response("Post not found", { status: 404 });
       }
 
+      // Return raw source if requested
+      if (isRaw) {
+        const content = await file.text();
+        const ext = filePath.endsWith(".mdx") ? "mdx" : "md";
+        return new Response(content, {
+          headers: {
+            "Content-Type": "text/plain; charset=utf-8",
+            "Content-Disposition": `inline; filename="${pathSegments.join(
+              "-"
+            )}.${ext}"`,
+            "Cache-Control":
+              process.env.NODE_ENV === "production"
+                ? "public, max-age=3600"
+                : "no-cache",
+          },
+        });
+      }
+
       console.log(
         `[POST API] Using Bun.build with MDX plugin for: ${filePath}`
       );
 
       try {
         // Bundle MDX with React marked as external
-        // We'll provide React via a simple wrapper that uses window.React
         console.log(`[POST API] Starting Bun.build with MDX plugin...`);
         const result = await Bun.build({
           entrypoints: [filePath],
@@ -177,7 +198,7 @@ const server = Bun.serve({
             "react/jsx-dev-runtime",
             "react-dom",
             "react-dom/client",
-          ], // Mark React as external
+          ],
         });
 
         if (!result.success) {
@@ -193,12 +214,6 @@ const server = Bun.serve({
         console.log(
           `[POST API] Bundled code length: ${bundledCode.length} chars`
         );
-
-        // No transformations needed!
-        // The browser uses import maps (defined in index.html) to resolve:
-        //   import { useState } from 'react' -> /api/shims/react.js
-        //   import { jsx } from 'react/jsx-runtime' -> /api/shims/jsx-runtime.js
-        // These shims export from window.React, ensuring single React instance.
 
         console.log(
           `[POST API] ✓ Returning bundled module (${bundledCode.length} chars)`

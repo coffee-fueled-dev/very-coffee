@@ -55,6 +55,7 @@ export interface RegisteredPost {
 }
 export type ResolvedPost = Omit<RegisteredPost, "module"> & {
   module: MDXModule | undefined;
+  rawUrl?: string;
 };
 
 // TODO: Add schema

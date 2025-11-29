@@ -181,18 +181,20 @@ const resolvePost = async (
 ): Promise<ResolvedPost> => {
   if (!post || !post.published) throw notFound({ routeId: rootRouteId });
 
+  const apiPath = segments.join("/");
+  const rawUrl = `/api/posts/${apiPath}?raw=true`;
+
   // If module is provided (for root/legacy posts), use it
   if (post.module) {
     const { module, ...rest } = post;
     const postData = await module();
     if (!postData) throw notFound({ routeId: rootRouteId });
-    return { ...rest, module: postData };
+    return { ...rest, module: postData, rawUrl };
   }
 
   // Otherwise, fetch from API on-demand
   // Import directly from the API URL (not blob URL) so import maps work
   // Import maps allow the browser to resolve 'react' imports to our shims
-  const apiPath = segments.join("/");
   const moduleUrl = `/api/posts/${apiPath}`;
 
   try {
@@ -200,7 +202,7 @@ const resolvePost = async (
     const postData = await import(/* @vite-ignore */ moduleUrl);
 
     const { module: _, ...rest } = post;
-    return { ...rest, module: postData };
+    return { ...rest, module: postData, rawUrl };
   } catch (error) {
     console.error("Failed to load post module:", error);
     throw notFound({ routeId: rootRouteId });
