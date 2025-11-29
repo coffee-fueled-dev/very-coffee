@@ -2,6 +2,14 @@ import entry from "../public/index.html";
 import mdxPlugin from "./plugins/mdx";
 import type { BunFile } from "bun";
 import path from "path";
+import { LRUCache } from "lru-cache";
+
+// Cache for compiled MDX bundles
+// Key: filePath, Value: { code, mtime }
+const mdxCache = new LRUCache<string, { code: string; mtime: number }>({
+  max: 100, // Max 100 posts cached
+  ttl: 1000 * 60 * 60, // 1 hour TTL
+});
 
 // React shim - exports from window.React (ensures single React instance)
 const reactShim = `
@@ -179,13 +187,34 @@ const server = Bun.serve({
         });
       }
 
+      // Check file modification time for cache validation
+      const stat = await file.stat();
+      const mtime = stat.mtime.getTime();
+
+      // Check cache
+      const cached = mdxCache.get(filePath);
+      if (cached && cached.mtime === mtime) {
+        console.log(`[POST API] ✓ Cache hit for: ${filePath}`);
+        return new Response(cached.code, {
+          headers: {
+            "Content-Type": "application/javascript",
+            "Cache-Control":
+              process.env.NODE_ENV === "production"
+                ? "public, max-age=3600"
+                : "no-cache",
+            "X-Cache": "HIT",
+          },
+        });
+      }
+
       console.log(
-        `[POST API] Using Bun.build with MDX plugin for: ${filePath}`
+        `[POST API] ${
+          cached ? "Cache stale" : "Cache miss"
+        }, compiling: ${filePath}`
       );
 
       try {
         // Bundle MDX with React marked as external
-        console.log(`[POST API] Starting Bun.build with MDX plugin...`);
         const result = await Bun.build({
           entrypoints: [filePath],
           target: "browser",
@@ -207,17 +236,14 @@ const server = Bun.serve({
           throw new Error("Bundle failed");
         }
 
-        console.log(
-          `[POST API] ✓ Bundle successful, outputs: ${result.outputs.length}`
-        );
         const bundledCode = await result.outputs[0].text();
         console.log(
-          `[POST API] Bundled code length: ${bundledCode.length} chars`
+          `[POST API] ✓ Compiled ${bundledCode.length} chars, caching...`
         );
 
-        console.log(
-          `[POST API] ✓ Returning bundled module (${bundledCode.length} chars)`
-        );
+        // Store in cache
+        mdxCache.set(filePath, { code: bundledCode, mtime });
+
         return new Response(bundledCode, {
           headers: {
             "Content-Type": "application/javascript",
@@ -225,6 +251,7 @@ const server = Bun.serve({
               process.env.NODE_ENV === "production"
                 ? "public, max-age=3600"
                 : "no-cache",
+            "X-Cache": "MISS",
           },
         });
       } catch (error) {
