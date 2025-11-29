@@ -92,6 +92,34 @@ const countChildPosts = (post: RegisteredPost): number =>
       }, 0)
     : 0;
 
+/**
+ * Recursively collect all posts in a hierarchy (depth-first).
+ * Returns array of { segments, post } for each published post.
+ */
+export function collectPostHierarchy(
+  post: RegisteredPost,
+  baseSegments: string[] = []
+): { segments: string[]; post: RegisteredPost }[] {
+  const result: { segments: string[]; post: RegisteredPost }[] = [];
+
+  // Add the current post first
+  if (post.published) {
+    result.push({ segments: baseSegments, post });
+  }
+
+  // Recursively add children
+  if (post.posts) {
+    for (const [key, child] of Object.entries(post.posts)) {
+      if (child.published) {
+        const childSegments = [...baseSegments, key];
+        result.push(...collectPostHierarchy(child, childSegments));
+      }
+    }
+  }
+
+  return result;
+}
+
 export function getChildPostPreviews(
   segments: string[],
   post: RegisteredPost

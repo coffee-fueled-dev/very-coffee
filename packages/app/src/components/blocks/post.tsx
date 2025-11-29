@@ -1,4 +1,9 @@
-import { ChevronRightIcon, ChevronsUpDown, FileText } from "lucide-react";
+import {
+  ChevronRightIcon,
+  ChevronsUpDown,
+  Download,
+  FileText,
+} from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import {
   Item,
@@ -13,13 +18,14 @@ import type { ResolvedPost } from "@/lib/post";
 import { Separator } from "../ui/separator";
 import { InlineLink } from "./external-link";
 import { CopyButton } from "./copy-button";
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "../ui/button";
 import { Loader } from "./loader";
 import {
   useStaticPost,
   useLazyPost,
   type PostPreviewProps,
+  collectPostHierarchy,
 } from "@/contexts/post-context";
 import { extractTextFromChildren } from "@/lib/extract-text-from-children";
 import {
@@ -160,9 +166,59 @@ export const PostPreviews = ({ sectionTitle }: { sectionTitle: string }) => {
 };
 
 export const PostHeader = () => {
-  const { post } = useStaticPost();
+  const { post, segments, breadcrumbs } = useStaticPost();
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  const handleDownloadHierarchy = useCallback(async () => {
+    if (!post) return;
+
+    setIsDownloading(true);
+    try {
+      // Collect all posts in hierarchy
+      const hierarchy = collectPostHierarchy(post as any, segments);
+
+      // Fetch raw content for each post
+      const contents: string[] = [];
+      for (const { segments: postSegments, post: p } of hierarchy) {
+        const apiPath = postSegments.join("/");
+        try {
+          const res = await fetch(`/api/posts/${apiPath}?raw=true`);
+          if (res.ok) {
+            const raw = await res.text();
+            // Add a header comment with the post title and path
+            const header = `<!-- ${
+              p.title
+            } -->\n<!-- Path: /${postSegments.join("/")} -->\n\n`;
+            contents.push(header + raw);
+          }
+        } catch (e) {
+          console.warn(`Failed to fetch ${apiPath}:`, e);
+        }
+      }
+
+      // Concatenate with separators
+      const combined = contents.join("\n\n---\n\n");
+
+      // Create and trigger download
+      const blob = new Blob([combined], { type: "text/markdown" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${post.title.toLowerCase().replace(/\s+/g, "-")}.md`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } finally {
+      setIsDownloading(false);
+    }
+  }, [post, segments]);
+
   if (!post) return null;
   const { author, title, tags, summary } = post;
+
+  // Show download button for all posts except the root blog index
+  const showDownloadButton = breadcrumbs.length > 1;
 
   return (
     <div className="flex flex-col gap-2">
@@ -173,6 +229,17 @@ export const PostHeader = () => {
       <div className="flex gap-1 items-center justify-center flex-wrap">
         <Badge variant="default">{author}</Badge>
         <TagCloud tags={tags} />
+        {showDownloadButton && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleDownloadHierarchy}
+            disabled={isDownloading}
+          >
+            <Download className="size-4" />
+            {isDownloading ? "Downloading..." : "Download All"}
+          </Button>
+        )}
       </div>
     </div>
   );
