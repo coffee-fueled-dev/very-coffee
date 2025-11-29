@@ -1,8 +1,8 @@
-# **Planning Engine \(\mathcal{P}\) – Risks and Open Questions**
+# **Planning Engine $\mathcal{P}$ – Risks and Open Questions**
 
 ## **1. Abstraction Safety and Macro Reliability**
 
-- **Unsafe Macros from \(\mathcal{L}\)**  
+- **Unsafe Macros from $\mathcal{L}$**  
   Macro-actions derived from morphemes may:
   - bypass infrequent but crucial checks or safeguards,
   - conceal intermediate failure modes within a single high-level step,

@@ -3,7 +3,7 @@
 ## **1. Failure Semantics**
 
 - **Absorbing vs. Monadic Failure**  
-  OBP currently uses a strict absorbing sink \(\bot\) (failure contaminates all concurrent context). Open risks:
+  OBP currently uses a strict absorbing sink $\bot$ (failure contaminates all concurrent context). Open risks:
   - coarse failure semantics may be too rigid for nuanced rollback / compensation patterns,
   - mixing partiality and concurrency can make reasoning about liveness subtle.  
     Design question: when (if ever) to migrate toward a more refined, monadic failure model while preserving existing guarantees.
@@ -11,17 +11,17 @@
 ## **2. Stochastic Semantics and Measures**
 
 - **Measure-Theoretic Subtleties**  
-  Modeling stochastic ports as Markov kernels over \(\mathcal{T}(X)\) raises:
+  Modeling stochastic ports as Markov kernels over $\mathcal{T}(X)$ raises:
   - measurability concerns on trajectory spaces,
   - issues around composing kernels over infinite-horizon or continuous-time trajectories,
   - edge cases in defining and estimating probability measures from finite logs.  
-    These subtleties affect the soundness of probabilistic reasoning in \(\mathcal{W}\).
+    These subtleties affect the soundness of probabilistic reasoning in $\mathcal{W}$.
 
 ## **3. Coherence of Operad and SMC**
 
 - **Structural Consistency**  
-  The operadic interface layer and the SMC \(\mathcal{W}\) must satisfy coherence conditions:
-  - substitutions in the operad should correspond to well-defined morphism compositions in \(\mathcal{W}\),
+  The operadic interface layer and the SMC $\mathcal{W}$ must satisfy coherence conditions:
+  - substitutions in the operad should correspond to well-defined morphism compositions in $\mathcal{W}$,
   - tensoring and sequencing at the categorical level must respect the intended wiring discipline.  
     Failure to maintain this correspondence risks:
   - “syntactically valid but semantically ill-typed” compositions,
