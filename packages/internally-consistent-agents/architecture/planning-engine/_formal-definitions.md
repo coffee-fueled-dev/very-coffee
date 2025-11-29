@@ -4,9 +4,9 @@
 
 A **planning engine** is a formal system that constructs sequences of actions that transform an initial state into a desired goal state. It operates over:
 
-- a **state space** $(\mathcal{S})$,
-- a set of **primitive actions** $(\mathcal{A})$,
-- a set of **macro-actions** $(\mathcal{M})$,
+- a **state space** $\mathcal{S}$,
+- a set of **primitive actions** $\mathcal{A}$,
+- a set of **macro-actions** $\mathcal{M}$,
 - a **transition function**,
 - a **goal predicate**,
 - a **search procedure** that identifies an optimal or admissible plan.
@@ -23,7 +23,7 @@ $$
 \mathcal{S} \text{ is a non-empty set of valid system states.}
 $$
 
-A state $(S \in \mathcal{S})$ represents a complete snapshot of all information relevant to planning.
+A state $S \in \mathcal{S}$ represents a complete snapshot of all information relevant to planning.
 
 The planning engine assumes only that states are:
 
@@ -41,7 +41,7 @@ No assumptions are made about the content or structure of states beyond these pr
 
 ### **Definition (Primitive Action)**
 
-A primitive action $(a \in \mathcal{A})$ is defined by:
+A primitive action $a \in \mathcal{A}$ is defined by:
 
 - a **precondition** function
   $$
@@ -54,7 +54,7 @@ A primitive action $(a \in \mathcal{A})$ is defined by:
 
 ### **Applicability**
 
-An action $(a)$ is **applicable** in state $(S)$ iff:
+An action $a$ is **applicable** in state $S$ iff:
 
 $$
 \mathsf{Pre}(a)(S) = \mathsf{True}.
@@ -62,7 +62,7 @@ $$
 
 ### **Result**
 
-When applicable, action $(a)$ transforms state $(S)$ into:
+When applicable, action $a$ transforms state $S$ into:
 
 $$
 S' = \mathsf{Eff}(a)(S).
@@ -78,7 +78,7 @@ A **macro-action** groups multiple primitive actions into a single planning oper
 
 ### **Definition (Macro-Action)**
 
-A macro-action $(m \in \mathcal{M})$ is defined by:
+A macro-action $m \in \mathcal{M}$ is defined by:
 
 - a finite sequence of primitive actions
   $$
@@ -139,7 +139,7 @@ $$
 o\_i \in \mathcal{A} \cup \mathcal{M}.
 $$
 
-A plan transforms an initial state $(S\_0)$ into a final state $(S\_n)$ via:
+A plan transforms an initial state $S\_0$ into a final state $S\_n$ via:
 
 $$
 S\_0 \xRightarrow{o\_1} S\_1 \xRightarrow{o\_2} \dots \xRightarrow{o\_n} S\_n.
@@ -155,9 +155,9 @@ $$
 \mathsf{Goal} : \mathcal{S} \to \{\mathsf{True},\ \mathsf{False}\}.
 $$
 
-A state $(S)$ is a **goal state** iff $(\mathsf{Goal}(S) = \mathsf{True})$.
+A state $S$ is a **goal state** iff $\mathsf{Goal}(S) = \mathsf{True}$.
 
-A plan $(\Pi)$ is a **solution** iff applying $(\Pi)$ to the initial state yields a goal state.
+A plan $\Pi$ is a **solution** iff applying $\Pi$ to the initial state yields a goal state.
 
 ---
 
@@ -192,11 +192,11 @@ The planning engine uses a search strategy to discover a valid or optimal plan.
 
 Given:
 
-- initial state $(S\_0)$,
-- goal predicate $(\mathsf{Goal})$,
-- operations $(\mathcal{A} \cup \mathcal{M})$,
+- initial state $S\_0$,
+- goal predicate $\mathsf{Goal}$,
+- operations $\mathcal{A} \cup \mathcal{M}$,
 
-find a plan $(\Pi)$ such that:
+find a plan $\Pi$ such that:
 
 $$
 \mathsf{Goal}(S\_0 \xRightarrow{\Pi}) = \mathsf{True}.
@@ -210,7 +210,7 @@ The planning engine may use any search procedure that satisfies:
    Every plan returned must be valid and lead to a goal state.
 
 2. **Optionally, Optimality**
-   If declared an _optimal_ planner, the engine must return a plan $(\Pi^*)$ such that:
+   If declared an _optimal_ planner, the engine must return a plan $\Pi^*$ such that:
 
    $$
    \mathsf{Cost}(\Pi^*) = \min_{\Pi} \mathsf{Cost}(\Pi).

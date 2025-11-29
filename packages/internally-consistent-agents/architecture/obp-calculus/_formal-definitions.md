@@ -6,12 +6,12 @@ The **Offer-Bind-Port (OBP) calculus** is a formal model of workflows in which
 parties interact by binding to ports on offers. It provides:
 
 - a space of **offers** and **ports** that expose action opportunities,
-- a global **state space** \(X\) and a set of admissible trajectories \(\mathcal{T}(X)\),
+- a global **state space** $X$ and a set of admissible trajectories $\mathcal{T}(X)$,
 - a notion of **actions** as state-transforming morphisms between offers,
 - a **binding operation** that selects admissible trajectories from port-specific
   action cones,
-- a **failure sink** \(\bot\) and associated transactional semantics for errors,
-- a **symmetric monoidal category** \(\mathcal{W}\) and a **trace functor**
+- a **failure sink** $\bot$ and associated transactional semantics for errors,
+- a **symmetric monoidal category** $\mathcal{W}$ and a **trace functor**
   that extract execution histories as sequences of actions.
 
 OBP specifies **what it means** for bindings, actions, and executions to be
@@ -35,13 +35,13 @@ $$
 \mathsf{Action}.
 $$
 
-In addition, OBP is interpreted over a **state space** $X$ and a set of admissible trajectories $\mathcal{T}(X)$, which together provide the semantic foundation for ports and actions.
+In addition, OBP is interpreted over a **state space** $X$ and a set of admissible trajectories $\mathcal{T}(X$, which together provide the semantic foundation for ports and actions.
 
 ### State Space and Admissible Trajectories
 
 Let $X$ denote the global state space of the system.
 
-Let $\mathcal{T}(X)$ denote the set of all **admissible trajectories**:
+Let $\mathcal{T}(X$ denote the set of all **admissible trajectories**:
 
 $$
 \tau : [0,T] \to X, \qquad T < \infty,
@@ -54,7 +54,7 @@ where _admissibility_ incorporates all system-level constraints, including:
 - party permissions and capabilities,
 - port-state and capacity conditions.
 
-Thus, $\mathcal{T}(X)$ is the constraint-closed set of possible system evolutions.
+Thus, $\mathcal{T}(X$ is the constraint-closed set of possible system evolutions.
 
 Each concrete offer $O \in \mathsf{Offer}$ carries a distinguished **state component**:
 
@@ -103,20 +103,20 @@ $$
 P(x,C) \subseteq \mathcal{T}(X)
 $$
 
-is the **action cone** exposed by the port $P$ at state $x$ under context $C$. Each $\tau \in P(x,C)$ is a trajectory that can be launched by binding to $P$ in state $x$ under context $C$.
+is the **action cone** exposed by the port $P$ at state $x$ under context $C$. Each $\tau \in P(x,C$ is a trajectory that can be launched by binding to $P$ in state $x$ under context $C$.
 
 This definition uniformly subsumes a range of affordance regimes:
 
-- **Discrete ports:** $P(x,C)$ is a finite set (often a singleton) of discrete trajectories.
+- **Discrete ports:** $P(x,C$ is a finite set (often a singleton) of discrete trajectories.
 - **Parameterized ports:** $P(x,C) = {\tau_\theta : \theta \in \Theta}$ for a parameter domain $\Theta$.
 - **Continuous manifolds:** $P(x,C) = {\tau_\alpha : \alpha \in \Omega}$ for a region $\Omega \subseteq \mathbb{R}^n$.
-- **Vector fields and control flows:** $P(x,C)$ is the set of integral curves of a controlled vector field under admissible controls.
+- **Vector fields and control flows:** $P(x,C$ is the set of integral curves of a controlled vector field under admissible controls.
 
 ### Ports as Symbolic Trajectories and Evidence
 
 The same port $P$ admits a complementary **symbolic** reading:
 
-- **Semantic view (action cone):** For each state–context pair $(x, C)$, the cone
+- **Semantic view (action cone):** For each state–context pair $x, C$, the cone
 
 $$
 P(x, C) \subseteq \mathcal{T}(X)
@@ -124,7 +124,7 @@ $$
 
 is the set of admissible trajectories that can be launched by binding at $P$ in state $x$ under context $C$.
 
-- **Symbolic view (causal trajectory schema):** The port $P$ also serves as a **symbolic trajectory** through the causal graph of $\mathcal{W}$: it names a family of admissible paths from a neighborhood of $(x, C)$ in OBP causal space to a set of reachable states.
+- **Symbolic view (causal trajectory schema):** The port $P$ also serves as a **symbolic trajectory** through the causal graph of $\mathcal{W}$: it names a family of admissible paths from a neighborhood of $x, C$ in OBP causal space to a set of reachable states.
 
 When a binding
 
@@ -132,7 +132,7 @@ $$
 \mathsf{Bind}(O, P, \mathcal{C})
 $$
 
-is successfully defined and executed, the resulting offer $O'$ is **evidence** that there exists at least one realized trajectory $\tau \in P(x\_O, C)$ in the corresponding cone, where
+is successfully defined and executed, the resulting offer $O'$ is **evidence** that there exists at least one realized trajectory $\tau \in P(x\_O, C$ in the corresponding cone, where
 
 $$
 x_O = \mathsf{StateOf}(O), \qquad C = \mathsf{Ctx}(O, P, \mathcal{C}).
@@ -140,14 +140,14 @@ $$
 
 In particular:
 
-- each **successful binding at port $P$** witnesses the existence of a realized trajectory in $P(x\_O, C)$ for some concrete $(x\_O, C)$, and
+- each **successful binding at port $P$** witnesses the existence of a realized trajectory in $P(x\_O, C$ for some concrete $x\_O, C$, and
 - each **resulting offer $O'$** in the current OBP state space is an artifact of a **past successful commitment** that lay inside some port’s admissible action cone.
 
 Thus, ports are not only affordances; they are also **indices into a body of empirical evidence** about which causal trajectories have in fact been achievable. The evolving web of offers and ports in $\mathcal{W}$ is therefore a compressed record of **witnessed trajectories** that the Program Synthesis Engine $\mathcal{P}$ can exploit when searching for new plans.
 
 ### Stochastic Action Cones
 
-The action-cone semantics admits a probabilistic generalization. In the deterministic setting, a port $P$ exposes, at each state $x \in X$, a set $P(x) \subseteq \mathcal{T}(X)$ of admissible trajectories. The stochastic formulation replaces this set-valued assignment with a probability measure over trajectories.
+The action-cone semantics admits a probabilistic generalization. In the deterministic setting, a port $P$ exposes, at each state $x \in X$, a set $P(x) \subseteq \mathcal{T}(X$ of admissible trajectories. The stochastic formulation replaces this set-valued assignment with a probability measure over trajectories.
 
 #### Definition (Stochastic Action Cone)
 
@@ -157,7 +157,7 @@ $$
 P_{\mathsf{stoch}} : X \to \mathsf{Prob}(\mathcal{T}(X)),
 $$
 
-where $\mathsf{Prob}(\mathcal{T}(X))$ denotes the set of probability measures on the trajectory space. For each state $x$, the value $P_{\mathsf{stoch}}(x)$ is a probability distribution whose support consists precisely of the admissible trajectories originating at $x$.
+where $\mathsf{Prob}(\mathcal{T}(X)$ denotes the set of probability measures on the trajectory space. For each state $x$, the value $P_{\mathsf{stoch}}(x$ is a probability distribution whose support consists precisely of the admissible trajectories originating at $x$.
 
 The deterministic cone model is recovered as the special case in which each cone is a Dirac measure:
 
@@ -168,7 +168,7 @@ P_{\mathsf{det}}(x)(\tau) = \begin{cases}
 \end{cases}
 $$
 
-for some trajectory $\tau^{\ast} \in \mathcal{T}(X)$. Thus the deterministic semantics corresponds to the degenerate subclass of stochastic cones with unit mass on a single trajectory.
+for some trajectory $\tau^{\ast} \in \mathcal{T}(X$. Thus the deterministic semantics corresponds to the degenerate subclass of stochastic cones with unit mass on a single trajectory.
 
 #### Binding Semantics
 
@@ -178,7 +178,7 @@ $$
 \tau \sim P_{\mathsf{stoch}}(x_O),
 $$
 
-and advances the workflow to the resulting endpoint state $x_O' = \tau(T)$. All remaining components of the OBP calculus, including the definition of actions, evaluation semantics, and the categorical and operadic interpretations, remain unchanged.
+and advances the workflow to the resulting endpoint state $x_O' = \tau(T$. All remaining components of the OBP calculus, including the definition of actions, evaluation semantics, and the categorical and operadic interpretations, remain unchanged.
 
 ### Port Structure of Offers
 
@@ -188,7 +188,7 @@ $$
 \mathsf{Ports} : \mathsf{Offer} \to \mathsf{Port}^*.
 $$
 
-Each $p \in \mathsf{Ports}(O)$ is a port endowed with an affordance-map interpretation
+Each $p \in \mathsf{Ports}(O$ is a port endowed with an affordance-map interpretation
 
 $$
 [\![p]\!] : X \times \mathsf{Context} \to \mathcal{P}(\mathcal{T}(X)).
@@ -272,19 +272,19 @@ $$
 
 ### Binding as Trajectory Selection (Multi-Party)
 
-The **binding function** $\mathsf{Bind}$ is a partial function that constructs an action from an initial offer, a chosen port, and a coalition of parties $\mathcal{P}(\mathsf{Party})$:
+The **binding function** $\mathsf{Bind}$ is a partial function that constructs an action from an initial offer, a chosen port, and a coalition of parties $\mathcal{P}(\mathsf{Party}$:
 
 $$
 \mathsf{Bind} : \mathsf{Offer}^+ \times \mathsf{Port} \times \mathcal{P}(\mathsf{Party}) \rightharpoonup \mathsf{Action}.
 $$
 
-Given a triple $(O,p,\mathcal{C})$, the associated context is
+Given a triple $O,p,\mathcal{C}$, the associated context is
 
 $$
 C = \mathsf{Ctx}(O,p,\mathcal{C}) \in \mathsf{Context},
 $$
 
-and the port $p$ exposes an action cone of admissible trajectories at the state $x_O = \mathsf{StateOf}(O)$:
+and the port $p$ exposes an action cone of admissible trajectories at the state $x_O = \mathsf{StateOf}(O$:
 
 $$
 p(x_O,C) \subseteq \mathcal{T}(X).
@@ -318,7 +318,7 @@ $$
 
 and metadata (ports, resources, ownership) are updated as determined by the semantics of $\tau$.
 
-An action $a = \mathsf{Bind}(O,p,\mathcal{C})$ thus satisfies
+An action $a = \mathsf{Bind}(O,p,\mathcal{C}$ thus satisfies
 
 $$
 \mathsf{InOffer}(a) = O,\qquad
@@ -327,14 +327,14 @@ $$
 
 #### Binding Constraints
 
-The validity of a binding is governed by the admissibility of the cone $p(x_O,C)$. This admissibility encodes, in particular:
+The validity of a binding is governed by the admissibility of the cone $p(x_O,C$. This admissibility encodes, in particular:
 
 - **Port State Validity:** The port $p$ must be in a published or otherwise bindable state.
-- **Capacity:** The current number of bindings at $p$ must be less than a maximum capacity $\max\text{bindings}(p)$.
-- **Resource Feasibility:** Resource checks must confirm that the state component of $O$, the participating parties $\mathcal{C}$, and the global resource pool collectively support the resource expenditure induced by trajectories in $p(x_O,C)$.
-- **Permission and Policy Conditions:** The parties in $\mathcal{C}$ must have the necessary permissions to initiate the actions encoded by trajectories in $p(x_O,C)$.
+- **Capacity:** The current number of bindings at $p$ must be less than a maximum capacity $\max\text{bindings}(p$.
+- **Resource Feasibility:** Resource checks must confirm that the state component of $O$, the participating parties $\mathcal{C}$, and the global resource pool collectively support the resource expenditure induced by trajectories in $p(x_O,C$.
+- **Permission and Policy Conditions:** The parties in $\mathcal{C}$ must have the necessary permissions to initiate the actions encoded by trajectories in $p(x_O,C$.
 
-These constraints are internalized into the definition of $\mathcal{T}(X)$ and into the computation of $p(x_O,C)$ via $\mathsf{Context}$.
+These constraints are internalized into the definition of $\mathcal{T}(X$ and into the computation of $p(x_O,C$ via $\mathsf{Context}$.
 
 ### Transactional Execution Semantics
 
@@ -378,7 +378,7 @@ $$
 \tau_2 : [0,T_2] \to X
 $$
 
-with $\tau_1(T_1) = \tau_2(0)$, their concatenation is the trajectory
+with $\tau_1(T_1) = \tau_2(0$, their concatenation is the trajectory
 
 $$
 (\tau_2 \circledast \tau_1)(t) :=
@@ -447,7 +447,7 @@ Morphisms in $\mathcal{W}$ are generated by:
 - sequential composition $\circ$,
 - parallel composition $\otimes$.
 
-Semantically, each morphism corresponds to an admissible concatenated trajectory (or combination of trajectories) in $\mathcal{T}(X)$, assembled via concatenation and parallel execution.
+Semantically, each morphism corresponds to an admissible concatenated trajectory (or combination of trajectories) in $\mathcal{T}(X$, assembled via concatenation and parallel execution.
 
 ## Trace Semantics and Trace Extraction
 
@@ -461,7 +461,7 @@ $$
 \mathrm{Tr} : \mathcal{W} \to \mathrm{List}(\mathsf{Action})
 $$
 
-is a monoidal natural transformation that extracts the sequence of primitive actions from any composed workflow. The codomain is the free monoid $\mathrm{List}(\mathsf{Action})$ of finite action sequences.
+is a monoidal natural transformation that extracts the sequence of primitive actions from any composed workflow. The codomain is the free monoid $\mathrm{List}(\mathsf{Action}$ of finite action sequences.
 
 The functor is defined inductively:
 
@@ -498,7 +498,7 @@ where $\parallel$ is a **concurrent shuffle** of two sequences, constrained by c
 
 ### Formal Definition of the Concurrent Shuffle ($\parallel$)
 
-Let $\mathrm{Tr}(f) = [f_1,\dots,f_m]$ and $\mathrm{Tr}(g) = [g_1,\dots,g_n]$. The concurrent shuffle $\parallel$ produces the set of all sequences $h \in \mathrm{List}(\mathsf{Action})$ that interleave these actions while respecting internal order and causal constraints.
+Let $\mathrm{Tr}(f) = [f_1,\dots,f_m]$ and $\mathrm{Tr}(g) = [g_1,\dots,g_n]$. The concurrent shuffle $\parallel$ produces the set of all sequences $h \in \mathrm{List}(\mathsf{Action}$ that interleave these actions while respecting internal order and causal constraints.
 
 #### Unconstrained Shuffle
 
@@ -521,7 +521,7 @@ $$
 
 This yields all interleavings that preserve the relative order of actions within each component sequence.
 
-#### Causal Validity Predicate $C(h)$
+#### Causal Validity Predicate $C(h$
 
 The concurrent shuffle $\parallel$ is defined by filtering the unconstrained shuffle via a causal validity predicate $C$:
 
@@ -530,9 +530,9 @@ $$
 = { h \in \mathrm{Tr}(f) \bowtie \mathrm{Tr}(g) \mid C(h) = \mathsf{True} }.
 $$
 
-For a combined trace $h = [h_1, \dots, h_{m+n}]$, define $\mathsf{State}(h_1,\dots,h_k)$ to be the distributed state in $\mathrm{Ob}(\mathcal{W})$ resulting from evaluating $h_1,\dots,h_k$ in sequence via $\mathsf{Eval}$ and the monoidal structure.
+For a combined trace $h = [h_1, \dots, h_{m+n}]$, define $\mathsf{State}(h_1,\dots,h_k$ to be the distributed state in $\mathrm{Ob}(\mathcal{W}$ resulting from evaluating $h_1,\dots,h_k$ in sequence via $\mathsf{Eval}$ and the monoidal structure.
 
-The predicate $C(h)$ is satisfied if, for every $k \in {1,\dots,m+n}$:
+The predicate $C(h$ is satisfied if, for every $k \in {1,\dots,m+n}$:
 
 - the input offer of $h_k$ is available in the preceding state:
 
@@ -542,7 +542,7 @@ $$
 
 - the context computed for each binding in $h_k$ admits a non-empty action cone at the relevant port, so that $h_k$ corresponds to a valid binding under the action-cone semantics.
 
-Thus, $C(h)$ ensures that $h$ is a valid global execution path.
+Thus, $C(h$ ensures that $h$ is a valid global execution path.
 
 ### Failure Functor and Partial Traces
 
@@ -563,10 +563,10 @@ By construction, these failure-annotated traces allow downstream learners (the L
 
 The concurrent shuffle induces:
 
-- **Data Generation:** The execution of $f \otimes g$ may yield any interleaving in $\mathrm{Tr}(f) \parallel \mathrm{Tr}(g)$, depending on scheduling and concurrency. The trace functor $\mathrm{Tr}$ extracts one such valid linearization as an action sequence $\mathsf{Action}^*$.
+- **Data Generation:** The execution of $f \otimes g$ may yield any interleaving in $\mathrm{Tr}(f) \parallel \mathrm{Tr}(g$, depending on scheduling and concurrency. The trace functor $\mathrm{Tr}$ extracts one such valid linearization as an action sequence $\mathsf{Action}^*$.
 - **Robustness:** The Learning Module $\mathcal{L}$ operates on these traces; its learned $\mathsf{MacroAction}\text{s}$ are therefore robust to variations in concurrent execution order that respect underlying causal dependencies.
 
-The output $\mathrm{Tr}(f)$ is the concrete, recorded **execution log** or **trace** of the workflow $f$.
+The output $\mathrm{Tr}(f$ is the concrete, recorded **execution log** or **trace** of the workflow $f$.
 
 ### Logging Contract and Replayability
 
@@ -663,7 +663,7 @@ $$
 \mu \circ_i \nu
 $$
 
-is an $(n+k-1)$-ary operation formed by wiring the output of $\nu$ into the $i$-th input of $\mu$.
+is an $n+k-1$-ary operation formed by wiring the output of $\nu$ into the $i$-th input of $\mu$.
 
 Semantically, each port in an operadic interface corresponds to an action cone. Substitution corresponds to:
 
