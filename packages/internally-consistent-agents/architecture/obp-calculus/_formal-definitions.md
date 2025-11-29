@@ -35,6 +35,11 @@ $$
 \mathsf{Action}.
 $$
 
+Here:
+
+- $\mathsf{Party}$, $\mathsf{Offer}$, and $\mathsf{Port}$ are the **ontological primitives**: they describe who participates, which contractual artifacts exist, and which affordances are exposed.
+- $\mathsf{Action}$ is a **syntactic generator**: it indexes atomic binding episodes between offers and their ports so that the categorical semantics $\mathcal{W}$ has a concrete generating set of arrows and the trace functors $\mathrm{Tr}$, $\mathrm{Tr}_{\bot}$ range over a well-defined alphabet of events.
+
 In addition, OBP is interpreted over a **state space** $X$ and a set of admissible trajectories $\mathcal{T}(X$, which together provide the semantic foundation for ports and actions.
 
 ### State Space and Admissible Trajectories
@@ -227,6 +232,8 @@ Categorically, there is a **single** failure object $\bot$ in $\mathcal{W}$. The
 Thus, the axiom that $\bot$ is a strict absorbing element applies only once an execution has been classified as terminal and mapped into $\bot$ at the categorical level. All _recoverable_ behavior lives in the ordinary part of the category, with rollback and retry modeled as further morphisms from checkpointed offers, and with the failure taxonomy attached as metadata on traces and/or actions rather than by introducing separate non-absorbing objects $\bot\_{\mathbf{R}}, \bot\_{\mathbf{C}}, \dots$.
 
 ### The Action-Morphism Constructor
+
+Ontologically, the dynamics of OBP are already determined by offers, ports, contexts, and admissible trajectories: a **binding** at port $P$ of offer $O$ selects a trajectory $\tau \in P(x_O, C)$ and yields a successor offer $O'$. The sort $\mathsf{Action}$ simply **reifies** such atomic binding episodes as named arrows so that they can generate morphisms in the categorical semantics and serve as the alphabet for trace extraction.
 
 An **action** is a subset of the Cartesian product of offers:
 
