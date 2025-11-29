@@ -2,15 +2,15 @@
 
 Agentic System 2 (AS2) is an architecture for building agents that can reason about cause and effect. Most agent systems today treat actions as isolated events. They execute commands, observe results, and learn patterns, but don't maintain a coherent model of how their actions causally relate to the world around them.
 
-The belief I aim to embody in AS2 is that internally consistent agents need three core capabilities:
+AS2 is designed based on the belief is that internally consistent agents need three core capabilities:
 
-1. A way to represent actions, resources, and their effects in a structured way
-2. A way to extract reusable patterns from its experience interacting with the world
-3. A way to synthesize sequences of actions to achieve goals, using both primitive actions and learned patterns
+1. A way to represent actions, resources, and their effects structurally
+2. A way to learn patterns from experience
+3. A way to synthesize sequences of actions to achieve goals based on current context and past experience
 
-These three functions must work together in a closed loop: the agent acts in the world, learns from what happened, plans new actions based on what it learned, and revises its understanding when reality doesn't match expectations.
+These three capabilities must work together in a closed loop: the agent acts in the world, learns from what happened, plans new actions based on what it learned, and revises its understanding when reality doesn't match expectations.
 
-The posts dive into each component in detail, starting with the formal definitions and working up to how they integrate into a complete cognitive cycle.
+The posts start by formally defining each of three components which are responsible for the core functions, and then work up to their integration into a complete cognitive cycle.
 
 ## A Note on Category Theory
 
