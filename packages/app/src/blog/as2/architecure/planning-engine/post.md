@@ -2,7 +2,7 @@
 
 ## **1. Overview**
 
-A **planning engine** is a formal system that constructs sequences of actions that transform an initial state into a desired goal state. It operates over:
+A **planning engine** constructs sequences of actions that transform an initial state into a desired goal state. It operates over:
 
 - a **state space** $\mathcal{S}$,
 - a set of **primitive actions** $\mathcal{A}$,

@@ -1,6 +1,6 @@
 # **An Architecture for Causally-Grounded Agentic Behavior**
 
-This document describes an agentic architecture built from three interacting formal subsystems:
+This document describes an agentic architecture built from three interacting subsystems:
 
 1. **The Offer–Bind–Port (OBP) Calculus** — the agent's causal interface to the world.
 2. **The Online Learner $\mathcal{L}$** — a structural pattern extractor over causal traces.
@@ -10,7 +10,7 @@ Together, these systems form a closed-loop of **perception**, **learning**, **pl
 
 # **1. OBP: The Causal Substrate of Action and Perception**
 
-OBP defines the formal semantics of causal interaction through offers, ports, admissible cones, and binding actions.
+OBP defines the semantics of causal interaction through offers, ports, admissible cones, and binding actions.
 Its semantics are given as a symmetric monoidal category $\mathcal{W}$ whose morphisms are valid execution trajectories.
 (See formal OBP definitions: )
 
