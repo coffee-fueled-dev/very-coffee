@@ -12,7 +12,6 @@ export default {
   tags: [],
   summary:
     "The Architecture of the AS2 project is a collection of formal models and algorithms for building and reasoning about causal programs.",
-  module: () => import("./post.md"),
   posts: {
     "planning-engine": planningEngine,
     "obp-calculus": obpCalculus,

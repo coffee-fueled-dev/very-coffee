@@ -21,7 +21,7 @@ import { ModeToggle } from "@/components/mode-toggle";
 import.meta.hot.accept();
 
 const RootLayout = () => (
-  <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
+  <ThemeProvider defaultTheme="system" storageKey="ui-theme">
     <Toaster richColors />
     <header className="absolute w-full p-6 flex justify-end items-center gap-4">
       <NavigationMenu>

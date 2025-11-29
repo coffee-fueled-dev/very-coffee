@@ -10,7 +10,6 @@ export default {
   tags: [],
   summary:
     "The Offer-Bind-Port Calculus (OBP) is a formal model of workflows in which parties interact by binding to ports on offers.",
-  module: () => import("./post.md"),
   posts: {
     "neural-ports": neuralPorts,
     "subjective-usage": subjectiveUsage,

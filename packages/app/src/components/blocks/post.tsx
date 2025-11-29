@@ -238,9 +238,12 @@ export const Post = (post: ResolvedPost) => {
 };
 
 export function PostPageContent() {
-  const { post } = useStaticPost();
+  const { post, segments } = useStaticPost();
   const getLazyPost = useLazyPost();
-  const LazyPost = useMemo(() => getLazyPost(post), [getLazyPost, post]);
+  const LazyPost = useMemo(
+    () => getLazyPost(post, segments),
+    [getLazyPost, post, segments]
+  );
 
   return (
     <AnimatePresence mode="wait">

@@ -7,5 +7,4 @@ export default {
   title: "Pattern Discovery",
   tags: ["machine learning", "tokenization", "compression"],
   summary: "How the tkn algorithm discovers patterns from a sample.",
-  module: () => import("./post.mdx"),
 } satisfies RegisteredPost;

@@ -8,5 +8,4 @@ export default {
   tags: [],
   summary:
     "This document describes a principled approach for grounding OBP Ports in neural models while preserving the formal semantics of the OBP calculus.",
-  module: () => import("./post.md"),
 } satisfies RegisteredPost;

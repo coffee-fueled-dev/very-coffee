@@ -8,5 +8,4 @@ export default {
   tags: [],
   summary:
     "The Online Learner is a structural pattern extractor over causal traces.",
-  module: () => import("./post.md"),
 } satisfies RegisteredPost;

@@ -176,25 +176,45 @@ export function useStaticPost(): PostContextValue {
 }
 
 const resolvePost = async (
-  post: RegisteredPost | undefined
+  post: RegisteredPost | undefined,
+  segments: string[]
 ): Promise<ResolvedPost> => {
-  if (!post || !post.module || !post.published)
-    throw notFound({ routeId: rootRouteId });
-  const { module, ...rest } = post;
-  const postData = await module();
-  if (!postData) throw notFound({ routeId: rootRouteId });
+  if (!post || !post.published) throw notFound({ routeId: rootRouteId });
 
-  return { ...rest, module: postData };
+  // If module is provided (for root/legacy posts), use it
+  if (post.module) {
+    const { module, ...rest } = post;
+    const postData = await module();
+    if (!postData) throw notFound({ routeId: rootRouteId });
+    return { ...rest, module: postData };
+  }
+
+  // Otherwise, fetch from API on-demand
+  // Import directly from the API URL (not blob URL) so import maps work
+  // Import maps allow the browser to resolve 'react' imports to our shims
+  const apiPath = segments.join("/");
+  const moduleUrl = `/api/posts/${apiPath}`;
+
+  try {
+    // Dynamic import from real URL - browser uses import maps to resolve React
+    const postData = await import(/* @vite-ignore */ moduleUrl);
+
+    const { module: _, ...rest } = post;
+    return { ...rest, module: postData };
+  } catch (error) {
+    console.error("Failed to load post module:", error);
+    throw notFound({ routeId: rootRouteId });
+  }
 };
 
 export function useLazyPost() {
   const { rootPost } = useBlog();
 
   return useCallback(
-    (post: RegisteredPost | undefined) => {
+    (post: RegisteredPost | undefined, segments: string[]) => {
       const postToResolve = post ?? rootPost;
       return lazy(async () => {
-        const resolvedPost = await resolvePost(postToResolve);
+        const resolvedPost = await resolvePost(postToResolve, segments);
         return { default: () => <Post {...resolvedPost} /> };
       });
     },

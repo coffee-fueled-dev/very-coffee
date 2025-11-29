@@ -12,7 +12,6 @@ export default {
   tags: ["compression", "machine learning", "tokenization"],
   summary:
     "An online algorithm that incrementally discovers and compresses recurring patterns in a data stream.",
-  module: () => import("./post.mdx"),
   posts: {
     "user-data": userData,
     "corpus-fingerprinting": corpusFingerprinting,

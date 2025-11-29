@@ -1,4 +1,79 @@
 import entry from "../public/index.html";
+import mdxPlugin from "./plugins/mdx";
+import type { BunFile } from "bun";
+import path from "path";
+
+// React shim - exports from window.React (ensures single React instance)
+const reactShim = `
+// React shim - uses window.React from main app
+const React = window.React;
+export default React;
+export const useState = React.useState;
+export const useEffect = React.useEffect;
+export const useContext = React.useContext;
+export const useReducer = React.useReducer;
+export const useCallback = React.useCallback;
+export const useMemo = React.useMemo;
+export const useRef = React.useRef;
+export const useImperativeHandle = React.useImperativeHandle;
+export const useLayoutEffect = React.useLayoutEffect;
+export const useDebugValue = React.useDebugValue;
+export const useDeferredValue = React.useDeferredValue;
+export const useTransition = React.useTransition;
+export const useId = React.useId;
+export const useSyncExternalStore = React.useSyncExternalStore;
+export const useInsertionEffect = React.useInsertionEffect;
+export const Fragment = React.Fragment;
+export const StrictMode = React.StrictMode;
+export const Suspense = React.Suspense;
+export const Component = React.Component;
+export const PureComponent = React.PureComponent;
+export const createElement = React.createElement;
+export const cloneElement = React.cloneElement;
+export const createContext = React.createContext;
+export const isValidElement = React.isValidElement;
+export const Children = React.Children;
+export const memo = React.memo;
+export const forwardRef = React.forwardRef;
+export const lazy = React.lazy;
+export const startTransition = React.startTransition;
+export const version = React.version;
+`;
+
+// JSX runtime shim
+const jsxRuntimeShim = `
+// JSX runtime shim - uses window.React from main app
+const React = window.React;
+export const Fragment = React.Fragment;
+
+// jsx-runtime keeps children in props - don't extract them
+export function jsx(type, props, key) {
+  if (key !== undefined) {
+    return React.createElement(type, { ...props, key });
+  }
+  return React.createElement(type, props);
+}
+
+export function jsxs(type, props, key) {
+  if (key !== undefined) {
+    return React.createElement(type, { ...props, key });
+  }
+  return React.createElement(type, props);
+}
+
+export const jsxDEV = jsx;
+`;
+
+// React DOM shim
+const reactDomShim = `
+// React DOM shim - uses window.ReactDOM from main app
+const ReactDOM = window.ReactDOM;
+export default ReactDOM;
+export const createRoot = ReactDOM.createRoot;
+export const hydrateRoot = ReactDOM.hydrateRoot;
+export const createPortal = ReactDOM.createPortal;
+export const flushSync = ReactDOM.flushSync;
+`;
 
 const server = Bun.serve({
   port: process.env.PORT || 3000,
@@ -12,6 +87,136 @@ const server = Bun.serve({
       : false,
 
   routes: {
+    // React shims for import maps
+    "/api/shims/react.js": () =>
+      new Response(reactShim, {
+        headers: { "Content-Type": "application/javascript" },
+      }),
+    "/api/shims/jsx-runtime.js": () =>
+      new Response(jsxRuntimeShim, {
+        headers: { "Content-Type": "application/javascript" },
+      }),
+    "/api/shims/react-dom.js": () =>
+      new Response(reactDomShim, {
+        headers: { "Content-Type": "application/javascript" },
+      }),
+
+    "/api/posts/*": async (req) => {
+      const url = new URL(req.url);
+      const pathSegments = url.pathname
+        .replace("/api/posts/", "")
+        .split("/")
+        .filter(Boolean);
+
+      console.log(`[POST API] Request for: ${pathSegments.join("/")}`);
+
+      // Map URL segments to file system paths (handle typo: "architecture" -> "architecure")
+      const fsSegments = pathSegments.map((seg) =>
+        seg === "architecture" ? "architecure" : seg
+      );
+
+      // Use import.meta.dir to get the directory where this file is located
+      const baseDir = import.meta.dir; // This is packages/app/src
+      const blogBase = path.join(baseDir, "blog");
+
+      const possiblePaths = [
+        // path.join(blogBase, ...fsSegments) + ".mdx",
+        // path.join(blogBase, ...fsSegments) + ".md",
+        path.join(blogBase, ...fsSegments, "post.mdx"),
+        path.join(blogBase, ...fsSegments, "post.md"),
+      ];
+
+      console.log(
+        `[POST API] Searching for file in ${possiblePaths.length} possible locations:`
+      );
+      possiblePaths.forEach((p, i) => console.log(`  ${i + 1}. ${p}`));
+
+      let file: BunFile | null = null;
+      let filePath: string | null = null;
+
+      for (const path of possiblePaths) {
+        try {
+          const candidate = Bun.file(path);
+          const exists = await candidate.exists();
+          if (exists) {
+            file = candidate;
+            filePath = path;
+            console.log(`[POST API] ✓ Found file: ${path}`);
+            break;
+          }
+        } catch (e) {
+          console.log(`[POST API] ✗ Error checking ${path}:`, e);
+          // Continue to next path
+        }
+      }
+
+      if (!file || !filePath) {
+        console.log(
+          `[POST API] ✗ File not found for: ${pathSegments.join("/")}`
+        );
+        return new Response("Post not found", { status: 404 });
+      }
+
+      console.log(
+        `[POST API] Using Bun.build with MDX plugin for: ${filePath}`
+      );
+
+      try {
+        // Bundle MDX with React marked as external
+        // We'll provide React via a simple wrapper that uses window.React
+        console.log(`[POST API] Starting Bun.build with MDX plugin...`);
+        const result = await Bun.build({
+          entrypoints: [filePath],
+          target: "browser",
+          format: "esm",
+          minify: false,
+          plugins: [mdxPlugin],
+          external: [
+            "react",
+            "react/jsx-runtime",
+            "react/jsx-dev-runtime",
+            "react-dom",
+            "react-dom/client",
+          ], // Mark React as external
+        });
+
+        if (!result.success) {
+          console.error("[POST API] ✗ Bundle failed!");
+          console.error("Bundle errors:", result.logs);
+          throw new Error("Bundle failed");
+        }
+
+        console.log(
+          `[POST API] ✓ Bundle successful, outputs: ${result.outputs.length}`
+        );
+        const bundledCode = await result.outputs[0].text();
+        console.log(
+          `[POST API] Bundled code length: ${bundledCode.length} chars`
+        );
+
+        // No transformations needed!
+        // The browser uses import maps (defined in index.html) to resolve:
+        //   import { useState } from 'react' -> /api/shims/react.js
+        //   import { jsx } from 'react/jsx-runtime' -> /api/shims/jsx-runtime.js
+        // These shims export from window.React, ensuring single React instance.
+
+        console.log(
+          `[POST API] ✓ Returning bundled module (${bundledCode.length} chars)`
+        );
+        return new Response(bundledCode, {
+          headers: {
+            "Content-Type": "application/javascript",
+            "Cache-Control":
+              process.env.NODE_ENV === "production"
+                ? "public, max-age=3600"
+                : "no-cache",
+          },
+        });
+      } catch (error) {
+        console.error(`[POST API] ✗ Error during bundling:`, error);
+        return new Response("Internal server error", { status: 500 });
+      }
+    },
     "/*": entry,
   },
 });

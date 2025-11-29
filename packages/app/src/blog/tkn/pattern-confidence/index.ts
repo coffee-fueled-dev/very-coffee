@@ -8,5 +8,4 @@ export default {
   tags: ["compression", "machine learning", "tokenization"],
   summary:
     "How the tkn algorithm can be used to learn high confidence patterns from a sample.",
-  module: () => import("./post.mdx"),
 } satisfies RegisteredPost;

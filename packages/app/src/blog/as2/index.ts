@@ -8,6 +8,5 @@ export default {
   title: "AS2",
   tags: ["ai", "agents", "machine learning"],
   summary: "",
-  module: () => import("./post.md"),
   posts: { architecture: architecture },
 } satisfies RegisteredPost;

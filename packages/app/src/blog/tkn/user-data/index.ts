@@ -8,5 +8,4 @@ export default {
   tags: ["machine learning", "tokenization", "compression"],
   summary:
     "Describing a concept for building training data from session-scoped user interactions with a web app.",
-  module: () => import("./post.mdx"),
 } satisfies RegisteredPost;

@@ -10,5 +10,4 @@ export const blog = {
   author: "Zach Garrett",
   summary: "Zach's dev blog",
   posts: { tkn, protologic, as2 },
-  module: () => import("./post.mdx"),
 } satisfies RegisteredPost;

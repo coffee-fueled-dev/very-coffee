@@ -9,5 +9,4 @@ export default {
   summary: "Auto-progressive agent entitlement",
   tags: ["agents", "ai", "security", "graphs"],
   posts: { constraintSolver },
-  module: () => import("./post.mdx"),
 } satisfies RegisteredPost;

@@ -5,6 +5,18 @@
 <head>
     <meta charSet="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Import map MUST come before any module scripts -->
+    <script type="importmap">
+    {
+        "imports": {
+            "react": "/api/shims/react.js",
+            "react/jsx-runtime": "/api/shims/jsx-runtime.js",
+            "react/jsx-dev-runtime": "/api/shims/jsx-runtime.js",
+            "react-dom": "/api/shims/react-dom.js",
+            "react-dom/client": "/api/shims/react-dom.js"
+        }
+    }
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -17,7 +29,7 @@
 <body>
     <script>
         (function () {
-            const theme = localStorage.getItem('vite-ui-theme') || 'system';
+            const theme = localStorage.getItem('ui-theme') || 'system';
             const root = document.documentElement;
 
             if (theme === 'system') {

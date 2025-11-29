@@ -8,5 +8,4 @@ export default {
   tags: [],
   summary:
     "The Planning Engine is a goal-driven synthesizer of admissible causal programs.",
-  module: () => import("./post.md"),
 } satisfies RegisteredPost;
