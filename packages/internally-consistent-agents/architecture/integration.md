@@ -1,4 +1,4 @@
-# **An Integrated Architecture for Causally-Grounded Agentic Behavior**
+# **An Architecture for Causally-Grounded Agentic Behavior**
 
 This document describes an agentic architecture built from three interacting formal subsystems:
 
