@@ -108,7 +108,7 @@ export const DropZone: FC<DropZoneProps> = ({
       {...getRootProps()}
       className={cn(
         "flex flex-row items-start w-full transition-[color,box-shadow]",
-        "border border-input rounded-md p-6 cursor-pointer gap-3 relative bg-transparent shadow-xs outline-none",
+        "border border-input rounded-md p-6 cursor-pointer gap-3 relative bg-transparent outline-none",
         "hover:border-ring/50",
         "focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
         isDragActive ? "border-ring ring-ring/50 ring-[3px] bg-primary/10" : "",
