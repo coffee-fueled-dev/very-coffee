@@ -13,7 +13,7 @@ import type { ResolvedPost } from "@/lib/post";
 import { Separator } from "../ui/separator";
 import { InlineLink } from "./external-link";
 import { CopyButton } from "./copy-button";
-import { Suspense, useMemo } from "react";
+import { Suspense, useMemo, useState } from "react";
 import {
   useStaticPost,
   useLazyPost,
@@ -86,10 +86,11 @@ const PostPreview = ({
   tags,
   childPostCount,
   summary,
-}: PostPreviewProps) => {
+  onNavigate,
+}: PostPreviewProps & { onNavigate?: () => void }) => {
   return (
     <Item variant="outline" size="sm" asChild>
-      <Link {...link}>
+      <Link {...link} onClick={onNavigate}>
         <ItemContent>
           <span className="flex gap-2">
             <ItemTitle>{title}</ItemTitle>
@@ -118,10 +119,16 @@ const PostPreview = ({
 export const PostPreviews = ({ sectionTitle }: { sectionTitle: string }) => {
   const { childPostPreviews } = useStaticPost();
 
+  const [open, setOpen] = useState(false);
+
   if (childPostPreviews.length === 0) return null;
 
   return (
-    <Collapsible className="w-full flex flex-col gap-4">
+    <Collapsible
+      className="w-full flex flex-col gap-4"
+      open={open}
+      onOpenChange={setOpen}
+    >
       <CollapsibleTrigger asChild>
         <Item variant="outline" className="cursor-pointer" size="sm">
           <ItemContent>
@@ -138,7 +145,12 @@ export const PostPreviews = ({ sectionTitle }: { sectionTitle: string }) => {
       </CollapsibleTrigger>
       {childPostPreviews.map((postPreview, i) => (
         <CollapsibleContent key={i}>
-          <PostPreview {...postPreview} />
+          <PostPreview
+            {...postPreview}
+            onNavigate={() => {
+              setOpen(false);
+            }}
+          />
         </CollapsibleContent>
       ))}
     </Collapsible>
@@ -166,22 +178,16 @@ export const PostHeader = () => {
 
 const mdxComponents = {
   h1: (props: React.HTMLAttributes<HTMLHeadingElement>) => (
-    <h1
-      className="scroll-m-20 text-4xl font-bold tracking-tight mt-6 mb-4"
-      {...props}
-    />
+    <h1 className="scroll-m-20 text-4xl tracking-loose mt-6 mb-4" {...props} />
   ),
   h2: (props: React.HTMLAttributes<HTMLHeadingElement>) => (
-    <h2
-      className="scroll-m-20 text-3xl font-semibold tracking-tight mt-6 mb-4"
-      {...props}
-    />
+    <h2 className="scroll-m-20 text-2xl tracking-loose mt-6 mb-4" {...props} />
   ),
   h3: (props: React.HTMLAttributes<HTMLHeadingElement>) => (
-    <h3
-      className="scroll-m-20 text-2xl font-semibold tracking-tight mt-6 mb-4"
-      {...props}
-    />
+    <h3 className="scroll-m-20 text-xl tracking-loose mt-6 mb-4" {...props} />
+  ),
+  h4: (props: React.HTMLAttributes<HTMLHeadingElement>) => (
+    <h3 className="scroll-m-20 text-lg tracking-tight mt-6 mb-4" {...props} />
   ),
   p: (props: React.HTMLAttributes<HTMLParagraphElement>) => (
     <p className="leading-7 mb-6" {...props} />

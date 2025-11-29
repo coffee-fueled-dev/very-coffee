@@ -78,15 +78,18 @@ function segmentsToPath(baseRoute: string, segments: string[]): string {
 
 export interface PostPreviewProps extends Omit<RegisteredPost, "module"> {
   link: Omit<LinkComponentProps, "children">;
+  /**
+   * Total number of published posts in this post's subtree (excluding itself).
+   */
   childPostCount: number;
 }
 
-const countChildPosts = (posts: RegisteredPost["posts"]) =>
-  posts
-    ? Object.values(posts).reduce(
-        (acc, { published }) => (published ? acc + 1 : acc),
-        0
-      )
+const countChildPosts = (post: RegisteredPost): number =>
+  post.posts
+    ? Object.values(post.posts).reduce((acc, child) => {
+        if (!child.published) return acc;
+        return acc + 1 + countChildPosts(child);
+      }, 0)
     : 0;
 
 export function getChildPostPreviews(
@@ -105,7 +108,7 @@ export function getChildPostPreviews(
     const childSegments = [...segments, postKey];
     publishedChildren.push({
       ...post,
-      childPostCount: countChildPosts(post.posts),
+      childPostCount: countChildPosts(post),
       link: {
         to: "/blog/$",
         params: { _splat: childSegments.join("/") },

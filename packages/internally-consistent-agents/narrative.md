@@ -1,7 +1,3 @@
-Here’s a narrative you can basically drop into a deck or memo, with light editing for voice.
-
----
-
 ## The structural gap: why guarantees can’t just “emerge” from scale
 
 Over the last few years, a kind of quiet consensus has started to form among people who think hardest about AI systems: **today’s large language models are astonishingly capable, but they are the wrong kind of object to ever give us strong guarantees by themselves.**

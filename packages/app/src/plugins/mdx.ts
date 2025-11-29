@@ -12,7 +12,7 @@ function formatSize(bytes: number): string {
 export default {
   name: "mdx",
   setup(build) {
-    build.onLoad({ filter: /\.mdx$/, namespace: "file" }, async (args) => {
+    build.onLoad({ filter: /\.(mdx|md)$/, namespace: "file" }, async (args) => {
       const file = Bun.file(args.path);
       const raw = await file.text();
       const stat = await file.stat();
