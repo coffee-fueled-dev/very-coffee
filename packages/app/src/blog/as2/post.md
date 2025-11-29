@@ -1,6 +1,6 @@
-## Overview
+# Overview
 
-Agentic System 2 (AS2) is an architecture for building agents that can reason about cause and effect. Most agent systems today treat actions as isolated events—they execute commands, observe results, and learn patterns, but they don't maintain a coherent model of how their actions causally relate to the world around them.
+Agentic System 2 (AS2) is an architecture for building agents that can reason about cause and effect. Most agent systems today treat actions as isolated events. They execute commands, observe results, and learn patterns, but don't maintain a coherent model of how their actions causally relate to the world around them.
 
 The belief I aim to embody in AS2 is that internally consistent agents need three things working together:
 
@@ -10,13 +10,11 @@ The belief I aim to embody in AS2 is that internally consistent agents need thre
 
 These three components must work together in a closed loop: the agent acts in the world, learns from what happened, plans new actions based on what it learned, and revises its understanding when reality doesn't match expectations.
 
-The architecture is built on formal foundations but maintains a practical goal: agents that can operate in dynamic, uncertain environments while maintaining an internally consistent understanding of cause and effect.
-
 The posts dive into each component in detail, starting with the formal definitions and working up to how they integrate into a complete cognitive cycle.
 
 ## A Note on Category Theory
 
-AS2 uses category theory as its formal backbone. It's alright if you're unfamiliar with the notation. The architectural intuitions (composition, typed interfaces, parallel execution) are more important than the formalism. The category-theoretic framing is chosen because it makes these intuitions precise and composable:
+AS2 uses category theory as its formal backbone but it's alright if you're unfamiliar with the notation. The architectural intuitions (composition, typed interfaces, parallel execution) are more important than the formalism. The category-theoretic framing is chosen because it makes these intuitions precise and composable:
 
 **Compositionality as a first-class concept.** Agentic behavior is fundamentally compositional—actions sequence into plans, plans compose into strategies, and subsystems interface through well-defined boundaries. Category theory makes composition explicit: morphisms compose associatively, and the laws are baked into the structure rather than enforced externally.
 
