@@ -4,8 +4,8 @@
 
 Let:
 
-- $(\Sigma)$ be a finite alphabet of observable symbols.
-- $(\Sigma^\*)$ be the set of all finite sequences over $(\Sigma)$.
+- $\Sigma$ be a finite alphabet of observable symbols.
+- $\Sigma^\*$ be the set of all finite sequences over $\Sigma$.
 - A **symbol stream** be an infinite or finite sequence
 
 $$
@@ -48,7 +48,7 @@ $$
 \mathsf{Ingest} : \mathsf{State} \times \Sigma \to \mathsf{State}.
 $$
 
-At time $(t)$, ingestion receives symbol $(x\_t)$ and:
+At time $t$, ingestion receives symbol $x\_t$ and:
 
 1. Extends the current candidate group:
 
@@ -56,14 +56,29 @@ $$
 w\_t^{\mathrm{cand}} = w\_{t-1} x\_t .
 $$
 
-2. Determines whether $(w\_t^{\mathrm{cand}})$ is **known** or **novel** relative to the dictionary $(D)$.
+2. Determines whether $w\_t^{\mathrm{cand}}$ is **known** or **novel** relative to the dictionary $D$.
 
 3. Based on this novelty test, either:
 
    - **continues** extending the current candidate group, or
    - **terminates** the current group and begins a new one.
 
-The segmentation rule is unspecified except that it must operate **online** and depend only on current state and the new symbol.
+Formally, a **segmentation policy** is an online map
+
+$$
+\sigma : (\mathsf{State}, \Sigma) \to \{\mathsf{continue},\ \mathsf{segment}\}
+$$
+
+that is evaluated at each time step $t$ using only $\mathsf{State}\_t, x\_t$. Two canonical admissible families are:
+
+- **LZ-style inclusion policies.** The dictionary $D$ stores previously observed groups. The candidate $w\_t^{\mathrm{cand}}$ is extended as long as it is **known** (e.g.\ lies in the closure of groups already encoded in $D$); on the first step where $w\_t^{\mathrm{cand}}$ is **novel**, the policy segments before $x\_t$, emits the longest known group as a morpheme, and starts a new candidate at $x\_t$. This yields **greedy, longest-known** segments.
+- **Two-stage policies with local resegmentation.** A first-stage online policy (such as the LZ-style rule above) produces a stream of provisional groups. A second-stage **resegmentation operator** may then rewrite only a finite window of the most recent groups—preserving their concatenation back to the original symbol stream—to enforce additional criteria such as minimum description length or application-specific constraints.
+
+To keep the learner principled while allowing heuristic flexibility, all admissible policies must satisfy at least:
+
+1. **Online locality:** decisions at time $t$ depend only on $\mathsf{State}\_t, x\_t$ and, for any optional resegmentation, on a bounded suffix of already emitted groups.
+2. **Prefix sanity:** emitted groups form a segmentation of the input (no overlaps, no gaps), and any optional resegmentation preserves the exact underlying symbol sequence.
+3. **Bounded explosion:** there exists a finite upper bound on group length or on the expected group length under the policy, ensuring that the lattice structures $D,G,T$ remain well-defined and incrementally maintainable.
 
 ---
 
@@ -77,7 +92,7 @@ $$
 
 where:
 
-- $(p \in \Sigma^+)$ is a completed symbol group,
+- $p \in \Sigma^+$ is a completed symbol group,
 - the candidate word resets to the empty string.
 
 Emission occurs exactly when the segmentation rule declares the current group complete.
@@ -94,7 +109,7 @@ derived online from the input stream.
 
 ## **5. Storage in a Lattice**
 
-Each emitted group $(p)$ updates the learner's global structures.
+Each emitted group $p$ updates the learner's global structures.
 
 ### **5.1 Group Dictionary (D)**
 
@@ -118,11 +133,11 @@ $$
 
 where:
 
-- $(V)$ is the set of all groups encountered so far,
-- $(E)$ contains edges $(p\_i \rightarrow p\_{i+1})$,
-- $(w(p\_i, p\_{i+1}))$ is the count of observed transitions.
+- $V$ is the set of all groups encountered so far,
+- $E$ contains edges $p\_i \rightarrow p\_{i+1}$,
+- $w(p\_i, p\_{i+1})$ is the count of observed transitions.
 
-Whenever groups $(p\_i)$ and $(p\_{i+1})$ are consecutive in emission order, the graph is updated:
+Whenever groups $p\_i$ and $p\_{i+1}$ are consecutive in emission order, the graph is updated:
 
 $$
 w(p\_i, p\_{i+1}) \leftarrow w(p\_i, p\_{i+1}) + 1.
@@ -136,7 +151,7 @@ This constructs a **symbol-group transition lattice** over time.
 
 The trie stores the symbol-level structure:
 
-- Insert each emitted group $(p = s\_1 s\_2 \dots s\_k)$ into the trie.
+- Insert each emitted group $p = s\_1 s\_2 \dots s\_k$ into the trie.
 - Associate the terminal node with the corresponding graph node.
 
 This binds symbol-level structure and group-level transitions.
@@ -145,7 +160,7 @@ This binds symbol-level structure and group-level transitions.
 
 ## **6. Importance Measures on the Lattice**
 
-The learner supports graph-theoretic importance metrics on groups via the transition graph $(G)$.
+The learner supports graph-theoretic importance metrics on groups via the transition graph $G$.
 
 ### **6.1 Degree Centrality**
 
@@ -163,7 +178,7 @@ $$
 
 ### **6.3 PageRank and Other Measures**
 
-Because $(G)$ is a weighted directed graph, any standard centrality or spectral method is well-defined, e.g.:
+Because $G$ is a weighted directed graph, any standard centrality or spectral method is well-defined, e.g.:
 
 - PageRank,
 - eigenvector centrality,
@@ -195,8 +210,8 @@ using only past observations and the current symbol.
 
 3. **Lattice construction**, maintaining:
 
-   - a dictionary $(D)$ of groups,
-   - a transition graph $(G)$,
-   - a prefix trie $(T)$.
+   - a dictionary $D$ of groups,
+   - a transition graph $G$,
+   - a prefix trie $T$.
 
 4. **Support for graph-theoretic importance metrics** based on the lattice.
