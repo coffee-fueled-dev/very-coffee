@@ -14,6 +14,7 @@ import { Separator } from "../ui/separator";
 import { InlineLink } from "./external-link";
 import { CopyButton } from "./copy-button";
 import { Suspense, useMemo, useState } from "react";
+import { Loader } from "./loader";
 import {
   useStaticPost,
   useLazyPost,
@@ -247,7 +248,7 @@ export function PostPageContent() {
 
   return (
     <AnimatePresence mode="wait">
-      <Suspense>
+      <Suspense fallback={<Loader task="Loading post" />}>
         <LazyPost />
       </Suspense>
     </AnimatePresence>
