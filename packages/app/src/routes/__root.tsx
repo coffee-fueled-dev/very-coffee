@@ -3,6 +3,7 @@ import "../globals.css";
 
 import { createRootRoute, Outlet } from "@tanstack/react-router";
 import { Toaster } from "@/components/ui/sonner";
+import { ThemeProvider } from "@/components/theme-provider";
 
 import {
   NavigationMenu,
@@ -15,13 +16,14 @@ import { CoffeeCup } from "@/components/blocks/coffee-cup";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { SocialLinks } from "@/components/blocks/social-links";
+import { ModeToggle } from "@/components/mode-toggle";
 
 import.meta.hot.accept();
 
 const RootLayout = () => (
-  <>
+  <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
     <Toaster richColors />
-    <header className="absolute w-full p-6 flex justify-end">
+    <header className="absolute w-full p-6 flex justify-end items-center gap-4">
       <NavigationMenu>
         <NavigationMenuList>
           <NavigationMenuItem>
@@ -36,6 +38,7 @@ const RootLayout = () => (
           </NavigationMenuItem>
         </NavigationMenuList>
       </NavigationMenu>
+      <ModeToggle />
     </header>
     <div className="min-h-dvh flex flex-col">
       <main className="py-20 mx-6 flex-1 min-h-dvh max-w-5xl w-full self-center">
@@ -57,7 +60,7 @@ const RootLayout = () => (
         </section>
       </footer>
     </div>
-  </>
+  </ThemeProvider>
 );
 
 const NotFound = () => (
