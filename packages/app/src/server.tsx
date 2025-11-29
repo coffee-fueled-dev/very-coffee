@@ -4,6 +4,15 @@ import type { BunFile } from "bun";
 import path from "path";
 import { LRUCache } from "lru-cache";
 
+// Note: Page-specific OG tags for link previews require either:
+// 1. Server-side rendering (SSR)
+// 2. An edge function/worker that intercepts bot requests
+// 3. Static pre-rendering at build time
+//
+// Bun's route-based architecture serves bundled HTML directly, which doesn't
+// allow middleware-style interception before route matching. The default OG
+// tags in index.html provide a baseline preview for all pages.
+
 // Cache for compiled MDX bundles
 // Key: filePath, Value: { code, mtime }
 const mdxCache = new LRUCache<string, { code: string; mtime: number }>({
@@ -259,6 +268,8 @@ const server = Bun.serve({
         return new Response("Internal server error", { status: 500 });
       }
     },
+
+    // Catch-all for SPA routes
     "/*": entry,
   },
 });
