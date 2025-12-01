@@ -1,6 +1,6 @@
 import type { RegisteredPost } from "@/lib/post";
 import planningEngine from "./planning-engine";
-import obpCalculus from "./obp-calculus";
+import tapc from "./tapc";
 import onlineLearning from "./online-learning";
 import integration from "./integration";
 
@@ -14,7 +14,7 @@ export default {
     "The Architecture of the AS2 project is a collection of formal models and algorithms for building and reasoning about causal programs.",
   posts: {
     "planning-engine": planningEngine,
-    "obp-calculus": obpCalculus,
+    tapc: tapc,
     "online-learning": onlineLearning,
     integration,
   },
