@@ -3,7 +3,7 @@ import architecture from "./architecure";
 
 export default {
   __type: "post",
-  published: true,
+  published: false,
   author: "Zach Garrett",
   title: "AS2",
   tags: ["ai", "agents", "machine learning"],
