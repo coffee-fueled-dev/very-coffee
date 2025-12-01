@@ -6,10 +6,10 @@ export default {
   __type: "post",
   published: true,
   author: "Zach Garrett",
-  title: "OBP Calculus",
+  title: "Trajectory-Affordance Process Calculus",
   tags: [],
   summary:
-    "The Offer-Bind-Port Calculus (OBP) is a formal model of workflows in which parties interact by binding to ports on offers.",
+    "The Trajectory-Affordance Process Calculus (TAPC) is a process calculus in which all interactions are realized as admissible trajectories in a global state space.",
   posts: {
     "neural-ports": neuralPorts,
     "subjective-usage": subjectiveUsage,

@@ -1,279 +1,208 @@
-# **The Offer-Bind-Port Calculus (OBP)**
+# **The Trajectory-Affordance Process Calculus (TAPC)**
 
-## **Overview**
+## **1. Overview**
 
-The **Offer-Bind-Port (OBP) calculus** is a formal model of workflows in which
-parties interact by binding to ports on offers. It provides:
+The **The Trajectory-Affordance Process Calculus (TAPC)** is a process calculus in which all interactions are realized as admissible trajectories in a global statespace. Rather than treating actions as symbolic labels, TAPC grounds them in the underlying system dynamics: actions correspond to concrete state evolutions, and interaction is understood as the selection of one such evolution.
 
-- a space of **offers** and **ports** that expose action opportunities,
-- a global **state space** $X$ and a set of admissible trajectories $\mathcal{T}(X)$,
-- a notion of **actions** as state-transforming morphisms between offers,
-- a **binding operation** that selects admissible trajectories from port-specific
-  action cones,
-- a **failure sink** $\bot$ and associated transactional semantics for errors,
-- a **symmetric monoidal category** $\mathcal{W}$ and a **trace functor**
-  that extract execution histories as sequences of actions.
+TAPC provides a unified formal structure for representing action, evolution, and concurrency through the lens of **trajectory affordances**. Its core components are:
 
-OBP specifies **what it means** for bindings, actions, and executions to be
-well-formed and causally valid, without committing to any particular
-implementation of state, resources, or concurrency control. It thereby serves
-both as:
+- **Ports**, which are canonical affordance maps that, under a given offer’s state and context, yield a cone of admissible trajectories;
+- **Offers**, which are concrete event nodes that both record a trajectory taken through a Port, and expose port instances which are admissible given the state-context pair with which they were evaluated;
+- a global **state space** $X$, whose trajectories $\mathcal{T}(X)$ form the semantic substrate for all affordances, selections, and compositions;
 
-- an **execution calculus**, when combined with concrete handlers that realize
-  actions in external systems, and
-- an **observational schema**, when used purely to describe and analyze
-  recorded event logs.
+From these primitives, TAPC induces additional semantic structure: a symmetric monoidal model of concurrency, a trace semantics for extracting execution histories, and a failure semantics for representing violations of admissibility.
 
-## Primitive Sorts and Core Definitions
+## **2. Semantic Ontology**
 
-The calculus is founded upon the following **primitive sorts**:
+### **2.1. Internal State Space and Modeled Trajectories**
+
+TAPC departs from label- or term-based calculi by grounding behavior in **trajectory affordances** over an internal model of system evolution. TAPC does not encode the external world directly. Instead, its worldview is represented by an **internal state space $\mathcal{X}$**, which is a causal graph constructed and refined through interaction with the environment.
+
+A **trajectory** $\tau$ in TAPC is the representation of a state evolution selected from the admissible set $P(x\_O, C\_O)$ exposed by a Port instance $P$ at an Offer $O$. Selecting such a trajectory either yields a successor Offer $O'$ within the same causal chain or results in a trace violation when the selection fails admissibility or contradicts external feedback.
+
+A port instance determines an **affordance cone**:
 
 $$
-\mathsf{Party},\qquad
-\mathsf{Offer},\qquad
-\mathsf{Port},\qquad
-\mathsf{Action}.
+P(x\_O, C\_O) \subseteq \mathcal{T}(\mathcal{X}),
 $$
 
-Here:
+the set of modeled trajectories which are feasible from $O$ under context $C\_O$.
 
-- $\mathsf{Party}$, $\mathsf{Offer}$, and $\mathsf{Port}$ are the **ontological primitives**: they describe who participates, which contractual artifacts exist, and which affordances are exposed.
-- $\mathsf{Action}$ is a **syntactic generator**: it indexes atomic binding episodes between offers and their ports so that the categorical semantics $\mathcal{W}$ has a concrete generating set of arrows and the trace functors $\mathrm{Tr}$, $\mathrm{Tr}_{\bot}$ range over a well-defined alphabet of events.
-
-In addition, OBP is interpreted over a **state space** $X$ and a set of admissible trajectories $\mathcal{T}(X$, which together provide the semantic foundation for ports and actions.
-
-### State Space and Admissible Trajectories
-
-Let $X$ denote the global state space of the system.
-
-Let $\mathcal{T}(X$ denote the set of all **admissible trajectories**:
+Binding selects one such trajectory:
 
 $$
-\tau : [0,T] \to X, \qquad T < \infty,
+\mathrm{Bind}(O, P) \rightsquigarrow \tau \in P(x\_O, C\_O).
 $$
 
-where _admissibility_ incorporates all system-level constraints, including:
-
-- physical or logical invariants,
-- resource availability and consumption rules,
-- party permissions and capabilities,
-- port-state and capacity conditions.
-
-Thus, $\mathcal{T}(X$ is the constraint-closed set of possible system evolutions.
-
-Each concrete offer $O \in \mathsf{Offer}$ carries a distinguished **state component**:
+If the chosen trajectory is admissible and external feedback is consistent with the modeled evolution,
 
 $$
-\mathsf{StateOf} : \mathsf{Offer} \to X,\qquad
-x_O := \mathsf{StateOf}(O).
+\tau \in P(x\_O, C\_O) \quad \Rightarrow \quad \text{binding succeeds},
 $$
 
-This state component determines which trajectories are admissible at the ports exposed by $O$.
-
-### Context and Binding-Relevant Data
-
-Binding semantics depend on additional contextual information such as party coalitions, resource inventories, and port metadata. This information is collectively modeled as an element of a **context space**:
+the result is a new Offer in the causal chain
 
 $$
-\mathsf{Context}.
+a : O \to O',
 $$
 
-A context $C \in \mathsf{Context}$ encodes, for example:
+where $O'$ continues the causal chain and exposes new port instances.
 
-- the coalition of parties participating in the binding,
-- the current resource inventories of those parties,
-- global resource pool levels,
-- port states (e.g.\ published, consumed),
-- capacity counters and permission sets.
-
-A deterministic function
+If no admissible trajectory exists or if real-world results contradict the prediction, binding fails, yielding a **trace violation**:
 
 $$
-\mathsf{Ctx} : \mathsf{Offer} \times \mathsf{Port} \times \mathcal{P}(\mathsf{Party}) \to \mathsf{Context}
+P(x\_O, C\_O) = \varnothing \quad \text{or} \quad \text{external mismatch}.
 $$
 
-computes the binding context associated with a proposed binding of a coalition of parties to a port of a given offer.
+### **2.2. Ports**
 
-### Ports as Action Cones
+A **Port** specifies the **class of admissible trajectories** that may be selected when it is bound at an Offer. Binding a port instantiates a predictive affordance map; transforming a state-context pair into a predicted trajectory of world evolution, against which the actual outcome can later be compared to produce evidence or trace violations.
 
-A **port** is interpreted as an **affordance map** exposing a cone of admissible trajectories at each state and context:
+**Definition of a Port.**
 
-$$
-P : X \times \mathsf{Context} ;\to; \mathcal{P}(\mathcal{T}(X)).
-$$
+Let:
 
-For $x \in X$ and $C \in \mathsf{Context}$, the set
+- $\mathcal{X}$ be the agent’s internal state space (causal graph),
+- $C$ be the set of Offer-local contexts,
+- $\mathcal{T}(\mathcal{X})$ be the space of internal trajectories.
 
-$$
-P(x,C) \subseteq \mathcal{T}(X)
-$$
-
-is the **action cone** exposed by the port $P$ at state $x$ under context $C$. Each $\tau \in P(x,C$ is a trajectory that can be launched by binding to $P$ in state $x$ under context $C$.
-
-This definition uniformly subsumes a range of affordance regimes:
-
-- **Discrete ports:** $P(x,C$ is a finite set (often a singleton) of discrete trajectories.
-- **Parameterized ports:** $P(x,C) = {\tau_\theta : \theta \in \Theta}$ for a parameter domain $\Theta$.
-- **Continuous manifolds:** $P(x,C) = {\tau_\alpha : \alpha \in \Omega}$ for a region $\Omega \subseteq \mathbb{R}^n$.
-- **Vector fields and control flows:** $P(x,C$ is the set of integral curves of a controlled vector field under admissible controls.
-
-### Ports as Symbolic Trajectories and Evidence
-
-The same port $P$ admits a complementary **symbolic** reading:
-
-- **Semantic view (action cone):** For each state–context pair $x, C$, the cone
+A **A Port** is a pair:
 
 $$
-P(x, C) \subseteq \mathcal{T}(X)
+P = (\text{name}, \Phi_P)
 $$
 
-is the set of admissible trajectories that can be launched by binding at $P$ in state $x$ under context $C$.
+where:
 
-- **Symbolic view (causal trajectory schema):** The port $P$ also serves as a **symbolic trajectory** through the causal graph of $\mathcal{W}$: it names a family of admissible paths from a neighborhood of $x, C$ in OBP causal space to a set of reachable states.
-
-When a binding
+1. **name** is a symbol in a global signature
 
 $$
-\mathsf{Bind}(O, P, \mathcal{C})
+\text{name} \in \Sigma_P
 $$
 
-is successfully defined and executed, the resulting offer $O'$ is **evidence** that there exists at least one realized trajectory $\tau \in P(x\_O, C$ in the corresponding cone, where
+(e.g. `move`, `sense`, `commit`, …)
+
+2. **$\Phi_P$** is an **affordance schema**:
 
 $$
-x_O = \mathsf{StateOf}(O), \qquad C = \mathsf{Ctx}(O, P, \mathcal{C}).
+\Phi_P : \mathcal{X} \times C \rightharpoonup \mathcal{P}(\mathcal{T}(\mathcal{X}))
 $$
 
-In particular:
+assigning to each state–context pair a set of **admissible trajectories**.
 
-- each **successful binding at port $P$** witnesses the existence of a realized trajectory in $P(x\_O, C$ for some concrete $x\_O, C$, and
-- each **resulting offer $O'$** in the current OBP state space is an artifact of a **past successful commitment** that lay inside some port’s admissible action cone.
+Thus, a Port denotes how the agent predicts possible evolutions of the world, conditioned on the Offer’s epistemic and material situation. The calculus assigns no intrinsic meaning to the port name itself; its semantic value arises solely from the affordances that $\Phi_P$ yields in the specific Offer context.
 
-Thus, ports are not only affordances; they are also **indices into a body of empirical evidence** about which causal trajectories have in fact been achievable. The evolving web of offers and ports in $\mathcal{W}$ is therefore a compressed record of **witnessed trajectories** that the Program Synthesis Engine $\mathcal{P}$ can exploit when searching for new plans.
-
-### Stochastic Action Cones
-
-The action-cone semantics admits a probabilistic generalization. In the deterministic setting, a port $P$ exposes, at each state $x \in X$, a set $P(x) \subseteq \mathcal{T}(X$ of admissible trajectories. The stochastic formulation replaces this set-valued assignment with a probability measure over trajectories.
-
-#### Definition (Stochastic Action Cone)
-
-A stochastic action cone is a map
+Let an Offer $O$ expose a state–context pair $(x_O, C_O)$.
+The port then instantiates to the admissible-trajectory set:
 
 $$
-P_{\mathsf{stoch}} : X \to \mathsf{Prob}(\mathcal{T}(X)),
+P_O := \Phi_P(x_O, C_O)
 $$
 
-where $\mathsf{Prob}(\mathcal{T}(X)$ denotes the set of probability measures on the trajectory space. For each state $x$, the value $P_{\mathsf{stoch}}(x$ is a probability distribution whose support consists precisely of the admissible trajectories originating at $x$.
+This yields the contextual semantics:
 
-The deterministic cone model is recovered as the special case in which each cone is a Dirac measure:
+**Semantic Interpretation Rule.**
 
-$$
-P_{\mathsf{det}}(x)(\tau) = \begin{cases}
-1, & \tau = \tau^{\ast}, \\
-0, & \text{otherwise},
-\end{cases}
-$$
+> The meaning of the port name $P$ at Offer $O$ is precisely the set of admissible trajectories $P_O$.
+> That is, the denotation of the symbol (e.g. “move”) in context $O$ is the trajectory affordance that $\Phi_P$ predicts from $(x_O, C_O)$.
 
-for some trajectory $\tau^{\ast} \in \mathcal{T}(X$. Thus the deterministic semantics corresponds to the degenerate subclass of stochastic cones with unit mass on a single trajectory.
-
-#### Binding Semantics
-
-Under the stochastic formulation, a binding operation selects a trajectory by sampling
+A port is meaningful at $O$ exactly when its instantiated affordance set is nonempty:
 
 $$
-\tau \sim P_{\mathsf{stoch}}(x_O),
+P_O = \varnothing \quad\Longleftrightarrow\quad
+\text{$P$ has no coherent interpretation at $O$.}
 $$
 
-and advances the workflow to the resulting endpoint state $x_O' = \tau(T$. All remaining components of the OBP calculus, including the definition of actions, evaluation semantics, and the categorical and operadic interpretations, remain unchanged.
+**Modeling Convention (Interaction Idioms).**
 
-### Port Structure of Offers
+> To ensure interpretability and avoid unstructured proliferation of ports, each canonical Port is intended to denote a stable interaction idiom: a conventional pattern in the structure of the trajectories it predicts.
+> This convention guides modeling practice but is not enforced by the formal semantics of TAPC.
 
-The port structure of an offer is defined by the function $\mathsf{Ports}$, which maps an offer to an ordered sequence of ports:
-
-$$
-\mathsf{Ports} : \mathsf{Offer} \to \mathsf{Port}^*.
-$$
-
-Each $p \in \mathsf{Ports}(O$ is a port endowed with an affordance-map interpretation
+**Port Equivalence.**
+Two Ports may be considered equivalent when they produce equivalent admissible cones for the same Offer
 
 $$
-[\![p]\!] : X \times \mathsf{Context} \to \mathcal{P}(\mathcal{T}(X)).
+P \equiv_O Q
+\quad\Longleftrightarrow\quad
+\Phi_P(x_O, C_O) = \Phi_Q(x_O, C_O).
 $$
 
-For notational simplicity, this interpretation is identified with $p$ itself when no confusion arises.
+This notion of equivalence is purely a specification-level relation; it has no operational force and does not require merging or deduplication of Ports.
 
-### Ad-Hoc and Observed Offers and Ports
+**In summary:**
 
-The calculus does not require a closed, statically declared catalog of offers and ports. New elements of $\mathsf{Offer}$ and $\mathsf{Port}$ may be **introduced dynamically** as execution proceeds or **inferred observationally** from external systems and logs. The only requirement is that, at any given step, the currently referenced offers and ports live in the state space $X$ and respect the admissibility and context constraints defined above.
+> A canonical Port is a globally named, context-sensitive affordance schema
+>
+> $$
+> P = (\text{name}, \Phi\_P)
+> $$
+>
+> where
+>
+> $$
+> \Phi_P: \mathcal{X} \times C \rightharpoonup \mathcal{P}(\mathcal{T}(\mathcal{X}))
+> $$
+>
+> assigns to each state–context pair the set of admissible trajectories.
+>
+> When bound at an Offer $O = (x\_O, C\_O)$, its instantiated meaning is
+>
+> $$
+> P\_O = \Phi\_P(x\_O, C\_O).
+> $$
+>
+> Port meaning is **polysemous** and **contextually determined**:
+> the name alone does not fix the affordance class; the Offer’s state and context determine the admissible trajectories and therefore the operative semantics of the Port.
 
-### Failure Sink ($\bot$)
+### **2.3. Offers**
 
-The set of all offers is defined as the union of valid offers $\mathsf{Offer}^+$ and the distinguished **failure sink** $\bot$:
+An **Offer** is the explicit record of a successfully bound trajectory within a causal chain. An Offer exposes a set of Ports which may be bound next, given the state–context pair realized by the preceding trajectory. An Offer is therefore the semantic anchor between one realized trajectory and the affordance landscape available for the next step in the causal chain.
 
-$$
-\mathsf{Offer} = \mathsf{Offer}^+ \cup {\bot}.
-$$
+**Definition of an Offer.**
+Let:
 
-The sink $\bot$ exposes the empty sequence of ports:
+- $x\_O \in \mathcal{X}$ be the internal state reached at the end of a successfully bound trajectory,
+- $C\_O \in C$ be the context after that trajectory completes,
+- $\mathsf{Ports}(O) \subseteq \Sigma\_P$ be the set of canonical port names the agent elects to expose at this point.
 
-$$
-\mathsf{Ports}(\bot) = \epsilon.
-$$
-
-No admissible trajectories emanate from $\bot$; informally, all action cones at $\bot$ are empty.
-
-#### Placement of Recoverable Failure
-
-Categorically, there is a **single** failure object $\bot$ in $\mathcal{W}$. The richer taxonomy of failure modes (e.g.\ terminal, recoverable, contention) is carried as **additional structure** rather than as distinct objects:
-
-- all hard, globally-fatal failures are represented by morphisms whose codomain is $\bot$ and therefore satisfy the absorbing law $O \otimes \bot = \bot$,
-- recoverable failures and contention events are represented as **ordinary morphisms** whose codomain is some non-failure offer $O' \in \mathsf{Offer}^+$, annotated with diagnostic labels and, when appropriate, by the failure-trace functor $\mathrm{Tr}_{\bot}$ below,
-- **local failures** that should not poison independent concurrent subgraphs are modeled as transitions into diagnostic offers $O' \neq \bot$ on the affected tensor factors; unrelated factors continue to evolve as usual.
-
-Thus, the axiom that $\bot$ is a strict absorbing element applies only once an execution has been classified as terminal and mapped into $\bot$ at the categorical level. All _recoverable_ behavior lives in the ordinary part of the category, with rollback and retry modeled as further morphisms from checkpointed offers, and with the failure taxonomy attached as metadata on traces and/or actions rather than by introducing separate non-absorbing objects $\bot\_{\mathbf{R}}, \bot\_{\mathbf{C}}, \dots$.
-
-### The Action-Morphism Constructor
-
-Ontologically, the dynamics of OBP are already determined by offers, ports, contexts, and admissible trajectories: a **binding** at port $P$ of offer $O$ selects a trajectory $\tau \in P(x_O, C)$ and yields a successor offer $O'$. The sort $\mathsf{Action}$ simply **reifies** such atomic binding episodes as named arrows so that they can generate morphisms in the categorical semantics and serve as the alphabet for trace extraction.
-
-An **action** is a subset of the Cartesian product of offers:
-
-$$
-\mathsf{Action} \subseteq \mathsf{Offer} \times \mathsf{Offer}.
-$$
-
-The associated input and result offers are defined by the projection maps:
+Then an **Offer** is a triple:
 
 $$
-\mathsf{InOffer} : \mathsf{Action} \to \mathsf{Offer},\qquad
-\mathsf{ResultOffer} : \mathsf{Action} \to \mathsf{Offer}.
+O = (x\_O, C\_O, \mathsf{Ports}(O)).
 $$
 
-For $a \in \mathsf{Action}$, $a : O \to O'$ denotes an action with
+Each port $P \in \mathsf{Ports}(O)$ is instantiated at the Offer by evaluating its affordance schema:
 
 $$
-O = \mathsf{InOffer}(a), \qquad O' = \mathsf{ResultOffer}(a).
+P_O := \Phi\_P(x\_O, C\_O).
 $$
 
-Each action $a$ corresponds semantically to an admissible trajectory segment
+These instantiated affordance sets represent the specific trajectories that could be bound next from this point in the causal chain.
+
+A well-formed Offer must satisfy:
 
 $$
-\tau_a \in \mathcal{T}(X)
+\mathsf{Ports}(O) \subseteq
+{, P \in \Sigma\_P \mid \Phi\_P(x\_O, C\_O) \neq \varnothing ,}.
 $$
 
-such that
+Every Offer corresponds to a **realized trajectory** (the one that produced it), and the **affordance profile** available immediately thereafter.
+
+Thus the causal chain is:
 
 $$
-\tau_a(0) = \mathsf{StateOf}(\mathsf{InOffer}(a)), \qquad
-\tau_a(T_a) = \mathsf{StateOf}(\mathsf{ResultOffer}(a))
+O\_0 \xrightarrow{\tau\_0} O\_1 \xrightarrow{\tau\_1} O\_2 \xrightarrow{\ta_2} \cdots
 $$
 
-for some finite horizon $T_a$.
+where each $\tau\_i \in (P\_i)_{O\_i}$ for some port $P\_i$ admissible at Offer $O\_i$.
 
-The set of **Hom-sets** (morphisms between individual offers) is defined by:
+Offers are historical artifacts, created only after a trajectory is successfully bound. An Offer is semantically meaningful precisely when it exposes at least one port whose instantiated affordance set is nonempty:
 
 $$
-\mathrm{Hom}(O,O') = { a \in \mathsf{Action} \mid \mathsf{InOffer}(a) = O,\ \mathsf{ResultOffer}(a) = O' }.
+\exists P \in \mathsf{Ports}(O) ;\text{such that}; P\_O \neq \varnothing.
 $$
+
+Otherwise the Offer is a **terminal node**—a point with no admissible continuation.
 
 ## Structural Functions and Semantics
 
