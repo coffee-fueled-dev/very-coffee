@@ -111,50 +111,118 @@ The core engine: _failure widens cones → wide cones lose agency → lost agenc
 
 TAM as base model describes a single actor. Composition and concurrency are separate concerns.
 
-**Actor as tuple**: $A = (\mathcal{X}, \mathcal{P}, \mathcal{C})$ — state space, ports, context domain.
+### Actor Tuple
 
-**Parallel composition** $A_1 \otimes A_2$:
+An actor is a tuple:
 
-- Port sets: $\mathcal{P}_1 \sqcup \mathcal{P}_2$ (disjoint union)
-- State spaces: $\mathcal{X}_1 \times \mathcal{X}_2$ (product)
-- Each actor maintains its own situation chain
+$$
+A = (\mathcal{X}, \mathcal{P}, \mathcal{C}, \Sigma)
+$$
 
-**Interaction through world**: The world mediates between actors. One actor's bindings produce episodes that become context for others.
+where:
 
-**Compatibility**: Actors are compatible when their port bindings don't produce episodes that violate each other's affordance cones. Static compatibility = mutual expectations met. Dynamic compatibility = adaptation converges faster than divergence.
+- $\mathcal{X}$ is the internal state space
+- $\mathcal{P}$ is the set of ports
+- $\mathcal{C}$ is the context domain
+- $\Sigma$ is the trace alphabet — messages the actor may emit to the World
 
-**Questions for TAM-Compose**:
+### Global World Bus
 
-- Routing: How does the world decide which actor sees which episode?
-- Addressing: Can ports target specific actors, or is everything broadcast?
-- Synchronization: Do actors bind in turns, simultaneously, or asynchronously?
-- Port compatibility: Can two ports "connect" when their domains align?
+The World maintains a single, time-ordered trace sequence:
 
-**Categorical structure**:
+$$
+\boldsymbol{\sigma} = (\sigma_0, \sigma_1, \dots)
+$$
+
+where each $\sigma_k \in \Sigma$ is a trace symbol containing:
+
+- a topic (e.g., process instance identifier)
+- a payload
+- metadata (e.g., suggested next actor, role, priority)
+
+**All actors see the same bus.** The context domain $\mathcal{C}$ of every actor is built from (some function of) the same prefix of $\boldsymbol{\sigma}$:
+
+$$
+C^{(i)}_n = g_i(\sigma_0, \dots, \sigma_t)
+$$
+
+Actors cannot avoid seeing what others do — at best they compress or de-emphasize it.
+
+### Episode Boundaries Under Shared Bus
+
+Episodes are actor-local slices of the same global log.
+
+Let $b^{(i)}_k$ be the global indices at which actor $A_i$ binds its ports. Then the $k$-th episode for $A_i$ is:
+
+$$
+E^{(i)}_{k \to k+1} = (C^{(i)}_{k,0}, \dots, C^{(i)}_{k,m}, C^{(i)}_{k+1})
+$$
+
+derived from the global traces $(\sigma_{b^{(i)}_k+1}, \dots, \sigma_{b^{(i)}_{k+1}})$ — all traces emitted by any actor between $A_i$'s own bindings.
+
+Each actor's episode includes **everyone's behavior** in that interval, not just their own thread.
+
+### Turn Markers
+
+Delegation uses special traces called turn markers:
+
+$$
+\tau = \text{Turn}\{\text{topic}, \text{assignee}, \text{role}, \text{constraints}\}
+$$
+
+- `topic` identifies the process instance
+- `assignee` is an actor identity or abstract role
+- `role` may specify a functional type
+- `constraints` captures expectations for the next binding
+
+Semantics:
+
+- Everyone **sees** the turn marker
+- Only actors whose identity/role matches treat it as "I am obliged/allowed to bind next on this topic"
+- Others treat it as context — updating their cones but not binding ports for that topic
+
+An actor $A_i$ treats a turn marker $\tau$ as an enabling condition:
+
+$$
+\text{EnabledPorts}^{(i)}(\tau) \subseteq \mathcal{P}_i
+$$
+
+For non-assigned actors, this set is typically empty for that topic, but the trace is still visible and may influence other cones.
+
+### Compositional Contextuality
+
+Affordance predicates are defined over context derived from the full global trace:
+
+$$
+\chi_p : \mathcal{T}(\mathcal{X}_i) \times \mathcal{X}_i \times \mathcal{C} \to \{\top, \bot\}
+$$
+
+where $\mathcal{C}$ summarizes the global trace prefix. An actor cannot ignore other actors' traces: its cones are defined relative to the composite system evolution, not merely its own local actions.
+
+### Compatibility
+
+**Static compatibility**: Actors are compatible when their port bindings don't produce episodes that violate each other's affordance cones — mutual expectations met.
+
+**Dynamic compatibility**: Adaptation converges faster than divergence.
+
+**Port compatibility**: Two ports $p_1$ and $p_2$ are compatible when the cones they induce over shared traces have non-empty intersection:
+
+$$
+\Phi_{p_1}(x_1, \vec{c}) \cap \Phi_{p_2}(x_2, \vec{c}) \neq \emptyset
+$$
+
+If the intersection is empty, no outcome satisfies both actors' expectations — binding either port guarantees one actor experiences failure.
+
+### Routing as Normative Expectation
+
+Routing in TAM-Compose is not about limiting information flow, but about constraining which actors are permitted or expected to perform the next binding on a given process thread, as encoded by turn markers on the shared World bus.
+
+### Categorical Structure
 
 - Objects = Actors (or Situations)
 - Morphisms = Binding transitions
 - Monoidal structure for parallel composition
 - Potential for string diagrams / wiring diagrams to represent actor networks
-
----
-
-## Trace Mechanism in Multi-Agent Hierarchies
-
-In a hierarchy of specialists and orchestrators, agents both produce and consume context:
-
-**World as shared broadcast**: Each agent broadcasts its traces to the World context. All agents in the system subscribe to this World context.
-
-**Mixed context**: From any agent's perspective, World context is a mixture of:
-
-- External context (entering the composite system from outside)
-- Internal context (traces from other agents within the system)
-
-**Episode boundaries**: An agent's episode is the sequence of context on the World broadcast between its own successive port bindings. Different agents have different episode boundaries depending on their binding timing.
-
-**Adaptation responsibility**: Each agent in the hierarchy must adapt its affordance cones to the dynamics of this composite environment — which includes the behavior of other agents, not just external dynamics.
-
-**Implication**: An agent doesn't distinguish between "the world" and "other agents" — it just sees context. Compatibility emerges when agents' affordance cones accommodate each other's traces.
 
 ---
 
