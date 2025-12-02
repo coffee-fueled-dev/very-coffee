@@ -1,6 +1,6 @@
 # The Trajectory-Affordance Model (TAM)
 
-TAM is a way of structuring causal chains, expectation, and exception from it between an actor $\mathsf{A}$ and an external world $\mathsf{W}$
+TAM is a formal model of causal chains between an actor $\mathsf{A}$ and world $\mathsf{W}$
 
 The core cycle:
 
