@@ -99,7 +99,7 @@ TAM as base model describes a single actor. Composition and concurrency are sepa
 
 - Port sets: $\mathcal{P}_1 \sqcup \mathcal{P}_2$ (disjoint union)
 - State spaces: $\mathcal{X}_1 \times \mathcal{X}_2$ (product)
-- Each actor maintains its own offer chain
+- Each actor maintains its own situation chain
 
 **Interaction through world**: The world mediates between actors. One actor's bindings produce episodes that become context for others.
 
@@ -114,7 +114,7 @@ TAM as base model describes a single actor. Composition and concurrency are sepa
 
 **Categorical structure**:
 
-- Objects = Actors (or Offers)
+- Objects = Actors (or Situations)
 - Morphisms = Binding transitions
 - Monoidal structure for parallel composition
 - Potential for string diagrams / wiring diagrams to represent actor networks

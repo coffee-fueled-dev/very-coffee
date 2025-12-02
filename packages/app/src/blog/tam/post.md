@@ -4,12 +4,12 @@ TAM is a formal model of causal chains between an actor $\mathsf{A}$ and world $
 
 The core cycle:
 
-1. $\mathsf{A}$ is at an offer
+1. $\mathsf{A}$ is in a situation
 2. $\mathsf{A}$ selects a port from those currently afforded
 3. $\mathsf{A}$ binds the port
 4. $\mathsf{W}$ responds with a context episode
 5. $\mathsf{A}$ interprets the episode and evaluates whether it falls within expectations
-6. A new offer is produced; the cycle repeats
+6. A new situation arises; the cycle repeats
 
 Ports define affordance cones: trajectories $\mathsf{A}$ is willing to accept for a given mode of interaction. Binding succeeds when the outcome lands in the cone; it fails otherwise.
 
@@ -99,23 +99,23 @@ p \equiv q
 \Phi_p(x, \vec{c}) = \Phi_q(x, \vec{c})
 $$
 
-### Offers
+### Situations
 
-An offer is an indexed instance of internal state:
+A situation is an indexed instance of internal state:
 
 $$
-o_n = (n, x_n)
+s_n = (n, x_n)
 $$
 
-The index $n$ marks the step in the causal chain. Two offers $o_n$ and $o_m$ are distinct even if $x_n = x_m$.
+The index $n$ marks the step in the causal chain. Two situations $s_n$ and $s_m$ are distinct even if $x_n = x_m$.
 
-At each offer $o_n$, there is a prior context $\vec{c}^{\,\text{prior}}_n \in \mathcal{C}^*$
+In each situation $s_n$, there is a prior context $\vec{c}^{\,\text{prior}}_n \in \mathcal{C}^*$
 which is some subsequence of all context received up to that point.
 
-Each offer requires binding an afforded port, and each binding produces the next offer. A port is afforded at $o_n$ when its affordance cone is non-empty:
+Each situation requires binding an afforded port, and each binding produces the next situation. A port is afforded in $s_n$ when its affordance cone is non-empty:
 
 $$
-\mathsf{Ports}(o_n)
+\mathsf{Ports}(s_n)
 =
 \{ p \in \mathcal{P} \mid \Phi_p(x_n, \vec{c}^{\,\text{prior}}_n) \neq \emptyset \}
 $$
@@ -124,7 +124,7 @@ $$
 
 ### Binding
 
-Binding is a transition from offer $o_n$ to offer $o_{n+1}$ via a port $p_n \in \mathsf{Ports}(o_n)$.
+Binding is a transition from situation $s_n$ to situation $s_{n+1}$ via a port $p_n \in \mathsf{Ports}(s_n)$.
 
 Upon binding, the world produces a context episode $e_{n \to n+1} \in \mathcal{C}^*$.
 
@@ -138,10 +138,10 @@ $$
 \mathcal{T}(x_n)
 $$
 
-The next offer is produced:
+The next situation arises:
 
 $$
-o_{n+1} = \hat{\tau}_n[\mathrm{end}]
+s_{n+1} = \hat{\tau}_n[\mathrm{end}]
 $$
 
 Binding succeeds when the inferred trajectory remains within the affordance cone:
