@@ -1,3 +1,21 @@
+## Representational Capacity
+
+The state space $\mathcal{X}$ contains exactly those states that could arise from some inference:
+
+$$
+\mathcal{X} = \bigcup_{p \in \mathcal{P}, x \in \mathcal{X}, \vec{c} \in \mathcal{C}^*} \{ \tau[i] \mid \tau = \mathsf{Infer}_p(x, \vec{c}), \, i \in \mathrm{dom}(\tau) \}
+$$
+
+The trajectory space $\mathcal{T}(\mathcal{X})$ is the cumulative affordance across all ports, states, and contexts:
+
+$$
+\mathcal{T}(\mathcal{X}) = \bigcup_{p \in \mathcal{P}, x \in \mathcal{X}, \vec{c} \in \mathcal{C}^*} \Phi_p(x, \vec{c})
+$$
+
+What is representable is bounded by what the ports can collectively infer and afford.
+
+---
+
 Agents are compatible to the degree that adaptation converges faster than divergence
 
 More generally, agents are compatible with their environment to the degree that adaptation converges faster than divergence (implying the environment the agent interacts with is never static)
