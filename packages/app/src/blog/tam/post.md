@@ -4,9 +4,9 @@ TAM is a way of structuring causal chains, expectation, and exception from it be
 
 The core cycle:
 
-1. $\mathsf{A}$ is at an offer (a marked internal state)
-2. $\mathsf{A}$ selects a port (a mode of interaction) from those currently afforded
-3. $\mathsf{A}$ binds the port, acting on $\mathsf{W}$
+1. $\mathsf{A}$ is at an offer
+2. $\mathsf{A}$ selects a port from those currently afforded
+3. $\mathsf{A}$ binds the port
 4. $\mathsf{W}$ responds with a context episode
 5. $\mathsf{A}$ interprets the episode and evaluates whether it falls within expectations
 6. A new offer is produced; the cycle repeats
@@ -25,7 +25,7 @@ The world is an external source of context.
 
 All information $\mathsf{A}$ receives from $\mathsf{W}$ is expressed as values from the context domain $\mathcal{C}$.
 
-When $\mathsf{A}$ acts on $\mathsf{W}$, the world produces a sequence of context called an episode:
+When $\mathsf{A}$ binds a port, $\mathsf{W}$ responds with a sequence of context called an episode:
 
 $$
 e_{n \to n+1}
@@ -101,11 +101,13 @@ $$
 
 ### Offers
 
-An offer $o_n$ marks the internal state at step $n$. Two offers $o_n$ and $o_m$ are distinct even if $x_n = x_m$
+An offer is an indexed instance of internal state:
 
 $$
-o_n = x_n
+o_n = (n, x_n)
 $$
+
+The index $n$ marks the step in the causal chain. Two offers $o_n$ and $o_m$ are distinct even if $x_n = x_m$.
 
 At each offer $o_n$, there is a prior context $\vec{c}^{\,\text{prior}}_n \in \mathcal{C}^*$
 which is some subsequence of all context received up to that point.
@@ -121,8 +123,6 @@ $$
 ---
 
 ### Binding
-
-$A$ acts on $W$ by binding ports.
 
 Binding is a transition from offer $o_n$ to offer $o_{n+1}$ via a port $p_n \in \mathsf{Ports}(o_n)$.
 
