@@ -1,7 +1,7 @@
 import { blog } from "../blog";
 import type { ComponentType } from "react";
 
-const TOPICS = blog?.posts;
+const TOPICS = blog?.posts as Record<string, RegisteredPost> | undefined;
 
 export type Tag = (typeof TAGS)[number];
 export const TAGS = [
@@ -21,14 +21,16 @@ export function asTag(tag: string) {
 }
 
 export function asTopicKey(topic: string) {
-  if (!(topic in TOPICS)) throw new Error("Topic not found");
-  return topic as keyof typeof TOPICS;
+  if (!TOPICS || !(topic in TOPICS)) throw new Error("Topic not found");
+  return topic;
 }
 
-export function asPostKey(topic: keyof typeof TOPICS, post: string) {
+export function asPostKey(topic: string, post: string) {
+  if (!TOPICS || !(topic in TOPICS)) throw new Error("Topic not found");
   const selectedTopic = TOPICS[topic];
-  if (!(post in selectedTopic["posts"])) throw new Error("Post not found");
-  return post as keyof (typeof selectedTopic)["posts"];
+  if (!selectedTopic.posts || !(post in selectedTopic.posts))
+    throw new Error("Post not found");
+  return post;
 }
 
 export interface PostMetadata {

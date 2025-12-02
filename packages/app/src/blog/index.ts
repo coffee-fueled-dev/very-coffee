@@ -1,7 +1,7 @@
 import type { RegisteredPost } from "@/lib/post";
 import tkn from "./tkn";
 import protologic from "./protologic";
-import as2 from "./as2";
+import tam from "./tam";
 
 export const blog = {
   __type: "post",
@@ -9,5 +9,5 @@ export const blog = {
   title: "Topics",
   author: "Zach Garrett",
   summary: "Zach's dev blog",
-  posts: { tkn, protologic, as2 },
+  posts: { tkn, protologic, tam },
 } satisfies RegisteredPost;
