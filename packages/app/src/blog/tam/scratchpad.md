@@ -224,6 +224,25 @@ Routing in TAM-Compose is not about limiting information flow, but about constra
 - Monoidal structure for parallel composition
 - Potential for string diagrams / wiring diagrams to represent actor networks
 
+### Next Steps to Formalize TAM-Compose
+
+**Underspecified (needs tightening):**
+
+- [ ] Constraints on trace alphabet Σ and its relationship to C
+- [ ] Composition operator: given $A_1, A_2$, what exactly is $A_1 \otimes A_2$?
+- [ ] Properties of context derivation $g_i$ — monotonic? computable?
+- [ ] How EnabledPorts interacts with $\chi_p$ — override? conjunction?
+
+**Not yet addressed:**
+
+- [ ] Execution model — interleaving, true concurrency, or round-robin?
+- [ ] Trace emission — when does binding produce a trace? what trace?
+- [ ] Global ordering — is $\boldsymbol{\sigma}$ totally ordered? simultaneous bindings?
+- [ ] Initial conditions — starting states, initial trace sequence
+- [ ] Projection theorem — composed behavior restricts to individual TAM behavior
+- [ ] Equivalence — when are two composed systems behaviorally the same? (bisimulation)
+- [ ] Liveness / progress — can we guarantee no deadlock?
+
 ---
 
 ## System 1/2 Architecture with LLMs
