@@ -1,5 +1,5 @@
 import type { RegisteredPost } from "@/lib/post";
-import architecture from "./architecure";
+import tam from "./tam";
 
 export default {
   __type: "post",
@@ -8,5 +8,5 @@ export default {
   title: "AS2",
   tags: ["ai", "agents", "machine learning"],
   summary: "",
-  posts: { architecture: architecture },
+  posts: { tam },
 } satisfies RegisteredPost;

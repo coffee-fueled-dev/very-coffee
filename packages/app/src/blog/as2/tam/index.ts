@@ -4,7 +4,7 @@ export default {
   __type: "post",
   published: true,
   author: "Zach Garrett",
-  title: "Trajectory-Affordance Process Calculus",
+  title: "Trajectory-Affordance Model",
   tags: [],
   summary: "",
 } satisfies RegisteredPost;

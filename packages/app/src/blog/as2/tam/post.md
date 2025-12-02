@@ -1,0 +1,155 @@
+# The Trajectory-Affordance Model (TAM)
+
+TAM models an actor $\mathsf{A}$ interacting with an external world $\mathsf{W}$ through discrete binding transitions, tracking whether outcomes match expectations.
+
+## Actor $\mathsf{A}$
+
+The actor $\mathsf{A}$ is an entity with agency that maintains internal state, chooses modes of interaction, and updates its state based on the world's response.
+
+$\mathsf{A}$ chooses which port to bind from those currently afforded.
+
+## World $\mathsf{W}$
+
+The world is an external, unmodeled dynamical source of context.
+Its internal structure is not represented within the system.
+
+All information the system receives from the world is expressed as
+values from the context domain $\mathcal{C}$.
+
+When the system interacts with the world, the world produces context episodes:
+
+$$
+e_{n \to n+1}
+=
+(c_{n,0}, c_{n,1}, \dots, c_{n,k}, c_{n+1})
+$$
+
+representing the sequence of feedback generated during the
+interaction period between two offers.
+
+The only interface between the system and the world is the context
+episodes it produces.
+
+## Core Components of TAM
+
+### State Space $\mathcal{X}$
+
+The set of distinct states the system is capable of representing.
+
+### Trajectories $\mathcal{T}(\mathcal{X})$
+
+The set of finite sequences of states the system is capable of representing:
+
+$$
+\mathcal{T}(\mathcal{X})
+\subseteq
+\bigcup_{k \ge 0}
+\{ (x_0, \dots, x_k) \mid x_i \in \mathcal{X} \}
+$$
+
+Trajectories from state $x_n$ are those in $\mathcal{T}(\mathcal{X})$ with $x_n$ as initial state:
+
+$$
+\mathcal{T}(x_n)
+=
+\{ \tau \in \mathcal{T}(\mathcal{X}) \mid \tau[0] = x_n \}
+$$
+
+### Ports $\mathcal{P}$
+
+A port represents a mode of interaction with the world. Ports are polysemous — their interpretation depends on context.
+
+Each port $p \in \mathcal{P}$ consists of:
+
+An inference map that interprets episodes as trajectories:
+
+$$
+\mathsf{Infer}_p : \mathcal{X} \times \mathcal{C}^* \to \mathcal{T}(\mathcal{X})
+$$
+
+An affordance predicate on trajectories:
+
+$$
+\chi_p :
+\mathcal{T}(\mathcal{X})
+\times \mathcal{X}
+\times \mathcal{C}^*
+\to
+\{\mathsf{true}, \mathsf{false}\}
+$$
+
+Given an internal state $x_n$ and a context sequence $\vec{c}_n \in \mathcal{C}^*$, the predicate induces an affordance cone — the set of trajectories $\mathsf{A}$ is willing to accept for this mode of interaction:
+
+$$
+\Phi_p(x_n, \vec{c}_n)
+=
+\{ \tau \in \mathcal{T}(x_n)
+\mid
+\chi_p(\tau, x_n, \vec{c}_n)
+\}
+$$
+
+Two ports $p$ and $q$ are equivalent when their inference maps and affordance cones coincide for all states and context sequences:
+
+$$
+p \equiv q
+\iff
+\forall x \in \mathcal{X}, \vec{c} \in \mathcal{C}^* :
+\mathsf{Infer}_p(x, \vec{c}) = \mathsf{Infer}_q(x, \vec{c})
+\land
+\Phi_p(x, \vec{c}) = \Phi_q(x, \vec{c})
+$$
+
+### Offers
+
+An offer $o_n$ marks the internal state at step $n$. Two offers $o_n$ and $o_m$ are distinct even if $x_n = x_m$
+
+$$
+o_n = x_n
+$$
+
+At each offer $o_n$, there is a prior context $\vec{c}^{\,\text{prior}}_n \in \mathcal{C}^*$
+representing the context available at decision time. This is some subsequence
+of all context received up to that point.
+
+Each offer requires binding an afforded port, and each binding produces the next offer. A port is afforded at $o_n$ when its affordance cone is non-empty:
+
+$$
+\mathsf{Ports}(o_n)
+=
+\{ p \in \mathcal{P} \mid \Phi_p(x_n, \vec{c}^{\,\text{prior}}_n) \neq \emptyset \}
+$$
+
+### Binding
+
+Binding is a transition from offer $o_n$ to offer $o_{n+1}$ via a port $p_n \in \mathsf{Ports}(o_n)$.
+
+Upon binding, the world produces a context episode $e_{n \to n+1} \in \mathcal{C}^*$.
+
+The port interprets the episode as a trajectory:
+
+$$
+\hat{\tau}_n = \mathsf{Infer}_{p_n}(x_n, e_{n \to n+1})
+\in
+\mathcal{T}(x_n)
+$$
+
+The next offer is always produced:
+
+$$
+o_{n+1} = \hat{\tau}_n[\mathrm{end}]
+$$
+
+After binding, there is a post context $\vec{c}^{\,\text{post}}_n \in \mathcal{C}^*$ representing context available at evaluation time. This is some subsequence of all context received up to and including the episode.
+
+Binding succeeds when the inferred trajectory remains within the affordance cone:
+
+$$
+\hat{\tau}_n \in \Phi_{p_n}(x_n, \vec{c}^{\,\text{post}}_n)
+$$
+
+Binding fails when the inferred trajectory exits the cone:
+
+$$
+\hat{\tau}_n \notin \Phi_{p_n}(x_n, \vec{c}^{\,\text{post}}_n)
+$$
