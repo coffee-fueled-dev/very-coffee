@@ -1,36 +1,37 @@
 # The Trajectory-Affordance Model (TAM)
 
-TAM models an actor $\mathsf{A}$ interacting with an external world $\mathsf{W}$ through discrete binding transitions, tracking whether outcomes match expectations.
+TAM is a way of structuring causal chains, expectation, and exception from it between an actor $\mathsf{A}$ and an external world $\mathsf{W}$
 
-## Actor $\mathsf{A}$
+The core cycle:
 
-The actor $\mathsf{A}$ is an entity with agency that maintains internal state, chooses modes of interaction, and updates its state based on the world's response.
+1. $\mathsf{A}$ is at an offer (a marked internal state)
+2. $\mathsf{A}$ selects a port (a mode of interaction) from those currently afforded
+3. $\mathsf{A}$ binds the port, acting on $\mathsf{W}$
+4. $\mathsf{W}$ responds with a context episode
+5. $\mathsf{A}$ interprets the episode and evaluates whether it falls within expectations
+6. A new offer is produced; the cycle repeats
 
-$\mathsf{A}$ chooses which port to bind from those currently afforded.
+Ports define affordance cones: trajectories $\mathsf{A}$ is willing to accept for a given mode of interaction. Binding succeeds when the outcome lands in the cone; it fails otherwise.
 
-## World $\mathsf{W}$
+---
 
-The world is an external, unmodeled dynamical source of context.
-Its internal structure is not represented within the system.
+### Actor $\mathsf{A}$
 
-All information the system receives from the world is expressed as
-values from the context domain $\mathcal{C}$.
+The actor selects modes of interaction and updates its state based on the world's response.
 
-When the system interacts with the world, the world produces context episodes:
+### World $\mathsf{W}$
+
+The world is an external source of context.
+
+All information $\mathsf{A}$ receives from $\mathsf{W}$ is expressed as values from the context domain $\mathcal{C}$.
+
+When $\mathsf{A}$ acts on $\mathsf{W}$, the world produces a sequence of context called an episode:
 
 $$
 e_{n \to n+1}
 =
 (c_{n,0}, c_{n,1}, \dots, c_{n,k}, c_{n+1})
 $$
-
-representing the sequence of feedback generated during the
-interaction period between two offers.
-
-The only interface between the system and the world is the context
-episodes it produces.
-
-## Core Components of TAM
 
 ### State Space $\mathcal{X}$
 
@@ -57,17 +58,15 @@ $$
 
 ### Ports $\mathcal{P}$
 
-A port represents a mode of interaction with the world. Ports are polysemous — their interpretation depends on context.
+A port $p \in \mathcal{P}$ is a polysemous mode of interaction with $W$
 
-Each port $p \in \mathcal{P}$ consists of:
-
-An inference map that interprets episodes as trajectories:
+Each port consists of an inference map that interprets context sequences as trajectories:
 
 $$
 \mathsf{Infer}_p : \mathcal{X} \times \mathcal{C}^* \to \mathcal{T}(\mathcal{X})
 $$
 
-An affordance predicate on trajectories:
+As well as an affordance predicate on trajectories:
 
 $$
 \chi_p :
@@ -78,7 +77,7 @@ $$
 \{\mathsf{true}, \mathsf{false}\}
 $$
 
-Given an internal state $x_n$ and a context sequence $\vec{c}_n \in \mathcal{C}^*$, the predicate induces an affordance cone — the set of trajectories $\mathsf{A}$ is willing to accept for this mode of interaction:
+Given an internal state $x_n$ and a context sequence $\vec{c}_n \in \mathcal{C}^*$, the predicate induces an affordance cone:
 
 $$
 \Phi_p(x_n, \vec{c}_n)
@@ -109,8 +108,7 @@ o_n = x_n
 $$
 
 At each offer $o_n$, there is a prior context $\vec{c}^{\,\text{prior}}_n \in \mathcal{C}^*$
-representing the context available at decision time. This is some subsequence
-of all context received up to that point.
+which is some subsequence of all context received up to that point.
 
 Each offer requires binding an afforded port, and each binding produces the next offer. A port is afforded at $o_n$ when its affordance cone is non-empty:
 
@@ -120,11 +118,17 @@ $$
 \{ p \in \mathcal{P} \mid \Phi_p(x_n, \vec{c}^{\,\text{prior}}_n) \neq \emptyset \}
 $$
 
+---
+
 ### Binding
+
+$A$ acts on $W$ by binding ports.
 
 Binding is a transition from offer $o_n$ to offer $o_{n+1}$ via a port $p_n \in \mathsf{Ports}(o_n)$.
 
 Upon binding, the world produces a context episode $e_{n \to n+1} \in \mathcal{C}^*$.
+
+There is now a post context $\vec{c}^{\,\text{post}}_n \in \mathcal{C}^*$: some subsequence of all context received up to and including the episode.
 
 The port interprets the episode as a trajectory:
 
@@ -134,13 +138,11 @@ $$
 \mathcal{T}(x_n)
 $$
 
-The next offer is always produced:
+The next offer is produced:
 
 $$
 o_{n+1} = \hat{\tau}_n[\mathrm{end}]
 $$
-
-After binding, there is a post context $\vec{c}^{\,\text{post}}_n \in \mathcal{C}^*$ representing context available at evaluation time. This is some subsequence of all context received up to and including the episode.
 
 Binding succeeds when the inferred trajectory remains within the affordance cone:
 

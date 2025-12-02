@@ -1,12 +1,10 @@
 import type { RegisteredPost } from "@/lib/post";
-import tam from "./tam";
 
 export default {
   __type: "post",
-  published: true,
+  published: false,
   author: "Zach Garrett",
-  title: "AS2",
-  tags: ["ai", "agents", "machine learning"],
+  title: "Trajectory-Affordance Model Learning",
+  tags: [],
   summary: "",
-  posts: { tam },
 } satisfies RegisteredPost;

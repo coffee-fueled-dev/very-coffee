@@ -5,6 +5,8 @@ export default {
   published: true,
   author: "Zach Garrett",
   title: "Trajectory-Affordance Model",
-  tags: [],
-  summary: "",
+  tags: ["agents", "ai", "state spaces"],
+  summary:
+    "A formal model for structuring causal chains, expectation, and exception from it between an actor  and an external world",
+  posts: {},
 } satisfies RegisteredPost;

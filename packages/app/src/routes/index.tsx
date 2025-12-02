@@ -50,9 +50,9 @@ function Home() {
             These are the things I've been most interested in lately:
           </p>
           <span className="space-x-2 p-6">
-            <Link to="/blog/$" params={{ _splat: "as2" }}>
+            <Link to="/blog/$" params={{ _splat: "tam" }}>
               <Button size="sm" variant="secondary">
-                AS2
+                TAM
               </Button>
             </Link>
             <Link to="/blog/$" params={{ _splat: "tkn/pattern-confidence" }}>
