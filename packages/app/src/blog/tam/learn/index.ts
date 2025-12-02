@@ -8,4 +8,5 @@ export default {
   tags: ["agents", "ai", "state spaces"],
   summary:
     "An extension of the Trajectory-Affordance Model that adds learning dynamics for port refinement.",
+  posts: {},
 } satisfies RegisteredPost;
