@@ -39,7 +39,7 @@ The set of distinct states the system is capable of representing.
 
 ### Trajectories $\mathcal{T}(\mathcal{X})$
 
-The set of finite sequences of $x \in \mathcal{X}$:
+Causal chains of states, represented as ordered tuples:
 
 $$
 \mathcal{T}(\mathcal{X})
