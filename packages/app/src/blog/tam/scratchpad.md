@@ -10,6 +10,22 @@ The actor may be a human in a negotiation, an AI agent completing a task, an alg
 
 ---
 
+## Agency
+
+Agency is inversely proportional to cone width:
+
+$$
+\text{agency}(p, x, \vec{c}) \propto \frac{1}{|\Phi_p(x, \vec{c})|}
+$$
+
+A port whose cone contains all trajectories exercises no agency:
+
+$$
+\Phi_p(x, \vec{c}) = \mathcal{T}(x) \implies \text{agency} = 0
+$$
+
+---
+
 ## Learning and Port Refinement (TAM-Learn)
 
 Must be defined before composition — compatibility depends on adaptation dynamics.
