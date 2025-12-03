@@ -1,8 +1,14 @@
 # Implementing TAM with LLMs
 
-Today's AI agents do not have a persistent concept of how their actions have impacted the world, nor do they attempt risk minimization or set expectations based on experience. As a result, they rarely exhibit consistent behavior or meaningful agency.
+TAM defines Actors as causal participants that interpret their own actions and the world's responses through the port–trajectory–situation cycle. To qualify as an Actor, a system must maintain expectations about outcomes and update its understanding based on what actually happens.
 
-Building agents using TAM provides a practical route to giving them those capabilities.
+Agency, in turn, requires being accountable to causal expectations you yourself chose. Actors exhibit agency to the degree that their choices exclude counterfactual worlds and stake predictive commitments. Choosing a narrow cone means ruling out most possible outcomes and committing to a specific prediction. If the world violates that prediction, the agent must respond, either by updating its expectations or by abandoning that mode of interaction.
+
+By this interpretation, typical LLM usage does not exhibit agency. The model processes each interaction fresh. It does not maintain expectations it can be held accountable to. It does not exclude counterfactual worlds because it is equally willing to accept any outcome. Nothing is at stake when its implicit predictions are wrong because it forms no persistent commitments and retains no memory of violation.
+
+An LLM with tool access comes closer but still falls short. It can take actions that affect the world, but it does not track how those actions changed the world over time. It does not narrow its expectations based on experience, nor does it specialize its behavior when certain contexts prove more predictable than others. Each tool call is made without reference to a history of outcomes.
+
+Building agents using TAM provides a practical route to giving LLMs these capabilities. By attaching expectations to ports, persisting those expectations across interactions, and updating them based on observed outcomes, the agent becomes accountable to its own predictions. It can stake commitments, learn from violations, and develop expertise through calibration.
 
 ## Note about State Space $\mathcal{X}$
 
