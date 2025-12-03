@@ -10,11 +10,19 @@ Learning operates only on the affordance predicate $\chi_p$.
 
 ## Refinement
 
-After binding resolves to success or failure, the agent must do at least one of one of:
+After binding resolves to success or failure, the agent must evaluate whether its affordance cone remains consistent with the observed episode.
+
+If the evidence indicates that the current cone is incomplete, over-broad, or semantically fragmented, the agent must perform at least one of:
 
 1. Widen the cone of the bound port
 2. Narrow the cone of the bound port
 3. Proliferate
+
+If the evidence supports that the current cone already captures the observed trajectory appropriately, no structural change is required. The identity function is permissible and reflects homeostasis:
+
+$$
+\Phi'_p = \Phi_p
+$$
 
 ### Widening
 
