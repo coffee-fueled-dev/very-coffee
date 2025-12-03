@@ -4,7 +4,7 @@ Today's AI agents do not have a persistent concept of how their actions have imp
 
 Building agents using TAM provides a practical route to giving them those capabilities.
 
----
+## Note about State Space $\mathcal{X}$
 
 Before diving in, there are a few subtle points to clarify about LLMs and TAM’s definition of the state space $\mathcal{X}$.
 
@@ -12,7 +12,7 @@ In TAM, $\mathcal{X}$ is defined as the set of discrete states the system is cap
 
 Adding a system prompt (or any other contextual constraint) narrows this representational capacity. The prompt biases the distribution of generated text, restricting which descriptions of state are reachable in practice. The resulting $\mathcal{X}$ may still be extremely large, but it is a smaller space than the unconstrained model.
 
-Once we take into account real limits—bounded generations per turn and maximum output length (ultimately capped by the context window); the reachable state set becomes immense but finite. TAM itself does not depend on whether $\mathcal{X}\$ is finite or infinite; only that it is a well-defined set from which ports select admissible subsets.
+Once we take into account real limits—bounded generations per turn and maximum output length (ultimately capped by the context window); the reachable state set becomes immense but finite. TAM itself does not depend on whether $\mathcal{X}$ is finite or infinite; only that it is a well-defined set from which ports select admissible subsets.
 
 The same logic applies to $\mathsf{Infer}$ and trajectory representation. A trajectory is simply the actor's expressed account of how its action changed the situation, as inferred from the episode it observed. If the model can express an interpretation of what just happened under its constraints, then that output is a valid trajectory in TAM. Any generation conditioned on prior situation and context can serve as an instance of $\mathsf{Infer}\_p$.
 
