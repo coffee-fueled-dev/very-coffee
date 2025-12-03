@@ -1,6 +1,6 @@
 # Overview
 
-TAM is a substrate-agnostic model of agency. It defines what qualifies as an Actor and what it means for that Actor to exhibit Agency, without prescribing implementation details. It applies to any system able to represent situations, choices, and outcomes.
+TAM is a substrate-agnostic model of agency. It defines what qualifies as an Actor and what it means for that Actor to exhibit Agency.
 
 - Actors are causal participants that interpret their own actions and the world's responses through the port–trajectory–situation cycle.
 
