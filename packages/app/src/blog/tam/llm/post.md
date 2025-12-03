@@ -17,8 +17,6 @@ TAM requires two additional properties of Ports over MCP tools:
 
 Both of these can be in natural language and can be as involved as you like. Just set some expectations for the agent about how the world may respond and waht those responses mean.
 
----
-
 ## Port Selection
 
 When the agent faces a situation, it needs to see the available ports: tools with their descriptions and accumulated expectations. Selection follows three constraints.
@@ -35,8 +33,6 @@ An agent with well-calibrated expectations can make specific commitments confide
 
 All of these concepts can be rolled into a prompt.
 
----
-
 ## Episode Interpretation
 
 After the agent binds a port, the world responds. It might be tool execution logs, API responses, user messages, error traces, or any other signal from outside.
@@ -47,8 +43,6 @@ This is the inference function in practice. The agent reads the logs and constru
 
 The output of interpretation is the new situation: the agent's understanding of where it currently stands, ready to select the next port.
 
----
-
 ## Breadcrumbs and Learning
 
 After interpreting the episode, the agent compares what happened against what it expected. If the outcome falls within the port's expectations, binding succeeded. If not, it failed.
@@ -56,8 +50,6 @@ After interpreting the episode, the agent compares what happened against what it
 Either way, the agent leaves breadcrumbs on the port by adding notes about this binding, removing irrelevant notes, or some combination of the two.
 
 Changing the notes should change what the agent can expect by using that port in the future, meaning notes must be provided to the agent as context wach time it evaluates ports. This is effectively altering the affordance cone. Widening happens when unexpected outcomes get added to expectations. Narrowing happens when the agent learns to distinguish contexts where different outcomes occur. The affordance predicate evolves through accumulated experience encoded in text.
-
----
 
 ## Port Proliferation
 
@@ -68,8 +60,6 @@ Rather than accept low agency, the agent can proliferate. It creates a new port 
 The original "send-email" port might work in many situations but predict outcomes poorly. The agent can create "send-email-to-executive" with expectations tuned to that context: faster response times, more formal acknowledgments, higher stakes for errors. The underlying tool call is identical. The expectations differ.
 
 Proliferation doesn't add new actions. It specializes expectations. The agent gains agency by committing to narrower outcomes in contexts where it has learned what to expect.
-
----
 
 ## The Loop
 
