@@ -30,8 +30,10 @@ $$
 
 Choosing a port is exercising agency. The affordance cone represents the change $\mathsf{A}$ aims to impart on $\mathsf{W}$. A port whose cone contains all trajectories commits to no particular outcome.
 
-When the state space is finite, agency can be quantified:
+When $\mathcal{X}$ (and by extension $\mathcal{T}(x)$) are finite, agency admits a simple cardinality ratio:
 
 $$
 \text{agency}(p, x, \vec{c}) = 1 - \frac{|\Phi_p(x, \vec{c})|}{|\mathcal{T}(x)|}
 $$
+
+In continuous spaces, analogous measures can be derived from relative volumes or measure-theoretic properties of $\Phi_p$

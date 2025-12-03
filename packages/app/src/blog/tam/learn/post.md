@@ -12,7 +12,7 @@ Learning operates only on the affordance predicate $\chi_p$.
 
 After binding resolves to success or failure, the agent must evaluate whether its affordance cone remains consistent with the observed episode.
 
-If the evidence indicates that the current cone is incomplete, over-broad, or semantically fragmented, the agent must perform at least one of:
+Binding failures are epistemic evidence that the affordance cone was overly narrow or structurally incomplete. In the case of failure, the agent must perform at least one of:
 
 1. Widen the cone of the bound port
 2. Narrow the cone of the bound port
