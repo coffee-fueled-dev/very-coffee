@@ -4,6 +4,8 @@ Today's AI agents do not have a persistent concept of how their actions have imp
 
 Building agents using TAM provides a practical route to giving them those capabilities.
 
+---
+
 Before diving in, there are a few subtle points to clarify about LLMs and TAM’s definition of the state space $\mathcal{X}$.
 
 In TAM, $\mathcal{X}$ is defined as the set of discrete states the system is capable of representing. TAM does not assume that states reflect objective truth. A state is any situation the actor can articulate as its current position, regardless of whether that description is symbolic, propositional, or narrative. For a LLM, this corresponds directly to whatever situations it can express under its constraints. Any coherent output the model can generate qualifies as a state by TAM’s definition. If we assume no limits on generation depth or output length, this set is effectively unbounded.
