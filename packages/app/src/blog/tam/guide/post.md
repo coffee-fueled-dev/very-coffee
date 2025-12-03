@@ -12,9 +12,7 @@ Building agents using TAM provides a practical route to giving LLMs these capabi
 
 ## Note about State Space $\mathcal{X}$
 
-Before diving in, there are a few subtle points to clarify about LLMs and TAM’s definition of the state space $\mathcal{X}$.
-
-In TAM, $\mathcal{X}$ is defined as the set of discrete states the system is capable of representing. TAM does not assume that states reflect objective truth. A state is any situation the actor can articulate as its current position, regardless of whether that description is symbolic, propositional, or narrative. For a LLM, this corresponds directly to whatever situations it can express under its constraints. Any coherent output the model can generate qualifies as a state by TAM’s definition. If we assume no limits on generation depth or output length, this set is effectively unbounded.
+In TAM, $\mathcal{X}$ is defined as the set of states the system is capable of representing. TAM does not assume that states reflect objective truth. A state is any situation the actor can articulate as its current position, regardless of whether that description is symbolic, propositional, or narrative. For a LLM, this corresponds directly to whatever situations it can express under its constraints. Any coherent output the model can generate qualifies as a state by TAM’s definition. If we assume no limits on generation depth or output length, this set is effectively unbounded.
 
 Adding a system prompt (or any other contextual constraint) narrows this representational capacity. The prompt biases the distribution of generated text, restricting which descriptions of state are reachable in practice. The resulting $\mathcal{X}$ may still be extremely large, but it is a smaller space than the unconstrained model.
 
