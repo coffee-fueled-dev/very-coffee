@@ -20,15 +20,11 @@ What is representable is bounded by what the ports can collectively infer and af
 
 ## Agency
 
-Agency correlates inversely with cone width.
-
-A narrow cone commits to specific outcomes — high agency. A wide cone accepts any outcome — low agency.
+Agency correlates inversely with cone width. A narrow cone commits to specific outcomes while a wide cone accepts many outcomes.
 
 $$
 \Phi_p(x, \vec{c}) = \mathcal{T}(x) \implies \text{agency} = 0
 $$
-
-Choosing a port is exercising agency. The affordance cone represents the change $\mathsf{A}$ aims to impart on $\mathsf{W}$. A port whose cone contains all trajectories commits to no particular outcome.
 
 When $\mathcal{X}$ (and by extension $\mathcal{T}(x)$) are finite, agency admits a simple cardinality ratio:
 
