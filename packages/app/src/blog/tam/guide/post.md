@@ -1,10 +1,26 @@
 # Implementing TAM with LLMs
 
-A practical guide for building agents with experiential learning.
+Today's AI agents do not have a persistent concept of how their actions have impacted the world, nor do they attempt risk minimization or set expectations based on experience. As a result, they rarely exhibit consistent behavior or meaningful agency.
+
+Building agents using TAM provides a practical route to giving them those capabilities.
+
+Before diving in, there are a few subtle points to clarify about LLMs and TAM’s definition of the state space $\mathcal{X}$.
+
+In TAM, $\mathcal{X}$ is defined as the set of discrete states the system is capable of representing. TAM does not assume that states reflect objective truth. A state is any situation the actor can articulate as its current position, regardless of whether that description is symbolic, propositional, or narrative. For a LLM, this corresponds directly to whatever situations it can express under its constraints. Any coherent output the model can generate qualifies as a state by TAM’s definition. If we assume no limits on generation depth or output length, this set is effectively unbounded.
+
+Adding a system prompt (or any other contextual constraint) narrows this representational capacity. The prompt biases the distribution of generated text, restricting which descriptions of state are reachable in practice. The resulting $\mathcal{X}$ may still be extremely large, but it is a smaller space than the unconstrained model.
+
+Once we take into account real limits—bounded generations per turn and maximum output length (ultimately capped by the context window); the reachable state set becomes immense but finite. TAM itself does not depend on whether $\mathcal{X}\$ is finite or infinite; only that it is a well-defined set from which ports select admissible subsets.
+
+The same logic applies to $\mathsf{Infer}$ and trajectory representation. A trajectory is simply the actor's expressed account of how its action changed the situation, as inferred from the episode it observed. If the model can express an interpretation of what just happened under its constraints, then that output is a valid trajectory in TAM. Any generation conditioned on prior situation and context can serve as an instance of $\mathsf{Infer}\_p$.
+
+This also means that any system prompt defines a constraint on $\mathcal{X}$, and any prompt that generates interpretations of outcomes is sufficient to realize $\mathsf{Infer}\_p$.
+
+> _If multiple models and prompts are combined, $\mathcal{X}$ expands accordingly. Conceptually, the state space becomes the product of the reachable representations under each component._
 
 ## The Minimal Implementation
 
-TAM maps onto LLM-based agents with almost no additional infrastructure. The state space $\mathcal{X}$ is already provided by the LLM's latent space constrained by the system prompt.
+TAM maps onto LLM-based agents with almost no additional infrastructure. As we said, the state space $\mathcal{X}$ is already provided by the LLM's latent space and naturally constrained by the system prompt.
 
 Ports map to tool calls. If you're using MCP-style function calling, you already have a version of ports. Each tool is a mode of interaction with the world: a function the agent can invoke, with arguments and a description. When the agent selects a tool, it delegates execution elsewhere and waits for the world to respond.
 

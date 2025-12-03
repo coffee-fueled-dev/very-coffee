@@ -1,3 +1,7 @@
+It's important to realize that the system prompt (any system prompt) is in effect a constraint on state space X and that situations are materializations of states in context. The second part means that it only needs to be a description of where the agent thinks it is now. If the agent was capable of describing the situation, it is a valid state, and therefore a valid situation. Practically speaking, state space X of an agent is finite (to the extent that the output must adhere to the context window and the agent is only allowed to generate a finite number of times per ask). The system prompt will narrow that space implicitly. So long as the same LLM model / system prompt is used for all parts, it will adhere to the basic math of TAM. When multiple Models or system prompts are used, the same intuition applies, but the space becomes the tensor product of those. It isn't until a true symbolic state space is defined (JSON perhaps) that the state space becomes fixed in a meaningful way.
+
+Extending from that line of thought, the infer and trajectory mapping is just whatever the agent generates when given some context and the last Situation. Those were legally representable
+
 ## Representational Capacity
 
 The state space $\mathcal{X}$ contains exactly those states that could arise from some inference:
