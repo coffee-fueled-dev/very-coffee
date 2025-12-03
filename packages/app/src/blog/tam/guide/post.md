@@ -1,8 +1,6 @@
 # Implementing TAM with LLMs
 
-A practical guide for building agents with situational learning.
-
----
+A practical guide for building agents with experiential learning.
 
 ## The Minimal Implementation
 

@@ -2,8 +2,6 @@
 
 Derived properties and interpretations of the Trajectory-Affordance Model.
 
----
-
 ## Representational Capacity
 
 The state space $\mathcal{X}$ contains exactly those states that could arise from some inference:
@@ -19,8 +17,6 @@ $$
 $$
 
 What is representable is bounded by what the ports can collectively infer and afford.
-
----
 
 ## Agency
 

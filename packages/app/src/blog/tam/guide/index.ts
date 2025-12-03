@@ -4,9 +4,9 @@ export default {
   __type: "post",
   published: true,
   author: "Zach Garrett",
-  title: "Properties of the Trajectory-Affordance Model",
-  tags: ["agency", "formal methods"],
+  title: "Implementing TAM with LLMs",
+  tags: ["llm", "agents", "learning"],
   summary:
-    "Derived properties and interpretations of the Trajectory-Affordance Model",
+    "A practical guide for building agents with experiential learning using TAM.",
   posts: {},
 } satisfies RegisteredPost;
