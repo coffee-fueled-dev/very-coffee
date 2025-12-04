@@ -45,7 +45,7 @@ After the agent binds a port, the world must provide feedback. Feedback could be
 
 After interpreting the feedback, the agent compares what happened against what it expected. Binding succeeds when it believes the world behaved within the port's expectations and fails otherwise.
 
-Either way, the agent leaves breadcrumbs on the port by adding notes about this binding, removing irrelevant notes, or some combination of the two. By doing so, the agent changes what it can expect by using that port in the future. If the binding failed, the agent may add the erroneous outcome as a new expectation. If the binding was successful, the agent may remove notes of make special notes about why this port was the right choice in the previous situation.
+Either way, the agent leaves breadcrumbs on the port by adding notes about this binding, removing irrelevant notes, or some combination of the two. By doing so, the agent changes what it can expect by using that port in the future. If the binding failed, the agent may add the erroneous outcome as a new expectation. If the binding was successful, the agent may remove notes of make special notes about why this port was the right choice in the previous situation. The agent may also choose to do nothing if it believes no refinement is necessary.
 
 ## Port Proliferation
 
