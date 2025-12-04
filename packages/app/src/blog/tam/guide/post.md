@@ -12,7 +12,7 @@ In TAM, $\mathcal{X}$ is defined as the set of states the system is capable of r
 
 Adding a system prompt (or any other contextual constraint) narrows this representational capacity. The prompt biases the distribution of generated text, restricting which descriptions of state are reachable in practice. The resulting $\mathcal{X}$ may still be extremely large, but it is a smaller space than the unconstrained model.
 
-Real world LLMs have additional practical bounds such a smaximum generations per turn and maximum output length, which is ultimately capped by the context window; further reducing the reachable state set. TAM itself does not depend on whether $\mathcal{X}$ is finite or infinite; only that it is a well-defined (not necessarily explicit) set from which ports select admissible subsets.
+Real world LLMs have additional practical bounds such as maximum generations per turn and maximum output length, which is ultimately capped by the context window; further reducing the reachable state set. TAM itself does not depend on whether $\mathcal{X}$ is finite or infinite; only that it is a well-defined (not necessarily explicit) set from which ports select admissible subsets.
 
 The same logic applies to $\mathsf{Infer}$ and trajectory representation. A trajectory is simply the actor's expressed account of how its action changed the situation, as inferred from the episode it observed. If the model can produce an interpretation of what just happened under its constraints, then that output is a valid trajectory in TAM. Therefore, any generation conditioned on prior situation and context can serve as an instance of $\mathsf{Infer}\_p$.
 
