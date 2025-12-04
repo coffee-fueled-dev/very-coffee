@@ -4,7 +4,7 @@ TAM-Learn extends TAM with dynamics for port evolution.
 
 ## Invariants
 
-The inference map $\mathsf{Infer}_p$ is fixed for each port. Learning operates only on the affordance predicate $\chi_p$.
+The inference map $\mathsf{Infer}_p$ is fixed for each port. Learning operates only on the affordance predicate $\chi_p$
 
 ## Refinement
 
