@@ -4,7 +4,7 @@ LLM-based agents with access to conversation history already exhibit a form of e
 
 What this in-context adaptation lacks is structure. The model adapts implicitly based on patterns in the history, but it doesn't maintain explicit expectations it can evaluate against. There's no formal step where the agent commits to a prediction, observes the outcome, and decides whether to update its beliefs. Any adaptation is ephemeral because it disappears when the context window ends or the session resets.
 
-TAM extends what conversation history with explicit expectations, a structured evaluation step that compares outcomes against those expectations, persistence across sessions so that learning accumulates over time, and selective refinement where the agent deliberately widens, narrows, or proliferates based on evidence. The result is an agent that not only adapts but knows what it expected and whether reality matched.
+TAM extends conversation history with explicit expectations, a structured evaluation step that compares outcomes against those expectations, persistence across sessions so that learning accumulates over time, and selective refinement where the agent deliberately widens, narrows, or proliferates based on evidence. The result is an agent that not only adapts but knows what it expected and whether reality matched.
 
 ## Note about State Space $\mathcal{X}$
 
