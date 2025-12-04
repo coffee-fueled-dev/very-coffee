@@ -262,10 +262,16 @@ const mdxComponents = {
     <p className="leading-7 mb-6" {...props} />
   ),
   ul: (props: React.HTMLAttributes<HTMLUListElement>) => (
-    <ul className="my-6 ml-6 list-disc [&>li]:mt-2" {...props} />
+    <ul
+      className="my-6 ml-6 list-disc [&>li]:mt-2 [&>li]:leading-7"
+      {...props}
+    />
   ),
   ol: (props: React.HTMLAttributes<HTMLOListElement>) => (
-    <ol className="my-6 ml-6 list-decimal [&>li]:mt-2" {...props} />
+    <ol
+      className="my-6 ml-6 list-decimal [&>li]:mt-2 [&>li]:leading-7"
+      {...props}
+    />
   ),
   pre: (props: React.HTMLAttributes<HTMLPreElement>) => {
     const codeContent = extractTextFromChildren(props.children);

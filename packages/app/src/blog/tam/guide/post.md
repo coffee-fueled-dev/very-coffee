@@ -12,35 +12,30 @@ In TAM, $\mathcal{X}$ is defined as the set of states the system is capable of r
 
 Adding a system prompt (or any other contextual constraint) narrows this representational capacity. The prompt biases the distribution of generated text, restricting which descriptions of state are reachable in practice. The resulting $\mathcal{X}$ may still be extremely large, but it is a smaller space than the unconstrained model.
 
-Once we take into account real limits—bounded generations per turn and maximum output length (ultimately capped by the context window); the reachable state set becomes immense but finite. TAM itself does not depend on whether $\mathcal{X}$ is finite or infinite; only that it is a well-defined set from which ports select admissible subsets.
+Real world LLMs have additional practical bounds such a smaximum generations per turn and maximum output length, which is ultimately capped by the context window; further reducing the reachable state set. TAM itself does not depend on whether $\mathcal{X}$ is finite or infinite; only that it is a well-defined (not necessarily explicit) set from which ports select admissible subsets.
 
-The same logic applies to $\mathsf{Infer}$ and trajectory representation. A trajectory is simply the actor's expressed account of how its action changed the situation, as inferred from the episode it observed. If the model can express an interpretation of what just happened under its constraints, then that output is a valid trajectory in TAM. Any generation conditioned on prior situation and context can serve as an instance of $\mathsf{Infer}\_p$.
+The same logic applies to $\mathsf{Infer}$ and trajectory representation. A trajectory is simply the actor's expressed account of how its action changed the situation, as inferred from the episode it observed. If the model can produce an interpretation of what just happened under its constraints, then that output is a valid trajectory in TAM. Therefore, any generation conditioned on prior situation and context can serve as an instance of $\mathsf{Infer}\_p$.
 
-This also means that any system prompt defines a constraint on $\mathcal{X}$, and any prompt that generates interpretations of outcomes is sufficient to realize $\mathsf{Infer}\_p$.
-
-> _If multiple models and prompts are combined, $\mathcal{X}$ expands accordingly. Conceptually, the state space becomes the product of the reachable representations under each component._
+> If multiple models and prompts are combined, $\mathcal{X}$ expands accordingly. Conceptually, the state space becomes the product of the reachable representations under each component.
 
 ## The Minimal Implementation
 
 TAM maps onto LLM-based agents with almost no additional infrastructure. As we said, the state space $\mathcal{X}$ is already provided by the LLM's latent space and naturally constrained by the system prompt.
 
-Ports map to tool calls. If you're using MCP-style function calling, you already have a version of ports. Each tool is a mode of interaction with the world: a function the agent can invoke, with arguments and a description. When the agent selects a tool, it delegates execution elsewhere and waits for the world to respond.
+Ports map to tool calls. If you're using MCP-style function calling, you already have a version of ports. Each tool is a mode of interaction with the world: a function the agent can invoke, with arguments and a description. When the agent selects a tool, it delegates execution elsewhere and waits for the world to respond. Ports additionally require a description of how the world is expected to evolve as a result of using the tool. This can start out broad. For example, the expectation of a send email tool can be:
 
-Ports require an additional property over MCP tools: a description of how the world is expected to evolve as a result of using the tool. This can start out broad. For example, the expectation of a send email tool can be:
-
-> "After using this tool, the recipient will have received the contents I added to the email without errors."
+> "After using this tool, the recipient will have received the contents of the email without errors."
 
 ## Port Selection
 
-When the agent faces a situation, it needs to see the available ports: tools with their descriptions and accumulated expectations. Selection follows three constraints.
+When the agent faces a situation, it needs to choose one port according to these constraints:
 
-First, the port must align with the agent's intent.
+1. The port must be available for use in the current situation.
+2. The port must align with the agent's intent.
+3. The agent must believe the outcome should fall within the port's expectations.
+4. Among safe options, the agent should choose the port with the narrowest expectations. A narrow cone represents a specific commitment to particular outcomes. A wide cone accepts anything and commits to nothing.
 
-Second, the agent must believe the outcome should fall within the port's expectations.
-
-Third, among safe options, the agent should choose the port with the narrowest expectations, thus maximizing agency. A narrow cone represents a specific commitment to particular outcomes. A wide cone accepts anything and commits to nothing.
-
-An agent with well-calibrated expectations can make specific commitments confidently. A novice agent, uncertain about what will happen, must use wider cones. Expertise is the accumulation of narrow, reliable ports.
+An agent with well-calibrated expectations can make specific commitments confidently. A novice agent must use wider cones to accomodate its uncertainty about the dynamics of the world. Expertise is the accumulation of narrow, reliable ports.
 
 ## Episode Interpretation
 
@@ -54,9 +49,9 @@ Either way, the agent leaves breadcrumbs on the port by adding notes about this 
 
 ## Port Proliferation
 
-Sometimes a port's expectations become too broad. The agent has seen many different outcomes in many different contexts, and the cone has widened to accommodate all of them. A wide cone is safe but weak because it commits to nothing. The agent can choose to proliferate by creating a new port that wraps the same underlying action with specialized expectations for a particular context.
+Sometimes a port's expectations become too broad. Perhaps the agent has seen many different outcomes in many different contexts, and the cone has widened to accommodate all of them. The agent can choose to proliferate by creating a new port that wraps the same underlying action with specialized expectations for a particular context.
 
-The original "send-email" port may work in many situations but predict outcomes poorly. The agent can create "send-email-to-executive" with expectations tuned to that context: faster response times, more formal acknowledgments, higher stakes for errors. The underlying tool call is identical but the expectations differ.
+For example, the original "send-email" port may work in many situations but predict outcomes poorly. The agent can create "send-email-to-executive" with expectations tuned to that context: faster response times, more formal acknowledgments, higher stakes for errors. The underlying tool call is identical but the expectations differ.
 
 ## The Loop
 
