@@ -17,6 +17,9 @@ export const TAGS = [
   "agency",
   "learning",
   "llm",
+  "lattice theory",
+  "differential geometry",
+  "category theory",
 ] as const;
 
 export function asTag(tag: string) {

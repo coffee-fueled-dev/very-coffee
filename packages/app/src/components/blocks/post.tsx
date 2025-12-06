@@ -97,8 +97,8 @@ const PostPreview = ({
   onNavigate,
 }: PostPreviewProps & { onNavigate?: () => void }) => {
   return (
-    <Item variant="outline" size="sm" asChild>
-      <Link {...link} onClick={onNavigate}>
+    <Link {...link} onClick={onNavigate}>
+      <Item variant="muted" size="sm">
         <ItemContent>
           <span className="flex gap-2">
             <ItemTitle>{title}</ItemTitle>
@@ -119,8 +119,8 @@ const PostPreview = ({
             </ItemFooter>
           </>
         )}
-      </Link>
-    </Item>
+      </Item>
+    </Link>
   );
 };
 
@@ -133,7 +133,7 @@ export const PostPreviews = ({ sectionTitle }: { sectionTitle: string }) => {
 
   return (
     <Collapsible
-      className="w-full flex flex-col gap-4"
+      className="w-full flex flex-col gap-2"
       open={open}
       onOpenChange={setOpen}
     >

@@ -1,8 +1,10 @@
 import type { RegisteredPost } from "@/lib/post";
 import learn from "./learn";
-import properties from "./properties";
 import guide from "./guide";
 import model from "./model";
+import structures from "./structures";
+import composition from "./composition";
+import bellman from "./bellman";
 
 export default {
   __type: "post",
@@ -11,5 +13,5 @@ export default {
   title: "Trajectory-Affordance Model",
   tags: ["agents", "agency", "formal methods"],
   summary: "A formal model of causal chains between an actor and world",
-  posts: { learn, properties, guide, model },
+  posts: { learn, guide, model, structures, composition, bellman },
 } satisfies RegisteredPost;

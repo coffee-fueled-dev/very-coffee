@@ -1,8 +1,68 @@
 import entry from "../public/index.html";
 import mdxPlugin from "./plugins/mdx";
-import type { BunFile } from "bun";
 import path from "path";
 import { LRUCache } from "lru-cache";
+
+// Build a registry mapping post key paths to actual file paths
+// by parsing import statements in index.ts files
+async function buildPostRegistry(
+  dir: string,
+  keyPath: string[] = []
+): Promise<Map<string, string>> {
+  const registry = new Map<string, string>();
+  const indexPath = path.join(dir, "index.ts");
+  const indexFile = Bun.file(indexPath);
+
+  if (!(await indexFile.exists())) return registry;
+
+  const content = await indexFile.text();
+
+  // Parse import statements: import <key> from "./<folder>"
+  const importRegex = /import\s+(\w+)\s+from\s+["']\.\/([^"']+)["']/g;
+  const imports = new Map<string, string>();
+
+  let match;
+  while ((match = importRegex.exec(content)) !== null) {
+    const [, key, folder] = match;
+    imports.set(key, folder);
+  }
+
+  // Check for post.mdx/post.md in current directory
+  for (const ext of ["mdx", "md"]) {
+    const postPath = path.join(dir, `post.${ext}`);
+    if (await Bun.file(postPath).exists()) {
+      const pathKey = keyPath.join("/");
+      registry.set(pathKey, postPath);
+      break;
+    }
+  }
+
+  // Recursively process subdirectories
+  for (const [key, folder] of imports) {
+    const subDir = path.join(dir, folder);
+    const subRegistry = await buildPostRegistry(subDir, [...keyPath, key]);
+    for (const [k, v] of subRegistry) {
+      registry.set(k, v);
+    }
+  }
+
+  return registry;
+}
+
+// Post path registry - maps key paths (e.g. "post1") to file paths
+let postRegistry: Map<string, string> | null = null;
+
+async function getPostRegistry(): Promise<Map<string, string>> {
+  // In development, rebuild registry each request to pick up changes
+  if (postRegistry && process.env.NODE_ENV === "production")
+    return postRegistry;
+  const blogBase = path.join(import.meta.dir, "blog");
+  postRegistry = await buildPostRegistry(blogBase);
+  if (!postRegistry.size || process.env.NODE_ENV !== "production") {
+    console.log("[POST REGISTRY] Built registry:", [...postRegistry.entries()]);
+  }
+  return postRegistry;
+}
 
 // Note: Page-specific OG tags for link previews require either:
 // 1. Server-side rendering (SSR)
@@ -126,55 +186,20 @@ const server = Bun.serve({
         .filter(Boolean);
 
       const isRaw = url.searchParams.get("raw") === "true";
+      const pathKey = pathSegments.join("/");
 
-      console.log(
-        `[POST API] Request for: ${pathSegments.join("/")}${
-          isRaw ? " (raw)" : ""
-        }`
-      );
+      // Look up actual file path from registry
+      const registry = await getPostRegistry();
+      const filePath = registry.get(pathKey);
 
-      // Map URL segments to file system paths (handle typo: "architecture" -> "architecure")
-      const fsSegments = pathSegments.map((seg) =>
-        seg === "architecture" ? "architecure" : seg
-      );
-
-      // Use import.meta.dir to get the directory where this file is located
-      const baseDir = import.meta.dir; // This is packages/app/src
-      const blogBase = path.join(baseDir, "blog");
-
-      const possiblePaths = [
-        path.join(blogBase, ...fsSegments, "post.mdx"),
-        path.join(blogBase, ...fsSegments, "post.md"),
-      ];
-
-      console.log(
-        `[POST API] Searching for file in ${possiblePaths.length} possible locations:`
-      );
-      possiblePaths.forEach((p, i) => console.log(`  ${i + 1}. ${p}`));
-
-      let file: BunFile | null = null;
-      let filePath: string | null = null;
-
-      for (const filePath_ of possiblePaths) {
-        try {
-          const candidate = Bun.file(filePath_);
-          const exists = await candidate.exists();
-          if (exists) {
-            file = candidate;
-            filePath = filePath_;
-            console.log(`[POST API] ✓ Found file: ${filePath_}`);
-            break;
-          }
-        } catch (e) {
-          console.log(`[POST API] ✗ Error checking ${filePath_}:`, e);
-          // Continue to next path
-        }
+      if (!filePath) {
+        console.log(`[POST API] ✗ No registry entry for: ${pathKey}`);
+        return new Response("Post not found", { status: 404 });
       }
 
-      if (!file || !filePath) {
-        console.log(
-          `[POST API] ✗ File not found for: ${pathSegments.join("/")}`
-        );
+      const file = Bun.file(filePath);
+      if (!(await file.exists())) {
+        console.log(`[POST API] ✗ File not found: ${filePath}`);
         return new Response("Post not found", { status: 404 });
       }
 
@@ -216,12 +241,6 @@ const server = Bun.serve({
         });
       }
 
-      console.log(
-        `[POST API] ${
-          cached ? "Cache stale" : "Cache miss"
-        }, compiling: ${filePath}`
-      );
-
       try {
         // Bundle MDX with React marked as external
         const result = await Bun.build({
@@ -246,9 +265,6 @@ const server = Bun.serve({
         }
 
         const bundledCode = await result.outputs[0].text();
-        console.log(
-          `[POST API] ✓ Compiled ${bundledCode.length} chars, caching...`
-        );
 
         // Store in cache
         mdxCache.set(filePath, { code: bundledCode, mtime });
