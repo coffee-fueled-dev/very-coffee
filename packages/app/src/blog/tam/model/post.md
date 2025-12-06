@@ -1,6 +1,6 @@
-# The Trajectory-Affordance Model (TAM)
+# Trajectory-Affordance (TA)
 
-TAM is a formal model of causal chains between an actor $\mathsf{A}$ and world $\mathsf{W}$
+TA is a formal model of causal chains between an actor $\mathsf{A}$ and world $\mathsf{W}$
 
 The core cycle:
 

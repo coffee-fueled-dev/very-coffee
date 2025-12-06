@@ -1,6 +1,6 @@
 # Refinement Calculus
 
-TAM-Learn operates on affordance cones as elements of a complete lattice. Refinement is monotone, and grounding emerges as a fixed point.
+TA-Learn operates on affordance cones as elements of a complete lattice. Refinement is monotone, and grounding emerges as a fixed point.
 
 ## Affordance Structures
 
@@ -10,7 +10,7 @@ $$
 \Phi_p(\cdot, \cdot) \in \mathcal{H} = \prod_{x \in \mathcal{X}} \mathcal{P}(\mathcal{T}(x))
 $$
 
-TAM-Learn updates these cones after each binding based on the observed trajectory $\hat{\tau}$.
+TA-Learn updates these cones after each binding based on the observed trajectory $\hat{\tau}$.
 
 ## Refinement Operators
 

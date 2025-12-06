@@ -4,9 +4,9 @@ export default {
   __type: "post",
   published: true,
   author: "Zach Garrett",
-  title: "Extending TAM with experiential learning",
+  title: "Extending TA with experiential learning",
   tags: ["learning", "agents"],
   summary:
-    "An extension of the Trajectory-Affordance Model that adds learning dynamics for port refinement.",
+    "An extension of Trajectory-Affordance that adds learning dynamics for port refinement.",
   posts: {},
 } satisfies RegisteredPost;

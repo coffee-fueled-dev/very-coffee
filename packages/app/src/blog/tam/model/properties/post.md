@@ -1,6 +1,6 @@
-# TAM Properties
+# TA Properties
 
-Derived properties and interpretations of the Trajectory-Affordance Model.
+Derived properties and interpretations of Trajectory-Affordance.
 
 ## Representational Capacity
 

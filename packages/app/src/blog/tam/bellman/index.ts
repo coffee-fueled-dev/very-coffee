@@ -4,9 +4,8 @@ export default {
   __type: "post",
   published: true,
   author: "Zach Garrett",
-  title: "TAM-Bellman Equations",
+  title: "TA-Bellman Equations",
   tags: ["formal methods", "state spaces", "learning", "agents"],
-  summary:
-    "Bellman equations reinterpreted in the Trajectory-Affordance Model.",
+  summary: "Bellman equations reinterpreted in terms of Trajectory-Affordance.",
   posts: {},
 } satisfies RegisteredPost;

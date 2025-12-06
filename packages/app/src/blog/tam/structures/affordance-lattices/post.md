@@ -1,6 +1,6 @@
 # Affordance Lattices
 
-Affordance cones in TAM are subsets of trajectories. This structure admits a natural algebraic treatment: powersets of trajectories form a Heyting algebra.
+Affordance cones in TA are subsets of trajectories. This structure admits a natural algebraic treatment: powersets of trajectories form a Heyting algebra.
 
 ## The Semantic Domain
 
@@ -32,7 +32,7 @@ $\mathcal{H}_x$ is a complete Boolean algebra, hence a Heyting algebra, with:
 - Join $\vee$ (union): $A \vee B = A \cup B$
 - Implication $\Rightarrow$: $A \Rightarrow B = A^c \cup B$
 
-Each affordance cone is an element of this algebra. Formulas in a TAM-logic would denote these cones.
+Each affordance cone is an element of this algebra. Formulas in a TA-logic would denote these cones.
 
 ## Global Structure
 

@@ -1,25 +1,3 @@
-It's important to realize that the system prompt (any system prompt) is in effect a constraint on state space X and that situations are materializations of states in context. The second part means that it only needs to be a description of where the agent thinks it is now. If the agent was capable of describing the situation, it is a valid state, and therefore a valid situation. Practically speaking, state space X of an agent is finite (to the extent that the output must adhere to the context window and the agent is only allowed to generate a finite number of times per ask). The system prompt will narrow that space implicitly. So long as the same LLM model / system prompt is used for all parts, it will adhere to the basic math of TAM. When multiple Models or system prompts are used, the same intuition applies, but the space becomes the tensor product of those. It isn't until a true symbolic state space is defined (JSON perhaps) that the state space becomes fixed in a meaningful way.
-
-Extending from that line of thought, the infer and trajectory mapping is just whatever the agent generates when given some context and the last Situation. Those were legally representable
-
-## Representational Capacity
-
-The state space $\mathcal{X}$ contains exactly those states that could arise from some inference:
-
-$$
-\mathcal{X} = \bigcup_{p \in \mathcal{P}, x \in \mathcal{X}, \vec{c} \in \mathcal{C}^*} \{ \tau[i] \mid \tau = \mathsf{Infer}_p(x, \vec{c}), \, 0 \le i < |\tau| \}
-$$
-
-The trajectory space $\mathcal{T}(\mathcal{X})$ is the cumulative affordance across all ports, states, and contexts:
-
-$$
-\mathcal{T}(\mathcal{X}) = \bigcup_{p \in \mathcal{P}, x \in \mathcal{X}, \vec{c} \in \mathcal{C}^*} \Phi_p(x, \vec{c})
-$$
-
-What is representable is bounded by what the ports can collectively infer and afford.
-
----
-
 Agents are compatible to the degree that adaptation converges faster than divergence
 
 More generally, agents are compatible with their environment to the degree that adaptation converges faster than divergence (implying the environment the agent interacts with is never static)
@@ -48,7 +26,7 @@ $$
 
 ---
 
-## Learning and Port Refinement (TAM-Learn)
+## Learning and Port Refinement (TA-Learn)
 
 Must be defined before composition — compatibility depends on adaptation dynamics.
 
@@ -111,9 +89,9 @@ The core engine: _failure widens cones → wide cones lose agency → lost agenc
 
 ---
 
-## Composition and Concurrency (TAM-Compose)
+## Composition and Concurrency (TA-Compose)
 
-TAM as base model describes a single actor. Composition and concurrency are separate concerns.
+TA as base model describes a single actor. Composition and concurrency are separate concerns.
 
 ### Actor Tuple
 
@@ -219,7 +197,7 @@ If the intersection is empty, no outcome satisfies both actors' expectations —
 
 ### Routing as Normative Expectation
 
-Routing in TAM-Compose is not about limiting information flow, but about constraining which actors are permitted or expected to perform the next binding on a given process thread, as encoded by turn markers on the shared World bus.
+Routing in TA-Compose is not about limiting information flow, but about constraining which actors are permitted or expected to perform the next binding on a given process thread, as encoded by turn markers on the shared World bus.
 
 ### Categorical Structure
 
@@ -228,7 +206,7 @@ Routing in TAM-Compose is not about limiting information flow, but about constra
 - Monoidal structure for parallel composition
 - Potential for string diagrams / wiring diagrams to represent actor networks
 
-### Next Steps to Formalize TAM-Compose
+### Next Steps to Formalize TA-Compose
 
 **Underspecified (needs tightening):**
 
@@ -243,7 +221,7 @@ Routing in TAM-Compose is not about limiting information flow, but about constra
 - [ ] Trace emission — when does binding produce a trace? what trace?
 - [ ] Global ordering — is $\boldsymbol{\sigma}$ totally ordered? simultaneous bindings?
 - [ ] Initial conditions — starting states, initial trace sequence
-- [ ] Projection theorem — composed behavior restricts to individual TAM behavior
+- [ ] Projection theorem — composed behavior restricts to individual TA behavior
 - [ ] Equivalence — when are two composed systems behaviorally the same? (bisimulation)
 - [ ] Liveness / progress — can we guarantee no deadlock?
 
@@ -251,9 +229,9 @@ Routing in TAM-Compose is not about limiting information flow, but about constra
 
 ## System 1/2 Architecture with LLMs
 
-TAM as System 2 for LLM-based agents:
+TA as System 2 for LLM-based agents:
 
-|             | System 1 (LLM)        | System 2 (TAM)         |
+|             | System 1 (LLM)        | System 2 (TA)          |
 | ----------- | --------------------- | ---------------------- |
 | Speed       | Fast                  | Deliberate             |
 | Mode        | Intuitive, generative | Structured, evaluative |
@@ -276,7 +254,7 @@ last failure: blocked by door I didn't see
 - Interpretable — just read the port to understand what the agent expects
 - LLM-friendly — cone widening is text editing ("add 'blocked-by-door' to expected outcomes")
 - No special infrastructure — LLM + database
-- System 1 proposes, System 2 disposes — LLM generates intent, TAM checks feasibility
+- System 1 proposes, System 2 disposes — LLM generates intent, TA checks feasibility
 
 **The cone in text:**
 

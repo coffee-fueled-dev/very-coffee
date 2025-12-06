@@ -1,6 +1,6 @@
 # Multi-Agent Composition
 
-Grounded TAM agents compose via lattice meet. This yields a category of agents with a monoidal structure.
+Grounded TA agents compose via lattice meet. This yields a category of agents with a monoidal structure.
 
 ## Grounded Agents
 

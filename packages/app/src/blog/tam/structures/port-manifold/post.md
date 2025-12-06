@@ -1,6 +1,6 @@
 # Port Manifold
 
-The core TAM model treats ports as elements of a set $\mathcal{P}$. This section enriches that set with smooth geometric structure, enabling continuous modes of interaction while preserving the discrete case.
+The core TA model treats ports as elements of a set $\mathcal{P}$. This section enriches that set with smooth geometric structure, enabling continuous modes of interaction while preserving the discrete case.
 
 ## Motivation
 
@@ -23,11 +23,11 @@ $$
 
 A port manifold is a smooth, second-countable, Hausdorff manifold $\mathcal{M}$. Each point $p \in \mathcal{M}$ represents a distinct mode of interaction.
 
-No constraints on dimensionality. The core TAM model remains intact; $\mathcal{M}$ is optional structure on $\mathcal{P}$.
+No constraints on dimensionality. The core TA model remains intact; $\mathcal{M}$ is optional structure on $\mathcal{P}$.
 
 ## Port-Indexed Fields
 
-In the manifold formalism, TAM structures become port-indexed fields.
+In the manifold formalism, TA structures become port-indexed fields.
 
 Port actuator map:
 

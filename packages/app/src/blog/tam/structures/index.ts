@@ -7,8 +7,8 @@ export default {
   __type: "post",
   published: true,
   author: "Zach Garrett",
-  title: "TAM Structures",
+  title: "TA Structures",
   tags: ["lattice theory", "differential geometry", "category theory"],
-  summary: "Optional algebraic and geometric enrichments of core TAM",
+  summary: "Optional algebraic and geometric enrichments of core TA",
   posts: { affordanceLattices, portManifold, portAffordanceFibration },
 } satisfies RegisteredPost;

@@ -1,6 +1,6 @@
-# TAM-Learn
+# TA-Learn
 
-TAM-Learn extends TAM with dynamics for port evolution.
+TA-Learn extends TA with dynamics for port evolution.
 
 ## Invariants
 

@@ -4,9 +4,9 @@ export default {
   __type: "post",
   published: true,
   author: "Zach Garrett",
-  title: "Properties of the Trajectory-Affordance Model",
+  title: "Properties of Trajectory-Affordance",
   tags: ["agency", "formal methods"],
   summary:
-    "Derived properties and interpretations of the Trajectory-Affordance Model",
+    "Derived properties and interpretations of Trajectory-Affordance",
   posts: {},
 } satisfies RegisteredPost;

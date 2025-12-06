@@ -1,8 +1,8 @@
-# TAM Structures
+# TA Structures
 
-Optional algebraic and geometric enrichments of the core Trajectory-Affordance Model.
+Optional algebraic and geometric enrichments of Trajectory-Affordance.
 
-These structures are not required for the core TAM definitions or TAM-Learn dynamics. They provide one interpretation that enables additional reasoning.
+These structures are not required for the core TA definitions or TA-Learn dynamics. They provide one interpretation that enables additional reasoning.
 
 ## Affordance Lattices
 

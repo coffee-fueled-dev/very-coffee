@@ -10,7 +10,7 @@ export default {
   __type: "post",
   published: true,
   author: "Zach Garrett",
-  title: "Trajectory-Affordance Model",
+  title: "Trajectory-Affordance",
   tags: ["agents", "agency", "formal methods"],
   summary: "A formal model of causal chains between an actor and world",
   posts: { learn, guide, model, structures, composition, bellman },

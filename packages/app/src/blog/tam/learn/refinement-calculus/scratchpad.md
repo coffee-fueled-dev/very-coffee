@@ -1,4 +1,4 @@
-## 1. TAM-Learn as monotone refinement on the lattice
+## 1. TA-Learn as monotone refinement on the lattice
 
 ### 1.1 Affordance structures as points in the lattice
 
@@ -8,7 +8,7 @@ $$
 \Phi*p(\cdot, \cdot) \in \mathcal{H} = \prod*{x} \mathcal{P}(\mathcal{T}(x)).
 $$
 
-TAM-Learn updates these cones after each binding based on observed $\hat{\tau}$.
+TA-Learn updates these cones after each binding based on observed $\hat{\tau}$.
 
 ### 1.2 Define refinement operators
 
@@ -73,7 +73,7 @@ Because $\mathcal{H}$ is a complete lattice and $F_p$ is monotone, you can now b
 ## 2. The grounding fixed-point theorem (Knaster–Tarski style)
 
 **Theorem (Grounding Fixed Point).**  
-Let $\mathcal{H}$ be a complete lattice of affordance structures and $F_p : \mathcal{H} \to \mathcal{H}$ a monotone refinement operator induced by TAM-Learn for port $p$. Then:
+Let $\mathcal{H}$ be a complete lattice of affordance structures and $F_p : \mathcal{H} \to \mathcal{H}$ a monotone refinement operator induced by TA-Learn for port $p$. Then:
 
 1. The set of fixed points of $F_p$ is non-empty and forms a complete lattice.
 2. There exists a **least fixed point**:
@@ -105,4 +105,4 @@ $$
 
 That’s the rigorous backend for what you were calling grounding of expectations.
 
-You can keep this theorem in a short “Algebraic TAM-Learn” section: it’s 100% on top of the existing TAM, not a replacement.
+You can keep this theorem in a short "Algebraic TA-Learn" section: it's 100% on top of the existing TA, not a replacement.

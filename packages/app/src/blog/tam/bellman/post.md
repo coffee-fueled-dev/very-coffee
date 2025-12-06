@@ -1,6 +1,6 @@
-# TAM-Bellman Equations
+# TA-Bellman Equations
 
-Bellman equations reinterpreted in the Trajectory-Affordance Model. Value functions live on the affordance lattice; Bellman operators are monotone with fixed points by Knaster-Tarski.
+Bellman equations reinterpreted in terms of Trajectory-Affordance. Value functions live on the affordance lattice; Bellman operators are monotone with fixed points by Knaster-Tarski.
 
 ## Setup
 
@@ -106,14 +106,14 @@ $$
 
 ## Dual Fixed Points
 
-TAM has two grounding processes:
+TA has two grounding processes:
 
 1. Affordance grounding via refinement operator $F_p$
 2. Value grounding via Bellman operator $\mathcal{B}$
 
 These are coupled. Refining affordance cones changes return sets $S_p$, which changes value fixed points. Conversely, value estimates inform which cones should narrow or widen.
 
-A fully grounded TAM agent has:
+A fully grounded TA agent has:
 
 $$
 F_p(\Phi_p^*) = \Phi_p^*, \quad \mathcal{B}(V^*) = V^*

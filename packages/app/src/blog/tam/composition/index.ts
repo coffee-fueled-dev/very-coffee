@@ -7,6 +7,6 @@ export default {
   title: "Multi-Agent Composition",
   tags: ["agents", "category theory", "lattice theory"],
   summary:
-    "Category-theoretic composition of grounded TAM agents via lattice meet",
+    "Category-theoretic composition of grounded TA agents via lattice meet",
   posts: {},
 } satisfies RegisteredPost;
