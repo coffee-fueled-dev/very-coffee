@@ -1,6 +1,6 @@
 # TA Refinement
 
-_Heads up, a lot of this was AI generated from the core math. I still need to validate some of it, and make sure it lines up with how I think it should work._
+_Heads up, a lot of this was AI generated from the core math. There are parts that still need validation and refinement._
 
 An architecture for training behavioral agents via affordance refinement over a geometric-logical substrate.
 
