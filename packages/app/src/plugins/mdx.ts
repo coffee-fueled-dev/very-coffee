@@ -3,6 +3,7 @@ import rehypeStarryNight from "rehype-starry-night";
 import rehypeMermaid from "rehype-mermaid";
 import rehypeKatex from "rehype-katex";
 import remarkMath from "remark-math";
+import remarkGfm from "remark-gfm";
 
 function formatSize(bytes: number): string {
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
@@ -27,7 +28,7 @@ export default {
       const compiled = await compile(raw, {
         jsxImportSource: "react",
         rehypePlugins: [rehypeKatex, rehypeMermaid, rehypeStarryNight],
-        remarkPlugins: [remarkMath],
+        remarkPlugins: [remarkGfm, remarkMath],
       });
 
       const withMetadata = `

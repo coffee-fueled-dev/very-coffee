@@ -1,4 +1,4 @@
-# Trajectory-Affordance (TA)
+# The Trajectory-Affordance Model
 
 TA is a formal model of causal chains between an actor $\mathsf{A}$ and world $\mathsf{W}$
 

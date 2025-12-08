@@ -5,7 +5,7 @@ export default {
   __type: "post",
   published: true,
   author: "Zach Garrett",
-  title: "Trajectory-Affordance",
+  title: "The Trajectory-Affordance Model",
   tags: ["formal methods", "state spaces"],
   summary: "A formal model of causal chains between an actor and world",
   posts: { properties },

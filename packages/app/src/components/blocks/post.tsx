@@ -291,6 +291,32 @@ const mdxComponents = {
     <blockquote className="mt-6 border-l-2 pl-6 italic" {...props} />
   ),
   a: InlineLink,
+  table: (props: React.HTMLAttributes<HTMLTableElement>) => (
+    <div className="my-6 w-full overflow-x-auto">
+      <table className="w-full border-collapse text-sm" {...props} />
+    </div>
+  ),
+  thead: (props: React.HTMLAttributes<HTMLTableSectionElement>) => (
+    <thead className="border-b border-border" {...props} />
+  ),
+  tbody: (props: React.HTMLAttributes<HTMLTableSectionElement>) => (
+    <tbody className="divide-y divide-border" {...props} />
+  ),
+  tr: (props: React.HTMLAttributes<HTMLTableRowElement>) => (
+    <tr
+      className="border-b border-border transition-colors hover:bg-muted/50"
+      {...props}
+    />
+  ),
+  th: (props: React.HTMLAttributes<HTMLTableCellElement>) => (
+    <th
+      className="px-4 py-3 text-left font-semibold text-foreground"
+      {...props}
+    />
+  ),
+  td: (props: React.HTMLAttributes<HTMLTableCellElement>) => (
+    <td className="px-4 py-3 text-muted-foreground" {...props} />
+  ),
 };
 
 export const Post = (post: ResolvedPost & { rawUrl?: string }) => {

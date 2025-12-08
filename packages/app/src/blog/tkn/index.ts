@@ -1,7 +1,5 @@
 import type { RegisteredPost } from "@/lib/post";
 import patternDiscovery from "./pattern-discovery";
-import corpusFingerprinting from "./corpus-fingerprinting";
-import userData from "./user-data";
 import patternConfidence from "./pattern-confidence";
 
 export default {
@@ -13,8 +11,6 @@ export default {
   summary:
     "An online algorithm that incrementally discovers and compresses recurring patterns in a data stream.",
   posts: {
-    "user-data": userData,
-    "corpus-fingerprinting": corpusFingerprinting,
     "pattern-discovery": patternDiscovery,
     "pattern-confidence": patternConfidence,
   },
