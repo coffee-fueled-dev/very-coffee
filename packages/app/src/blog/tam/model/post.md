@@ -1,7 +1,5 @@
 # The Trajectory-Affordance Model
 
-TA is a formal model of causal chains between an actor $\mathsf{A}$ and world $\mathsf{W}$
-
 The core cycle:
 
 1. $\mathsf{A}$ is in a situation
@@ -35,7 +33,7 @@ $$
 
 ### State Space $\mathcal{X}$
 
-The set of distinct states the system is capable of representing.
+The set of distinct states $\mathsf{A}$ is capable of representing.
 
 ### Trajectories $\mathcal{T}(\mathcal{X})$
 
@@ -77,7 +75,7 @@ $$
 \{\mathsf{true}, \mathsf{false}\}
 $$
 
-Given an internal state $x_n$ and a context sequence $\vec{c}_n \in \mathcal{C}^*$, the predicate induces an affordance cone:
+Given an internal state $x_n$ and a context sequence $\vec{c}_n \in \mathcal{C}^*$, the predicate determines an affordance cone:
 
 $$
 \Phi_p(x_n, \vec{c}_n)
