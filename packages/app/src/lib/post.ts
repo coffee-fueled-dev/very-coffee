@@ -11,6 +11,7 @@ export const TAGS = [
   "security",
   "graphs",
   "ai",
+  "arc-agi",
   "agents",
   "state spaces",
   "formal methods",
