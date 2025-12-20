@@ -65,7 +65,7 @@ export const IOPanel = ({
           <Manifold
             ref={manifoldRef}
             data={data}
-            className="w-full h-full"
+            className="w-full h-full bg-zinc-900 rounded-lg"
             colorMode={colorMode}
           />
         )}

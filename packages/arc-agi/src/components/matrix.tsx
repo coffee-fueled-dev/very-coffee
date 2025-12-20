@@ -14,21 +14,21 @@ import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
  * Muted color palette for ARC-AGI values 0-9
  * 0 = background (dark), 1-9 = distinct muted colors
  */
-const MUTED_PALETTE = [
-  "#1a1a1a", // 0: background/empty
-  "#6b8e9f", // 1: muted steel blue
-  "#9f8b6b", // 2: muted sand/tan
-  "#7a9f6b", // 3: muted sage green
-  "#9f6b7a", // 4: muted dusty rose
-  "#8b7a9f", // 5: muted lavender
-  "#6b9f9f", // 6: muted teal
-  "#9f9f6b", // 7: muted olive
-  "#9f7a6b", // 8: muted terracotta
-  "#7a8b9f", // 9: muted slate
+const COLOR_PALETTE = [
+  "#353B3C", // 0: Gunmetal
+  "#3772FF", // 1: Crayola Blue
+  "#FFCF9C", // 2: Apricot Cream
+  "#06B178", // 3: Jungle Green
+  "#EF3054", // 4: Watermelon
+  "#BAA5FF", // 5: Mauve
+  "#73FBD3", // 6: Aquamarine
+  "#09725F", // 7: Blue Spruce
+  "#A12B6A", // 8: Berry Blush
+  "#5C7299", // 9: Glaucous
 ] as const;
 
 function mapColor(value: number): string {
-  return MUTED_PALETTE[Math.max(0, Math.min(9, value))] ?? MUTED_PALETTE[0];
+  return COLOR_PALETTE[Math.max(0, Math.min(9, value))] ?? COLOR_PALETTE[0];
 }
 
 export const DenseMatrix = ({
@@ -158,9 +158,9 @@ function buildLattice(data: number[][]): {
 
 const OCCUPIED_RADIUS = 0.3;
 const UNOCCUPIED_RADIUS = 0.12;
-const MUTED_SPHERE_COLOR = "#aaa";
+const MUTED_SPHERE_COLOR = "#494A45";
 
-export type ManifoldColorMode = "rgb" | "layer";
+export type ManifoldColorMode = "rgb" | "gradient" | "layer";
 
 // Camera preset angles (azimuth, polar) in radians
 export const CAMERA_PRESETS = {
@@ -180,12 +180,21 @@ function getOccupiedColor(
   cell: LatticeCell,
   colorMode: ManifoldColorMode
 ): string {
-  if (colorMode === "layer") {
-    // Use the muted palette based on the z (layer) value
-    return MUTED_PALETTE[cell.z] ?? MUTED_PALETTE[0];
+  switch (colorMode) {
+    case "gradient":
+      // Use the center color for this layer (x=0.5, y=0.5 in normalized coordinates)
+      // This locks all cells in the same z-layer to the same color
+      const centerR = 0.5;
+      const centerG = 0.5;
+      const b = cell.color[2]; // z is already normalized (z/depth)
+      return `rgb(${Math.round(centerR * 255)}, ${Math.round(centerG * 255)}, ${Math.round(b * 255)})`;
+    case "layer":
+      return COLOR_PALETTE[cell.z] ?? COLOR_PALETTE[0];
+    case "rgb":
+      return `rgb(${Math.round(cell.color[0] * 255)}, ${Math.round(cell.color[1] * 255)}, ${Math.round(cell.color[2] * 255)})`;
+    default:
+      return COLOR_PALETTE[0];
   }
-  // RGB interpolation mode
-  return `rgb(${Math.round(cell.color[0] * 255)}, ${Math.round(cell.color[1] * 255)}, ${Math.round(cell.color[2] * 255)})`;
 }
 
 function LatticeSphere({
@@ -204,20 +213,18 @@ function LatticeSphere({
   const radius = cell.occupied ? OCCUPIED_RADIUS : UNOCCUPIED_RADIUS;
   const color = cell.occupied
     ? getOccupiedColor(cell, colorMode)
-    : MUTED_SPHERE_COLOR;
+    : COLOR_PALETTE[0];
 
   return (
     <mesh position={[cell.x - offsetX, -(cell.y - offsetY), cell.z - offsetZ]}>
       <sphereGeometry
         args={[radius, cell.occupied ? 8 : 4, cell.occupied ? 8 : 4]}
       />
-      <meshStandardMaterial
-        color={color}
-        metalness={cell.occupied ? 0.3 : 0.1}
-        roughness={cell.occupied ? 0.4 : 0.8}
-        transparent={!cell.occupied}
-        opacity={cell.occupied ? 1 : 0.2}
-      />
+      {cell.occupied ? (
+        <meshStandardMaterial color={color} />
+      ) : (
+        <meshBasicMaterial color={color} transparent opacity={0.2} />
+      )}
     </mesh>
   );
 }
@@ -241,9 +248,9 @@ function ManifoldScene({
 
   return (
     <>
-      <ambientLight intensity={0.6} />
+      <ambientLight intensity={1} />
       <pointLight position={[15, 15, 15]} intensity={1} />
-      <pointLight position={[-10, -10, -10]} intensity={0.3} />
+      <pointLight position={[-10, -10, -10]} intensity={1} />
 
       {cells.map((cell) => (
         <LatticeSphere
