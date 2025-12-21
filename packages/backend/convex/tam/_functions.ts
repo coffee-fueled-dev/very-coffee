@@ -1,12 +1,17 @@
-import { languageModels } from "../conversation/_agents";
 import { embed, generateObject } from "ai";
 import { z } from "zod/v4";
 import { Doc, Id } from "../_generated/dataModel";
+import { languageModels } from "./_util";
+import systemPrompt from "./_systemPrompt.txt";
 
 export async function evaluateThen(observedTrajectory: string[], then: string) {
   return generateObject({
     model: languageModels.chat,
     messages: [
+      {
+        role: "system",
+        content: systemPrompt,
+      },
       {
         role: "user",
         content: `Did any state of the observed trajectory violate the expected outcome?`,
@@ -52,6 +57,10 @@ export async function inferTrajectory(
     model: languageModels.chat,
     messages: [
       {
+        role: "system",
+        content: systemPrompt,
+      },
+      {
         role: "user",
         content: `From the previous situation, an port was chosen which resulted in an episode from the world.
           Given that episode, infer the causal chain of events in the world, ending with the current state.
@@ -66,16 +75,12 @@ export async function inferTrajectory(
     schema: z.string(),
   });
 
-  const { embedding: embeddedState } = await embed({
-    model: languageModels.textEmbedding,
-    value: trajectory[trajectory.length - 1],
-  });
-
   return {
     trajectory,
     situation: {
-      state: trajectory[trajectory.length - 1],
-      embeddedState: embeddedState,
+      state: {
+        value: trajectory[trajectory.length - 1],
+      },
     },
   };
 }
@@ -84,7 +89,7 @@ export async function choosePort(
   situation: string,
   ports: {
     _id: Id<"ports">;
-    action: Pick<Doc<"actions">, "description" | "name" | "schema">;
+    action: Pick<Doc<"actions">, "description" | "key" | "schema">;
     predicate: { when: string; then: string };
   }[],
   intent: string
@@ -92,6 +97,10 @@ export async function choosePort(
   return generateObject({
     model: languageModels.chat,
     messages: [
+      {
+        role: "system",
+        content: systemPrompt,
+      },
       {
         role: "user",
         content: `Choose a port to bind which best achieves the intent and adheres to the following rules:
@@ -120,7 +129,7 @@ export async function choosePort(
       arguments: z
         .record(z.string(), z.any())
         .describe(
-          "Your choice of arguments which adhere to the provided action schema"
+          "Your choice of arguments which adhere to the schema for the chosen action"
         ),
     }),
   }).then(({ object }) => object);
@@ -143,6 +152,10 @@ export async function refinePort(
   const { object: refinement } = await generateObject({
     model: languageModels.chat,
     messages: [
+      {
+        role: "system",
+        content: systemPrompt,
+      },
       {
         role: "user",
         content: `Based on the verdict of the binding, refine the port's "when" and "then" clauses according to the following rules:
@@ -188,50 +201,29 @@ export async function refinePort(
     ]),
   });
 
-  if (
-    refinement.method !== "proliferate" &&
-    !refinement.when &&
-    refinement.then !== null
-  ) {
-    const { then, method } = refinement;
-    return await embed({
-      model: languageModels.textEmbedding,
-      value: then,
-    }).then(({ embedding }) => ({
-      method,
-      then,
-      embeddedThen: embedding,
-    }));
-  } else if (
-    refinement.method !== "proliferate" &&
-    !refinement.then &&
-    refinement.when !== null
-  ) {
-    const { when, method } = refinement;
-    return await embed({
-      model: languageModels.textEmbedding,
-      value: when,
-    }).then(({ embedding }) => ({
-      method,
-      when,
-      embeddedWhen: embedding,
-    }));
+  if (refinement.method === "proliferate") {
+    return {
+      when: { value: refinement.when },
+      then: { value: refinement.then },
+      method: refinement.method,
+    };
+  } else if (!refinement.when && refinement.then) {
+    return {
+      then: { value: refinement.then },
+      method: refinement.method,
+    };
+  } else if (!refinement.then && refinement.when) {
+    return {
+      when: { value: refinement.when },
+      method: refinement.method,
+    };
   } else if (!refinement.then && !refinement.when) {
     return null;
   } else {
-    return await Promise.all([
-      embed({
-        model: languageModels.textEmbedding,
-        value: refinement.when,
-      }),
-      embed({
-        model: languageModels.textEmbedding,
-        value: refinement.then,
-      }),
-    ]).then(([{ embedding: embeddedWhen }, { embedding: embeddedThen }]) => ({
-      ...refinement,
-      embeddedWhen,
-      embeddedThen,
-    }));
+    return {
+      when: { value: refinement.when! }, // TODO: Double check logic. This type assertion makes me think there's a bug
+      then: { value: refinement.then! }, // TODO: Double check logic. This type assertion makes me think there's a bug
+      method: refinement.method,
+    };
   }
 }

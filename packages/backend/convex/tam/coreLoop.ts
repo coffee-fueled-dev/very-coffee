@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { languageModels } from "../conversation/_agents";
+import { languageModels, vEmbeddedValue } from "./_util";
 import { embed } from "ai";
 import {
   internalQuery,
@@ -18,13 +18,59 @@ import {
   inferTrajectory,
   refinePort,
 } from "./_functions";
+import { pick } from "convex-helpers";
+
+export const getWorldPorts = internalQuery({
+  args: {
+    world: v.id("worlds"),
+  },
+  handler: async (ctx, { world }) => {
+    const actionStream = ctx.db
+      .query("actions")
+      .withIndex("by_world", (q) => q.eq("world", world));
+
+    const ports = [];
+    for await (const action of actionStream) {
+      const portStream = ctx.db
+        .query("ports")
+        .withIndex("by_action", (q) => q.eq("action", action._id));
+
+      for await (const port of portStream) {
+        ports.push({
+          ...pick(port, ["_id", "predicate"]),
+          action: pick(action, ["key", "description", "schema"]),
+        });
+      }
+    }
+
+    return ports;
+  },
+});
 
 export const getPort = internalQuery({
   args: {
     id: v.id("ports"),
   },
-  returns: v.union(doc(schema, "ports"), v.null()),
-  handler: (ctx, { id }): Promise<Doc<"ports"> | null> => ctx.db.get(id),
+  handler: (ctx, { id }) => ctx.db.get(id),
+});
+
+export const savePredicate = internalMutation({
+  args: {
+    port: v.id("ports"),
+    predicate: v.object({
+      when: vEmbeddedValue,
+      then: vEmbeddedValue,
+    }),
+  },
+  handler: (ctx, { port, predicate }) => ctx.db.patch(port, { predicate }),
+});
+
+export const saveSituationState = internalMutation({
+  args: {
+    situation: v.id("situations"),
+    state: vEmbeddedValue,
+  },
+  handler: (ctx, { situation, state }) => ctx.db.patch(situation, { state }),
 });
 
 export const updateBindingStatus = internalMutation({
@@ -37,30 +83,24 @@ export const updateBindingStatus = internalMutation({
 
 export const getSituationContext = internalQuery({
   args: {
-    actor: v.id("actors"),
+    session: v.id("sessions"),
   },
-  returns: v.union(
-    v.object({
-      situation: doc(schema, "situations"),
-      binding: v.union(doc(schema, "bindings"), v.null()),
-      episode: v.union(v.array(doc(schema, "contexts")), v.null()),
-      port: v.union(doc(schema, "ports"), v.null()),
-    }),
-    v.null()
-  ),
-  handler: async (
-    ctx
-  ): Promise<{
-    situation: Doc<"situations">;
-    binding: Doc<"bindings"> | null;
-    episode: Array<Doc<"contexts">> | null;
-    port: Doc<"ports"> | null;
-  } | null> =>
+  handler: async (ctx, { session }) =>
     Promise.all([
-      ctx.db.query("situations").order("desc").first(),
-      ctx.db.query("bindings").order("desc").first(),
+      ctx.db.get(session),
+      ctx.db
+        .query("situations")
+        .withIndex("by_session", (q) => q.eq("session", session))
+        .order("desc")
+        .first(),
+      ctx.db
+        .query("bindings")
+        .withIndex("by_session", (q) => q.eq("session", session))
+        .order("desc")
+        .first(),
     ])
-      .then(([situation, binding]) => {
+      .then(([session, situation, binding]) => {
+        if (!session) return Promise.reject(`Missing session ${session}`);
         if (!situation) return Promise.reject("No situations found");
         return Promise.all([
           situation,
@@ -72,13 +112,19 @@ export const getSituationContext = internalQuery({
                 .collect()
             : null,
           binding ? ctx.db.get(binding.port) : null,
+          ctx.db
+            .get(session.actor)
+            .then((actor) =>
+              actor ? actor : Promise.reject(`Missing actor ${session.actor}`)
+            ),
         ]);
       })
-      .then(([situation, binding, episode, port]) => ({
+      .then(([situation, binding, episode, port, actor]) => ({
         situation,
         binding,
         episode,
         port,
+        actor,
       }))
       .catch(() => null),
 });
@@ -189,44 +235,51 @@ export const handleRefinementData = internalMutation({
 
 export const handleInitilizationData = internalMutation({
   args: {
-    name: v.string(),
+    actor: v.id("actors"),
+    world: v.id("worlds"),
     initialSituation: v.object({
-      state: v.string(),
-      embeddedState: v.array(v.float64()),
+      state: vEmbeddedValue,
+    }),
+    session: v.object({
+      source: v.string(),
+      id: v.string(),
     }),
   },
-  handler: (ctx, { name, initialSituation }) =>
-    ctx.db
-      .insert("actors", {
-        name,
-        updatedAt: Date.now(),
+  handler: (ctx, { actor, world, initialSituation, session }) =>
+    void ctx.db
+      .insert("sessions", {
+        actor,
+        world,
+        external: session,
+        status: "active",
       })
-      .then((actor) =>
+      .then((session) =>
         ctx.db.insert("situations", {
           actor,
           previous: null,
           state: initialSituation.state,
-          embeddedState: initialSituation.embeddedState,
+          session,
         })
       ),
 });
 
-export const initializeActor = internalAction({
+export const initializeSession = internalAction({
   args: {
-    name: v.string(),
+    actor: v.id("actors"),
+    world: v.id("worlds"),
     state: v.string(),
+    session: v.object({
+      source: v.string(),
+      id: v.string(),
+    }),
   },
-  handler: async (ctx, { name, state }) => {
-    await embed({
-      model: languageModels.textEmbedding,
-      value: state,
-    }).then(({ embedding: embeddedState }) =>
-      ctx.runMutation(internal.tam.coreLoop.handleInitilizationData, {
-        name,
-        initialSituation: { state, embeddedState },
-      })
-    );
-  },
+  handler: async (ctx, { actor, world, state, session }) =>
+    void ctx.runMutation(internal.tam.coreLoop.handleInitilizationData, {
+      actor,
+      world,
+      initialSituation: { state: { value: state } },
+      session,
+    }),
 });
 
 export const searchPorts = internalAction({
@@ -240,16 +293,6 @@ export const searchPorts = internalAction({
     ctx,
     { actor, situation, predicate }
   ): Promise<Doc<"ports">[]> => {
-    const situationCtx = await ctx.runQuery(
-      internal.tam.coreLoop.getSituationContext,
-      {
-        actor,
-      }
-    );
-    if (!situationCtx) throw new Error("No situation exists to bind to");
-    if (situationCtx.binding)
-      throw new Error("A binding is already in progress");
-
     const [whenMatches, thenMatches] = await Promise.all([
       embed({
         model: languageModels.textEmbedding,
@@ -304,13 +347,13 @@ export const searchPorts = internalAction({
 
 export const bindPort = internalAction({
   args: {
-    actor: v.id("actors"),
+    session: v.id("sessions"),
     intent: v.string(),
     affordances: v.array(
       v.object({
         _id: v.id("ports"),
         action: v.object({
-          name: v.string(),
+          key: v.string(),
           description: v.string(),
           schema: v.record(v.string(), v.any()),
         }),
@@ -318,11 +361,11 @@ export const bindPort = internalAction({
       })
     ),
   },
-  handler: async (ctx, { actor, intent, affordances }) => {
+  handler: async (ctx, { session, intent, affordances }) => {
     const situationCtx = await ctx.runQuery(
       internal.tam.coreLoop.getSituationContext,
       {
-        actor,
+        session,
       }
     );
     if (!situationCtx) throw new Error("No situation exists to bind to");
@@ -330,7 +373,7 @@ export const bindPort = internalAction({
       throw new Error("A binding is already in progress");
 
     const choice = await choosePort(
-      situationCtx.situation.state,
+      situationCtx.situation.state.value,
       affordances,
       intent
     );
@@ -341,20 +384,21 @@ export const bindPort = internalAction({
       success: null,
       justification: choice.justification,
       arguments: choice.arguments,
-      actor,
+      actor: situationCtx.actor._id,
       status: "active",
+      session,
     });
   },
 });
 
 export const processEpisode = internalAction({
   args: {
-    actor: v.id("actors"),
+    session: v.id("sessions"),
   },
-  handler: async (ctx, { actor }) => {
+  handler: async (ctx, { session }) => {
     const situationCtx = await ctx.runQuery(
       internal.tam.coreLoop.getSituationContext,
-      { actor }
+      { session }
     );
 
     if (
@@ -373,13 +417,13 @@ export const processEpisode = internalAction({
 
     const { trajectory, situation } = await inferTrajectory(
       situationCtx.episode,
-      situationCtx.situation.state,
-      situationCtx.port.predicate.when
+      situationCtx.situation.state.value,
+      situationCtx.port.predicate.when.value
     );
 
     const { verdict } = await evaluateThen(
       trajectory,
-      situationCtx.port.predicate.then
+      situationCtx.port.predicate.then.value
     );
 
     const resolvedVerdict =
@@ -399,15 +443,16 @@ export const processEpisode = internalAction({
           };
 
     const refinement = await refinePort(resolvedVerdict, {
-      when: situationCtx.port.predicate.when,
-      then: situationCtx.port.predicate.then,
+      when: situationCtx.port.predicate.when.value,
+      then: situationCtx.port.predicate.then.value,
     });
 
     await ctx.runMutation(internal.tam.coreLoop.handleRefinementData, {
       newSituation: {
         ...situation,
         previous: situationCtx.situation._id,
-        actor,
+        actor: situationCtx.actor._id,
+        session,
       },
       verdict: { binding: situationCtx.binding._id, ...resolvedVerdict },
       portRefinement: refinement
@@ -419,8 +464,6 @@ export const processEpisode = internalAction({
                     predicate: {
                       when: refinement.when,
                       then: refinement.then,
-                      embeddedWhen: refinement.embeddedWhen,
-                      embeddedThen: refinement.embeddedThen,
                     },
                     history: {
                       totalIterations: 0,
@@ -433,11 +476,72 @@ export const processEpisode = internalAction({
                   updatedPort: {
                     predicate: omit(refinement, ["method"]),
                     _id: situationCtx.port._id,
-                    actor,
+                    actor: situationCtx.actor._id,
                   },
                 }),
           }
         : null,
     });
   },
+});
+
+export const embedPredicate = internalAction({
+  args: {
+    port: v.id("ports"),
+    when: v.optional(v.string()),
+    then: v.optional(v.string()),
+  },
+  handler: async (ctx, { port, when, then }) => {
+    const portDoc = await ctx.runQuery(internal.tam.coreLoop.getPort, {
+      id: port,
+    });
+    if (!portDoc) throw new Error(`Port ${port} not found`);
+
+    const currentPredicate = portDoc.predicate;
+    const [whenEmbedding, thenEmbedding] = await Promise.all([
+      when
+        ? embed({
+            model: languageModels.textEmbedding,
+            value: when,
+          }).then(({ embedding }) => ({
+            value: when,
+            embedding,
+          }))
+        : Promise.resolve(null),
+      then
+        ? embed({
+            model: languageModels.textEmbedding,
+            value: then,
+          }).then(({ embedding }) => ({
+            value: then,
+            embedding,
+          }))
+        : Promise.resolve(null),
+    ]);
+
+    await ctx.runMutation(internal.tam.coreLoop.savePredicate, {
+      port,
+      predicate: {
+        when: whenEmbedding ?? currentPredicate.when,
+        then: thenEmbedding ?? currentPredicate.then,
+      },
+    });
+  },
+});
+
+export const embedState = internalAction({
+  args: { situation: v.id("situations"), state: v.string() },
+  handler: (ctx, { situation, state }) =>
+    void embed({
+      model: languageModels.textEmbedding,
+      value: state,
+    }).then(({ embedding }) =>
+      ctx.runMutation(internal.tam.coreLoop.saveSituationState, {
+        situation,
+        state: {
+          value: state,
+          embedding,
+        },
+      })
+    ),
 });
