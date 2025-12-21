@@ -1,6 +1,6 @@
 import "./index.css";
 import { useState, useEffect } from "react";
-import type { ManifoldColorMode } from "./components/matrix";
+import type { LatticeColorMode } from "./components/lattice";
 import {
   ResizablePanelGroup,
   ResizableHandle,
@@ -13,67 +13,21 @@ import {
   type ExampleType,
   type ExampleTab,
 } from "./components/header";
+import { PuzzleProvider, usePuzzles } from "./context/puzzles";
 
-interface Puzzle {
-  id: string;
-  train: Array<{ input: number[][]; output: number[][] }>;
-  test: Array<{ input: number[][]; output: number[][] }>;
-}
-
-interface PuzzleListResponse {
-  puzzles: string[];
-  pagination: {
-    page: number;
-    limit: number;
-    totalCount: number;
-    totalPages: number;
-    hasNext: boolean;
-    hasPrev: boolean;
-  };
-}
-
-export function App() {
-  const [puzzleList, setPuzzleList] = useState<PuzzleListResponse | null>(null);
-  const [selectedPuzzle, setSelectedPuzzle] = useState<Puzzle | null>(null);
-  const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+function PuzzleViewer() {
+  const { selectedPuzzle } = usePuzzles();
   const [viewMode, setViewMode] = useState<ViewMode>("matrix");
-  const [colorMode, setColorMode] = useState<ManifoldColorMode>("rgb");
+  const [colorMode, setColorMode] = useState<LatticeColorMode>("layer");
   const [currentExample, setCurrentExample] = useState<ExampleType>({
     kind: "train",
     index: 0,
   });
 
-  // Fetch puzzle list
+  // Reset to first training example when puzzle changes
   useEffect(() => {
-    setLoading(true);
-    setError(null);
-    fetch(`/api/puzzles?page=${page}&limit=20`)
-      .then((res) => res.json())
-      .then((data) => {
-        setPuzzleList(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        setError(err.message);
-        setLoading(false);
-      });
-  }, [page]);
-
-  // Fetch selected puzzle
-  const loadPuzzle = async (id: string) => {
-    setLoading(true);
-    try {
-      const res = await fetch(`/api/puzzles/${id}`);
-      const data = await res.json();
-      setSelectedPuzzle(data);
-      setCurrentExample({ kind: "train", index: 0 }); // Reset to first training example
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load puzzle");
-    }
-    setLoading(false);
-  };
+    setCurrentExample({ kind: "train", index: 0 });
+  }, [selectedPuzzle?.id]);
 
   // Get current example data
   const getCurrentExample = () => {
@@ -100,66 +54,66 @@ export function App() {
   const example = getCurrentExample();
   const tabs = getExampleTabs();
 
+  if (!selectedPuzzle) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        Select a puzzle from the sidebar
+      </div>
+    );
+  }
+
   return (
-    <div className="h-screen w-full bg-zinc-950 text-zinc-100 flex">
-      <Sidebar
-        puzzleList={puzzleList}
-        loading={loading}
-        error={error}
-        selectedPuzzle={selectedPuzzle}
-        onPuzzleSelect={loadPuzzle}
-        onPageChange={(delta) => setPage((p) => p + delta)}
+    <>
+      <Header
+        puzzleId={selectedPuzzle.id}
+        tabs={tabs}
+        currentExample={currentExample}
+        viewMode={viewMode}
+        colorMode={colorMode}
+        onExampleSelect={setCurrentExample}
+        onViewModeChange={setViewMode}
+        onColorModeChange={setColorMode}
       />
 
-      {/* Main Content */}
-      <main className="flex-1 flex flex-col min-w-0">
-        {!selectedPuzzle ? (
-          <div className="h-full flex items-center justify-center text-zinc-500">
-            Select a puzzle from the sidebar
-          </div>
-        ) : (
-          <>
-            <Header
-              puzzleId={selectedPuzzle.id}
-              tabs={tabs}
-              currentExample={currentExample}
-              viewMode={viewMode}
-              colorMode={colorMode}
-              onExampleSelect={setCurrentExample}
-              onViewModeChange={setViewMode}
-              onColorModeChange={setColorMode}
-            />
+      {example && (
+        <ResizablePanelGroup
+          direction="horizontal"
+          className="flex-1 min-h-0 p-2 bg-muted-foreground/10"
+        >
+          <IOPanel
+            data={example.input}
+            viewMode={viewMode}
+            label="Input"
+            colorMode={colorMode}
+          />
 
-            {example && (
-              <ResizablePanelGroup
-                direction="horizontal"
-                className="flex-1 min-h-0"
-              >
-                <IOPanel
-                  data={example.input}
-                  viewMode={viewMode}
-                  label="Input"
-                  colorMode={colorMode}
-                />
+          <ResizableHandle withHandle />
 
-                <ResizableHandle withHandle />
+          <IOPanel
+            data={example.output}
+            viewMode={viewMode}
+            label={
+              currentExample.kind === "test" ? "Expected Output" : "Output"
+            }
+            colorMode={colorMode}
+            obfuscate={currentExample.kind === "test"}
+          />
+        </ResizablePanelGroup>
+      )}
+    </>
+  );
+}
 
-                <IOPanel
-                  data={example.output}
-                  viewMode={viewMode}
-                  label={
-                    currentExample.kind === "test"
-                      ? "Expected Output"
-                      : "Output"
-                  }
-                  colorMode={colorMode}
-                />
-              </ResizablePanelGroup>
-            )}
-          </>
-        )}
-      </main>
-    </div>
+export function App() {
+  return (
+    <PuzzleProvider>
+      <div className="h-screen w-full flex">
+        <Sidebar />
+        <main className="flex-1 flex flex-col min-w-0">
+          <PuzzleViewer />
+        </main>
+      </div>
+    </PuzzleProvider>
   );
 }
 

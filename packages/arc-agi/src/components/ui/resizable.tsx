@@ -50,7 +50,7 @@ function ResizableHandle({
     <Separator
       data-slot="resizable-handle"
       className={cn(
-        "bg-zinc-800 relative flex items-center justify-center",
+        "relative flex items-center justify-center",
         "data-[orientation=horizontal]:w-px data-[orientation=horizontal]:h-full",
         "data-[orientation=vertical]:h-px data-[orientation=vertical]:w-full",
         className
@@ -58,8 +58,8 @@ function ResizableHandle({
       {...props}
     >
       {withHandle && (
-        <div className="bg-zinc-700 z-10 flex h-4 w-3 items-center justify-center rounded-sm border border-zinc-600">
-          <GripVerticalIcon className="size-2.5 text-zinc-400" />
+        <div className="bg-muted-foreground/20 z-10 flex h-10 w-3 items-center justify-center rounded-sm border border-border">
+          <GripVerticalIcon className="size-2.5" />
         </div>
       )}
     </Separator>

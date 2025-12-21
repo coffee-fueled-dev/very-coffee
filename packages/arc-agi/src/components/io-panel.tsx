@@ -1,13 +1,14 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
+import { DenseMatrix } from "./matrix";
 import {
-  DenseMatrix,
-  Manifold,
-  type ManifoldColorMode,
-  type ManifoldHandle,
+  Lattice,
+  type LatticeColorMode,
+  type LatticeHandle,
   type CameraPreset,
-} from "./matrix";
-import { AspectRatio } from "./ui/aspect-ratio";
+} from "./lattice";
 import { ResizablePanel } from "./ui/resizable";
+import { EyeIcon, EyeOffIcon } from "lucide-react";
+import { Button } from "./ui/button";
 
 const SNAP_BUTTONS: Array<{ preset: CameraPreset; label: string }> = [
   { preset: "isometric", label: "Iso" },
@@ -21,54 +22,129 @@ export const IOPanel = ({
   viewMode,
   label = "Input",
   colorMode = "rgb",
+  obfuscate = false,
 }: {
   data: number[][];
-  viewMode: "matrix" | "manifold";
+  viewMode: "matrix" | "lattice";
   label?: string;
-  colorMode?: ManifoldColorMode;
+  colorMode?: LatticeColorMode;
+  obfuscate?: boolean;
 }) => {
-  const manifoldRef = useRef<ManifoldHandle>(null);
+  const latticeRef = useRef<LatticeHandle>(null);
+  const [revealed, setRevealed] = useState(false);
+
+  const isBlurred = obfuscate && !revealed;
 
   return (
-    <ResizablePanel defaultSize={50} minSize={20} className="overflow-y-auto">
-      <div className="h-full flex flex-col p-4">
+    <ResizablePanel
+      defaultSize={50}
+      minSize={20}
+      className="overflow-y-auto relative"
+    >
+      {/* Reveal hint overlay */}
+      {isBlurred && (
+        <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
+          <div className="rounded-full p-4">
+            <EyeIcon className="w-8 h-8" />
+          </div>
+        </div>
+      )}
+      <div
+        className="h-full flex flex-col p-2"
+        onClick={() => obfuscate && !revealed && setRevealed(true)}
+      >
         <div className="flex items-center justify-between mb-3">
-          <p className="text-sm text-zinc-400">{label}</p>
-          {viewMode === "manifold" && (
+          <p className="text-sm font-semibold">{label}</p>
+          {(viewMode === "lattice" || obfuscate) && (
             <div className="flex gap-1">
-              {SNAP_BUTTONS.map(({ preset, label: btnLabel }) => (
-                <button
-                  key={preset}
-                  onClick={() => manifoldRef.current?.snapTo(preset)}
-                  className="px-2 py-0.5 text-xs rounded bg-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-700 transition-colors"
+              {obfuscate && (
+                <Button
+                  onClick={() => setRevealed(!revealed)}
+                  variant="secondary"
+                  size="sm"
                 >
-                  {btnLabel}
-                </button>
-              ))}
+                  {revealed ? (
+                    <>
+                      <EyeOffIcon className="w-4 h-4" /> Hide
+                    </>
+                  ) : (
+                    <>
+                      <EyeIcon className="w-4 h-4" /> Show
+                    </>
+                  )}
+                </Button>
+              )}
+              {viewMode === "lattice" &&
+                SNAP_BUTTONS.map(({ preset, label: btnLabel }) => (
+                  <Button
+                    key={preset}
+                    onClick={() => latticeRef.current?.snapTo(preset)}
+                    variant="secondary"
+                    size="sm"
+                  >
+                    {btnLabel}
+                  </Button>
+                ))}
             </div>
           )}
         </div>
 
-        {viewMode === "matrix" ? (
-          <AspectRatio
-            ratio={data.length / (data[0]?.length ?? 1)}
-            className="bg-zinc-900 rounded-lg p-4"
+        <div className="flex-1 rounded-lg overflow-hidden relative">
+          <div
+            className="h-full"
+            style={{
+              filter: isBlurred ? "blur(3rem)" : "none",
+              transition: "filter 0.2s ease-out",
+              maskImage: isBlurred
+                ? "radial-gradient(ellipse 88% 88% at center, black 55%, rgba(0,0,0,0.4) 80%, rgba(0,0,0,0.1) 92%, transparent 100%)"
+                : "none",
+              WebkitMaskImage: isBlurred
+                ? "radial-gradient(ellipse 88% 88% at center, black 55%, rgba(0,0,0,0.4) 80%, rgba(0,0,0,0.1) 92%, transparent 100%)"
+                : "none",
+            }}
           >
-            <DenseMatrix
-              data={data}
-              fillContainer
-              gap={2}
-              className="max-w-full max-h-full aspect-square"
+            {viewMode === "matrix" ? (
+              <div
+                className="flex items-center justify-center overflow-hidden min-h-0 min-w-0 rounded-lg bg-card h-full"
+                style={{ containerType: "size" }}
+              >
+                <div
+                  className="p-4"
+                  style={{
+                    // Use container queries for true "contain" fit
+                    // Pick the smaller of: full width, or height-based width
+                    width: `min(100cqw, 100cqh * ${(data[0]?.length ?? 1) / data.length})`,
+                    height: `min(100cqh, 100cqw * ${data.length / (data[0]?.length ?? 1)})`,
+                  }}
+                >
+                  <DenseMatrix
+                    data={data}
+                    fillContainer
+                    gap={2}
+                    className="w-full h-full"
+                  />
+                </div>
+              </div>
+            ) : (
+              <Lattice
+                ref={latticeRef}
+                data={data}
+                className="w-full h-full rounded-lg bg-card"
+                colorMode={colorMode}
+              />
+            )}
+          </div>
+          {/* Soft edge overlay */}
+          {isBlurred && (
+            <div
+              className="absolute inset-0 pointer-events-none rounded-lg"
+              style={{
+                background:
+                  "radial-gradient(ellipse 88% 88% at center, transparent 55%, rgba(0,0,0,0.05) 80%, rgba(0,0,0,0.15) 92%, rgba(0,0,0,0.3) 100%)",
+              }}
             />
-          </AspectRatio>
-        ) : (
-          <Manifold
-            ref={manifoldRef}
-            data={data}
-            className="w-full h-full bg-zinc-900 rounded-lg"
-            colorMode={colorMode}
-          />
-        )}
+          )}
+        </div>
       </div>
     </ResizablePanel>
   );

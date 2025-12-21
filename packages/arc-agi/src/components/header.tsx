@@ -1,6 +1,7 @@
-import type { ManifoldColorMode } from "./matrix";
+import type { LatticeColorMode } from "./lattice";
+import { ToggleGroup, ToggleGroupItem } from "./ui/toggle-group";
 
-type ViewMode = "matrix" | "manifold";
+type ViewMode = "matrix" | "lattice";
 type ExampleType =
   | { kind: "train"; index: number }
   | { kind: "test"; index: number };
@@ -14,6 +15,18 @@ function PuzzleHeader({ puzzleId }: { puzzleId: string }) {
   return <h2 className="text-lg font-semibold font-mono">{puzzleId}</h2>;
 }
 
+function exampleToValue(example: ExampleType): string {
+  return `${example.kind}-${example.index}`;
+}
+
+function valueToExample(value: string): ExampleType {
+  const [kind, indexStr] = value.split("-");
+  return {
+    kind: kind as "train" | "test",
+    index: parseInt(indexStr ?? "0", 10),
+  };
+}
+
 function ExampleTabs({
   tabs,
   currentExample,
@@ -24,31 +37,22 @@ function ExampleTabs({
   onExampleSelect: (example: ExampleType) => void;
 }) {
   return (
-    <nav className="flex gap-1">
-      {tabs.map((tab, i) => {
-        const isActive =
-          currentExample.kind === tab.type.kind &&
-          currentExample.index === tab.type.index;
-        const isTest = tab.type.kind === "test";
-        return (
-          <button
-            key={i}
-            onClick={() => onExampleSelect(tab.type)}
-            className={`px-3 py-1 text-sm rounded transition-colors ${
-              isActive
-                ? isTest
-                  ? "bg-amber-600 text-white"
-                  : "bg-blue-600 text-white"
-                : isTest
-                  ? "bg-zinc-800 text-amber-400 hover:bg-zinc-700"
-                  : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700"
-            }`}
-          >
-            {tab.label}
-          </button>
-        );
-      })}
-    </nav>
+    <ToggleGroup
+      type="single"
+      value={exampleToValue(currentExample)}
+      onValueChange={(value) => value && onExampleSelect(valueToExample(value))}
+      variant="outline"
+      size="sm"
+    >
+      {tabs.map((tab) => (
+        <ToggleGroupItem
+          key={exampleToValue(tab.type)}
+          value={exampleToValue(tab.type)}
+        >
+          {tab.label}
+        </ToggleGroupItem>
+      ))}
+    </ToggleGroup>
   );
 }
 
@@ -56,32 +60,22 @@ function ColorModeToggle({
   colorMode,
   onColorModeChange,
 }: {
-  colorMode: ManifoldColorMode;
-  onColorModeChange: (mode: ManifoldColorMode) => void;
+  colorMode: LatticeColorMode;
+  onColorModeChange: (mode: LatticeColorMode) => void;
 }) {
   return (
-    <div className="flex gap-1 bg-zinc-800 p-1 rounded-lg">
-      <button
-        onClick={() => onColorModeChange("rgb")}
-        className={`px-3 py-1 text-sm rounded transition-colors ${
-          colorMode === "rgb"
-            ? "bg-zinc-600 text-white"
-            : "text-zinc-400 hover:text-white"
-        }`}
-      >
-        RGB
-      </button>
-      <button
-        onClick={() => onColorModeChange("layer")}
-        className={`px-3 py-1 text-sm rounded transition-colors ${
-          colorMode === "layer"
-            ? "bg-zinc-600 text-white"
-            : "text-zinc-400 hover:text-white"
-        }`}
-      >
-        Layer
-      </button>
-    </div>
+    <ToggleGroup
+      type="single"
+      value={colorMode}
+      onValueChange={(value) =>
+        value && onColorModeChange(value as LatticeColorMode)
+      }
+      variant="outline"
+      size="sm"
+    >
+      <ToggleGroupItem value="rgb">RGB</ToggleGroupItem>
+      <ToggleGroupItem value="layer">Layer</ToggleGroupItem>
+    </ToggleGroup>
   );
 }
 
@@ -93,28 +87,16 @@ function ViewModeToggle({
   onViewModeChange: (mode: ViewMode) => void;
 }) {
   return (
-    <div className="flex gap-1 bg-zinc-800 p-1 rounded-lg">
-      <button
-        onClick={() => onViewModeChange("matrix")}
-        className={`px-3 py-1 text-sm rounded transition-colors ${
-          viewMode === "matrix"
-            ? "bg-zinc-600 text-white"
-            : "text-zinc-400 hover:text-white"
-        }`}
-      >
-        Matrix
-      </button>
-      <button
-        onClick={() => onViewModeChange("manifold")}
-        className={`px-3 py-1 text-sm rounded transition-colors ${
-          viewMode === "manifold"
-            ? "bg-zinc-600 text-white"
-            : "text-zinc-400 hover:text-white"
-        }`}
-      >
-        Manifold
-      </button>
-    </div>
+    <ToggleGroup
+      type="single"
+      value={viewMode}
+      onValueChange={(value) => value && onViewModeChange(value as ViewMode)}
+      variant="outline"
+      size="sm"
+    >
+      <ToggleGroupItem value="matrix">Matrix</ToggleGroupItem>
+      <ToggleGroupItem value="lattice">Lattice</ToggleGroupItem>
+    </ToggleGroup>
   );
 }
 
@@ -132,13 +114,13 @@ export function Header({
   tabs: ExampleTab[];
   currentExample: ExampleType;
   viewMode: ViewMode;
-  colorMode: ManifoldColorMode;
+  colorMode: LatticeColorMode;
   onExampleSelect: (example: ExampleType) => void;
   onViewModeChange: (mode: ViewMode) => void;
-  onColorModeChange: (mode: ManifoldColorMode) => void;
+  onColorModeChange: (mode: LatticeColorMode) => void;
 }) {
   return (
-    <header className="flex items-center justify-between p-4 border-b border-zinc-800 shrink-0">
+    <header className="flex items-center justify-between px-4 border-b shrink-0 h-[81px]">
       <div className="flex items-center gap-4">
         <PuzzleHeader puzzleId={puzzleId} />
         <ExampleTabs
@@ -148,7 +130,7 @@ export function Header({
         />
       </div>
       <div className="flex items-center gap-3">
-        {viewMode === "manifold" && (
+        {viewMode === "lattice" && (
           <ColorModeToggle
             colorMode={colorMode}
             onColorModeChange={onColorModeChange}
