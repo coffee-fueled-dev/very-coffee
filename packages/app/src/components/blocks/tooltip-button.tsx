@@ -17,7 +17,7 @@ export const TooltipButton: React.FC<
   } & TooltipProps
 > = ({ children, tooltip, side, ...props }) => (
   <TooltipProvider>
-    <Tooltip {...props}>
+    <Tooltip skipProvider {...props}>
       <TooltipTrigger asChild>{children}</TooltipTrigger>
       <TooltipContent side={side}>
         <p>{tooltip}</p>
