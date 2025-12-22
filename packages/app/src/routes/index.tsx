@@ -55,7 +55,7 @@ function Home() {
                 TAM
               </Button>
             </Link>
-            <Link to="/blog/$" params={{ _splat: "tkn/pattern-confidence" }}>
+            <Link to="/blog/$" params={{ _splat: "tkn/patternConfidence" }}>
               <Button size="sm" variant="secondary">
                 TKN demo!
               </Button>
