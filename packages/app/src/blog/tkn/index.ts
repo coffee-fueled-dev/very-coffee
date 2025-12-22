@@ -11,7 +11,7 @@ export default {
   summary:
     "An online algorithm that incrementally discovers and compresses recurring patterns in a data stream.",
   posts: {
-    "pattern-discovery": patternDiscovery,
-    "pattern-confidence": patternConfidence,
+    patternDiscovery,
+    patternConfidence,
   },
 } satisfies RegisteredPost;
