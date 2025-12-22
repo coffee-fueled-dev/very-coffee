@@ -5,7 +5,7 @@ import refinementPolicy from "./refinement-policy";
 
 export default {
   __type: "post",
-  published: true,
+  published: false,
   author: "Zach Garrett",
   title: "TA Refinement",
   tags: ["formal methods", "lattice theory"],
