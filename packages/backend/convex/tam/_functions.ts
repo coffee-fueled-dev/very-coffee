@@ -1,8 +1,8 @@
-import { embed, generateObject } from "ai";
+import { generateObject } from "ai";
 import { z } from "zod/v4";
 import { Doc, Id } from "../_generated/dataModel";
 import { languageModels } from "./_util";
-import systemPrompt from "./_systemPrompt.txt";
+import taContext from "./prompts/ta.txt";
 
 export async function evaluateThen(observedTrajectory: string[], then: string) {
   return generateObject({
@@ -10,7 +10,7 @@ export async function evaluateThen(observedTrajectory: string[], then: string) {
     messages: [
       {
         role: "system",
-        content: systemPrompt,
+        content: taContext,
       },
       {
         role: "user",
@@ -58,7 +58,7 @@ export async function inferTrajectory(
     messages: [
       {
         role: "system",
-        content: systemPrompt,
+        content: taContext,
       },
       {
         role: "user",
@@ -99,7 +99,7 @@ export async function choosePort(
     messages: [
       {
         role: "system",
-        content: systemPrompt,
+        content: taContext,
       },
       {
         role: "user",
@@ -154,7 +154,7 @@ export async function refinePort(
     messages: [
       {
         role: "system",
-        content: systemPrompt,
+        content: taContext,
       },
       {
         role: "user",

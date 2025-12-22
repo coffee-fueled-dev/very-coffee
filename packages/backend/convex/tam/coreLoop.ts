@@ -355,7 +355,7 @@ export const bindPort = internalAction({
         action: v.object({
           key: v.string(),
           description: v.string(),
-          schema: v.record(v.string(), v.any()),
+          schema: v.optional(v.record(v.string(), v.any())),
         }),
         predicate: v.object({ when: v.string(), then: v.string() }),
       })

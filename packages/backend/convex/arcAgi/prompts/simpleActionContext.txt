@@ -1,0 +1,130 @@
+Simple actions are numbered 1-5 and require no arguments. When you choose a simple action, a SimpleActionCommend is sent automatically
+and will return a FrameResponse
+
+components:
+  schemas:
+    SimpleActionCommand:
+      type: object
+      description: |
+        Issues a one-parameter action (ACTION1 - ACTION5) to a running
+        game instance identified by `guid`.
+      properties:
+        game_id:
+          type: string
+          description: Game identifier this action targets.
+        guid:
+          type: string
+          description: Server-generated session ID obtained from a RESET response.
+        reasoning:
+          type: object
+          description: |
+            Optional, caller-defined JSON blob (≤ 16 KB) capturing the
+            agent's internal reasoning, model parameters, or any other
+            metadata you'd like to store alongside the action.
+          additionalProperties: true
+      required:
+        - game_id
+        - guid
+    FrameResponse:
+      type: object
+      description: |
+        Snapshot returned after every RESET or ACTION command.  
+        Includes the latest visual frame(s), cumulative score details, the
+        current game state, and an echo of the triggering action.
+      properties:
+        game_id:
+          type: string
+          description: Game identifier for the running session.
+        guid:
+          type: string
+          description: Server-generated session ID; use this for all subsequent commands.
+        frame:
+          type: array
+          description: |
+            One or more consecutive visual frames. Each frame is a 64 × 64
+            grid of 4-bit colour indices (integers 0-15). Multiple frames
+            may be returned if the environment advances internally (e.g.,
+            animations) before settling.
+          items:
+            type: array
+            items:
+              type: array
+              items:
+                type: integer
+                minimum: 0
+                maximum: 15
+        state:
+          type: string
+          description: >
+            Current state of the session:
+
+
+            • **NOT_FINISHED** - game in progress, not yet WIN or GAME_OVER.  
+
+            • **NOT_STARTED**  - session has ended (WIN or GAME_OVER) and
+            requires RESET.  
+
+            • **WIN**          - session ended in victory.  
+
+            • **GAME_OVER**    - session ended in defeat.
+          enum:
+            - NOT_FINISHED
+            - NOT_STARTED
+            - WIN
+            - GAME_OVER
+        score:
+          type: integer
+          description: Current cumulative score for this run.
+          minimum: 0
+          maximum: 254
+        win_score:
+          type: integer
+          description: |
+            Score threshold required to reach the **WIN** state. Mirrors
+            the game's configured win condition so agents can adapt
+            dynamically without hard-coding values.
+          minimum: 0
+          maximum: 254
+        action_input:
+          type: object
+          description: Echo of the command that produced this frame.
+          properties:
+            id:
+              type: integer
+              description: Client-assigned or sequential action index.
+            data:
+              type: object
+              description: Additional parameters originally sent with the action.
+              additionalProperties: true
+        available_actions:
+          type: array
+          description: List of available actions for the current game.
+          items:
+            type: integer
+            enum:
+              - 1
+              - 2
+              - 3
+              - 4
+              - 5
+              - 6
+      required:
+        - game_id
+        - guid
+        - frame
+        - state
+        - score
+        - win_score
+        - action_input
+        - available_actions
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+
+````
+
+---
+
+> To find navigation and other pages in this documentation, fetch the llms.txt file at: https://docs.arcprize.org/llms.txt
