@@ -1,0 +1,269 @@
+# Overview
+
+TA is a substrate-agnostic model of agency. It offers a way of analyzing systems that represent situations, choices, and outcomes by defining what qualifies as an Actor and what it means for that Actor to exhibit Agency.
+
+- Actors are causal participants that interpret their own actions and the world's responses.
+- Agency requires being accountable to causal expectations you yourself chose. Actors exhibit agency to the degree that their choices exclude counterfactual worlds and stake predictive commitments.
+
+TA can serve as a causal log for describing and tracing agent behavior, or as a decision-making framework whose expectations evolve through experience.
+
+# The Trajectory-Affordance Model
+
+The core cycle:
+
+1. $\mathsf{A}$ is in a situation
+2. $\mathsf{A}$ selects a port from those currently afforded
+3. $\mathsf{A}$ binds the port
+4. $\mathsf{W}$ responds with a context episode
+5. $\mathsf{A}$ interprets the episode and evaluates whether it falls within expectations
+6. A new situation arises; the cycle repeats
+
+Ports define affordance cones: trajectories $\mathsf{A}$ is willing to accept for a given mode of interaction. Binding succeeds when the outcome lands in the cone; it fails otherwise.
+
+---
+
+### Actor $\mathsf{A}$
+
+The actor selects modes of interaction and updates its state based on the world's response.
+
+### World $\mathsf{W}$
+
+The world is an external source of context.
+
+All information $\mathsf{A}$ receives from $\mathsf{W}$ is expressed as values from the context domain $\mathcal{C}$.
+
+When $\mathsf{A}$ binds a port, $\mathsf{W}$ responds with a sequence of context called an episode:
+
+$$
+e_{n \to n+1}
+=
+(c_{n,0}, c_{n,1}, \dots, c_{n,k}, c_{n+1})
+$$
+
+### State Space $\mathcal{X}$
+
+The set of distinct states $\mathsf{A}$ is capable of representing.
+
+### Trajectories $\mathcal{T}(\mathcal{X})$
+
+Causal chains of states, represented as ordered tuples:
+
+$$
+\mathcal{T}(\mathcal{X})
+\subseteq
+\bigcup_{k \ge 0}
+\{ (x_0, \dots, x_k) \mid x_i \in \mathcal{X} \}
+$$
+
+Trajectories from state $x_n$ are those in $\mathcal{T}(\mathcal{X})$ with $x_n$ as initial state:
+
+$$
+\mathcal{T}(x_n)
+=
+\{ \tau \in \mathcal{T}(\mathcal{X}) \mid \tau[0] = x_n \}
+$$
+
+### Ports $\mathcal{P}$
+
+A port $p \in \mathcal{P}$ is a polysemous mode of interaction with $W$
+
+Each port consists of an inference map that interprets context sequences as trajectories:
+
+$$
+\mathsf{Infer}_p : \mathcal{X} \times \mathcal{C}^* \to \mathcal{T}(\mathcal{X})
+$$
+
+As well as an affordance predicate on trajectories:
+
+$$
+\chi_p :
+\mathcal{T}(\mathcal{X})
+\times \mathcal{X}
+\times \mathcal{C}^*
+\to
+\{\mathsf{true}, \mathsf{false}\}
+$$
+
+Given an internal state $x_n$ and a context sequence $\vec{c}_n \in \mathcal{C}^*$, the predicate determines an affordance cone:
+
+$$
+\Phi_p(x_n, \vec{c}_n)
+=
+\{ \tau \in \mathcal{T}(x_n)
+\mid
+\chi_p(\tau, x_n, \vec{c}_n)
+\}
+$$
+
+Two ports $p$ and $q$ are equivalent when their inference maps and affordance cones coincide for all states and context sequences:
+
+$$
+p \equiv q
+\iff
+\forall x \in \mathcal{X}, \vec{c} \in \mathcal{C}^* :
+\mathsf{Infer}_p(x, \vec{c}) = \mathsf{Infer}_q(x, \vec{c})
+\land
+\Phi_p(x, \vec{c}) = \Phi_q(x, \vec{c})
+$$
+
+### Situations
+
+A situation is an indexed instance of internal state:
+
+$$
+s_n = (n, x_n)
+$$
+
+The index $n$ marks the step in the causal chain. Two situations $s_n$ and $s_m$ are distinct even if $x_n = x_m$.
+
+In each situation $s_n$, there is a prior context $\vec{c}^{\,\text{prior}}_n \in \mathcal{C}^*$
+which is some subsequence of all context received up to that point.
+
+Each situation requires binding an afforded port, and each binding produces the next situation. A port is afforded in $s_n$ when its affordance cone is non-empty:
+
+$$
+\mathsf{Ports}(s_n)
+=
+\{ p \in \mathcal{P} \mid \Phi_p(x_n, \vec{c}^{\,\text{prior}}_n) \neq \emptyset \}
+$$
+
+---
+
+### Binding
+
+Binding is a transition from situation $s_n$ to situation $s_{n+1}$ via a port $p_n \in \mathsf{Ports}(s_n)$.
+
+Upon binding, the world produces a context episode $e_{n \to n+1} \in \mathcal{C}^*$.
+
+There is now a post context $\vec{c}^{\,\text{post}}_n \in \mathcal{C}^*$: some subsequence of all context received up to and including the episode.
+
+The port interprets the episode as a trajectory:
+
+$$
+\hat{\tau}_n = \mathsf{Infer}_{p_n}(x_n, e_{n \to n+1})
+\in
+\mathcal{T}(x_n)
+$$
+
+The next situation arises:
+
+$$
+s_{n+1} = \hat{\tau}_n[\mathrm{end}]
+$$
+
+Binding succeeds when the inferred trajectory remains within the affordance cone:
+
+$$
+\hat{\tau}_n \in \Phi_{p_n}(x_n, \vec{c}^{\,\text{post}}_n)
+$$
+
+Binding fails when the inferred trajectory exits the cone:
+
+$$
+\hat{\tau}_n \notin \Phi_{p_n}(x_n, \vec{c}^{\,\text{post}}_n)
+$$
+
+# TA Properties
+
+Derived properties and interpretations of Trajectory-Affordance.
+
+## Representational Capacity
+
+The state space $\mathcal{X}$ contains exactly those states that could arise from some inference:
+
+$$
+\mathcal{X} = \bigcup_{p \in \mathcal{P}, x \in \mathcal{X}, \vec{c} \in \mathcal{C}^*} \{ \tau[i] \mid \tau = \mathsf{Infer}_p(x, \vec{c}), \, 0 \le i < |\tau| \}
+$$
+
+The trajectory space $\mathcal{T}(\mathcal{X})$ is the cumulative affordance across all ports, states, and contexts:
+
+$$
+\mathcal{T}(\mathcal{X}) = \bigcup_{p \in \mathcal{P}, x \in \mathcal{X}, \vec{c} \in \mathcal{C}^*} \Phi_p(x, \vec{c})
+$$
+
+What is representable is bounded by what the ports can collectively infer and afford.
+
+## Agency
+
+Agency correlates inversely with cone width. A narrow cone commits to specific outcomes while a wide cone accepts many outcomes.
+
+$$
+\Phi_p(x, \vec{c}) = \mathcal{T}(x) \implies \text{agency} = 0
+$$
+
+When $\mathcal{X}$ (and by extension $\mathcal{T}(x)$) are finite, agency admits a simple cardinality ratio:
+
+$$
+\text{agency}(p, x, \vec{c}) = 1 - \frac{|\Phi_p(x, \vec{c})|}{|\mathcal{T}(x)|}
+$$
+
+In continuous spaces, analogous measures can be derived from relative volumes or measure-theoretic properties of $\Phi_p$
+
+# Implementing TA with LLMs
+
+LLM-based agents with access to conversation history already exhibit a form of experience-based adaptation. The model sees what happened earlier in the context and adjusts its behavior accordingly. If a tool call failed, it might try something different. If a certain approach worked, it might repeat it. This is real learning, and it happens automatically.
+
+What this in-context adaptation lacks is structure. The model adapts implicitly based on patterns in the history, but it doesn't maintain explicit expectations it can evaluate against. There's no formal step where the agent commits to a prediction, observes the outcome, and decides whether to update its beliefs. Any adaptation is ephemeral because it disappears when the context window ends or the session resets.
+
+TA extends conversation history with explicit expectations, a structured evaluation step that compares outcomes against those expectations, persistence across sessions so that learning accumulates over time, and selective refinement where the agent deliberately widens, narrows, or proliferates based on evidence. The result is an agent that not only adapts but knows what it expected and whether reality matched.
+
+## Note about State Space $\mathcal{X}$
+
+In TA, $\mathcal{X}$ is defined as the set of states the system is capable of representing. TA does not assume that states reflect objective truth. A state is any situation the actor can articulate as its current position, regardless of whether that description is symbolic, propositional, or narrative. For a LLM, this corresponds directly to whatever situations it can express under its constraints. Any coherent output the model can generate qualifies as a state by TA's definition. If we assume no limits on generation depth or output length, this set is effectively unbounded.
+
+Adding a system prompt (or any other contextual constraint) narrows this representational capacity. The prompt biases the distribution of generated text, restricting which descriptions of state are reachable in practice. The resulting $\mathcal{X}$ may still be extremely large, but it is a smaller space than the unconstrained model.
+
+Real world LLMs have additional practical bounds such as maximum generations per turn and maximum output length, which is ultimately capped by the context window; further reducing the reachable state set. TA itself does not depend on whether $\mathcal{X}$ is finite or infinite; only that it is a well-defined (not necessarily explicit) set from which ports select admissible subsets.
+
+The same logic applies to $\mathsf{Infer}$ and trajectory representation. A trajectory is simply the actor's expressed account of how its action changed the situation, as inferred from the episode it observed. If the model can produce an interpretation of what just happened under its constraints, then that output is a valid trajectory in TA. Therefore, any generation conditioned on prior situation and context can serve as an instance of $\mathsf{Infer}\_p$.
+
+> If multiple models and prompts are combined, $\mathcal{X}$ expands accordingly. Conceptually, the state space becomes the product of the reachable representations under each component.
+
+## The Minimal Implementation
+
+TA maps onto LLM-based agents with almost no additional infrastructure. As we said, the state space $\mathcal{X}$ is already provided by the LLM's latent space and naturally constrained by the system prompt.
+
+Ports map to tool calls. If you're using MCP-style function calling, you already have a version of ports. Each tool is a mode of interaction with the world: a function the agent can invoke, with arguments and a description. When the agent selects a tool, it delegates execution elsewhere and waits for the world to respond. Ports additionally require a description of how the world is expected to evolve as a result of using the tool. This can start out broad. For example, the expectation of a send email tool can be:
+
+> "After using this tool, the recipient will have received the contents of the email without errors."
+
+## Port Selection
+
+When the agent faces a situation, it needs to choose one port according to these constraints:
+
+1. The port must be available for use in the current situation.
+2. The port must align with the agent's intent.
+3. The agent must believe the outcome should fall within the port's expectations.
+4. Among safe options, the agent should choose the port with the narrowest expectations. A narrow cone represents a specific commitment to particular outcomes. A wide cone accepts anything and commits to nothing.
+
+An agent with well-calibrated expectations can make specific commitments confidently. A novice agent must use wider cones to accomodate its uncertainty about the dynamics of the world. Expertise is the accumulation of narrow, reliable ports.
+
+## Episode Interpretation
+
+After the agent binds a port, the world must provide feedback. Feedback could be tool execution logs, API responses, user messages, error traces, or any other signal from outside. The agent must interpret the feedback into an internal hypothesis about what happened in the world as a result of its action, and what situation it is currently in.
+
+## Breadcrumbs and Learning
+
+After interpreting the feedback, the agent compares what happened against what it expected. Binding succeeds when it believes the world behaved within the port's expectations and fails otherwise.
+
+Either way, the agent leaves breadcrumbs on the port by adding notes about this binding, removing irrelevant notes, or some combination of the two. By doing so, the agent changes what it can expect by using that port in the future. If the binding failed, the agent may add the erroneous outcome as a new expectation. If the binding was successful, the agent may remove notes of make special notes about why this port was the right choice in the previous situation. The agent may also choose to do nothing if it believes no refinement is necessary.
+
+## Port Proliferation
+
+Sometimes a port's expectations become too broad. Perhaps the agent has seen many different outcomes in many different contexts, and the cone has widened to accommodate all of them. The agent can choose to proliferate by creating a new port that wraps the same underlying action with specialized expectations for a particular context.
+
+For example, the original "send-email" port may work in many situations but predict outcomes poorly. The agent can create "send-email-to-executive" with expectations tuned to that context: faster response times, more formal acknowledgments, higher stakes for errors. The underlying tool call is identical but the expectations differ.
+
+## The Loop
+
+Putting it together, the agent cycle is:
+
+The agent finds itself in a situation. It examines the available tools with their accumulated expectations. It selects the port that aligns with its intent, whose expectations it trusts, and whose cone is narrowest among safe options.
+
+It uses the tool and the world responds with feedback.
+
+The agent interprets the feedback, constructing a theory of the transition and arrives at a new situation.
+
+It compares the interpreted outcome against the port's expectations, determining if the expectations were in range, and then refines notes or adds a new port.
+
+A new situation has arisen. The cycle repeats.

@@ -9,14 +9,24 @@
  */
 
 import type * as ResendOTP from "../ResendOTP.js";
-import type * as acl__tables from "../acl/_tables.js";
+import type * as arcAgi__adapters from "../arcAgi/_adapters.js";
+import type * as arcAgi__api from "../arcAgi/_api.js";
+import type * as arcAgi__tables from "../arcAgi/_tables.js";
+import type * as arcAgi_game from "../arcAgi/game.js";
+import type * as arcAgi_gameStep from "../arcAgi/gameStep.js";
+import type * as arcAgi_scorecard from "../arcAgi/scorecard.js";
+import type * as arcAgi_tam from "../arcAgi/tam.js";
 import type * as auth from "../auth.js";
-import type * as conversation__agents from "../conversation/_agents.js";
-import type * as conversation__tables from "../conversation/_tables.js";
 import type * as customFunctions from "../customFunctions.js";
 import type * as http from "../http.js";
+import type * as tam__functions from "../tam/_functions.js";
 import type * as tam__tables from "../tam/_tables.js";
-import type * as tam_coreLoop from "../tam/coreLoop.js";
+import type * as tam__util from "../tam/_util.js";
+import type * as tam_binding from "../tam/binding.js";
+import type * as tam_port from "../tam/port.js";
+import type * as tam_session from "../tam/session.js";
+import type * as tam_situation from "../tam/situation.js";
+import type * as tam_world from "../tam/world.js";
 import type * as workflow from "../workflow.js";
 
 import type {
@@ -27,14 +37,24 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   ResendOTP: typeof ResendOTP;
-  "acl/_tables": typeof acl__tables;
+  "arcAgi/_adapters": typeof arcAgi__adapters;
+  "arcAgi/_api": typeof arcAgi__api;
+  "arcAgi/_tables": typeof arcAgi__tables;
+  "arcAgi/game": typeof arcAgi_game;
+  "arcAgi/gameStep": typeof arcAgi_gameStep;
+  "arcAgi/scorecard": typeof arcAgi_scorecard;
+  "arcAgi/tam": typeof arcAgi_tam;
   auth: typeof auth;
-  "conversation/_agents": typeof conversation__agents;
-  "conversation/_tables": typeof conversation__tables;
   customFunctions: typeof customFunctions;
   http: typeof http;
+  "tam/_functions": typeof tam__functions;
   "tam/_tables": typeof tam__tables;
-  "tam/coreLoop": typeof tam_coreLoop;
+  "tam/_util": typeof tam__util;
+  "tam/binding": typeof tam_binding;
+  "tam/port": typeof tam_port;
+  "tam/session": typeof tam_session;
+  "tam/situation": typeof tam_situation;
+  "tam/world": typeof tam_world;
   workflow: typeof workflow;
 }>;
 

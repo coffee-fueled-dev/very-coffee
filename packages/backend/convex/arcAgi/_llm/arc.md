@@ -1,0 +1,2847 @@
+# Rate Limits
+
+> Limiting RPM for your agents
+
+The ARC-AGI API is currently free to use during its research preview. To prevent abuse and ensure fair access, we have implemented rate limits with an exponential backoff mechanism.
+
+These limits help maintain system stability by throttling excessive requests. If you encounter rate limiting, your requests will receive a backoff response, requiring you to wait increasingly longer periods before retrying.
+
+Rate limits are set at 600 requests per minute (RPM).
+
+## Requesting Limit Increases
+
+We are open to discussing increases in rate limits, particularly for researchers and teams requiring higher throughput.
+
+If you need elevated limits, please email us at [team@arcprize.org](mailto:team@arcprize.org) with the subject line "Increase Rate Limits" to initiate a conversation.
+
+## Navigating Rate Limits
+
+If you've managed to hit a rate limit, you'll see a standard `429` response.
+
+```json
+{ "error": "RATE_LIMIT_EXCEEDED", "message": "rate limit has been exceeded" }
+```
+
+---
+
+> To find navigation and other pages in this documentation, fetch the llms.txt file at: https://docs.arcprize.org/llms.txt
+
+# List available games
+
+> Retrieves metadata for every game currently exposed by the
+> ARC-AGI-3 platform.  
+> Use this discovery endpoint to obtain `game_id` values before
+> opening a scorecard or issuing commands. Results are returned as
+> a flat array ordered alphabetically by `title`.
+
+## OpenAPI
+
+```yaml arc3v1.yaml get /api/games
+openapi: 3.0.3
+info:
+  title: ARC‑AGI‑3 REST API
+  version: 1.0.0
+  description: >
+    Programmatic interface for running agents against ARC‑AGI‑3 games,
+    opening/closing score‑cards and driving game state with actions.
+
+    All requests **require** an `X‑API‑Key` header issued from the ARC‑AGI‑3 web
+    console.
+servers:
+  - url: https://three.arcprize.org
+security: []
+tags:
+  - name: Games
+  - name: Scorecards
+  - name: Commands
+paths:
+  /api/games:
+    get:
+      tags:
+        - Games
+      summary: List available games
+      description: |
+        Retrieves metadata for every game currently exposed by the
+        ARC-AGI-3 platform.  
+        Use this discovery endpoint to obtain `game_id` values before
+        opening a scorecard or issuing commands. Results are returned as
+        a flat array ordered alphabetically by `title`.
+      operationId: listGames
+      responses:
+        "200":
+          description: Successful lookup; array of game descriptors.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Game"
+              examples:
+                sample:
+                  summary: Two games
+                  value:
+                    - game_id: ls20-016295f7601e
+                      title: LS20
+                    - game_id: ft09-16726c5b26ff
+                      title: FT09
+        "401":
+          description: Missing or invalid **X-API-Key** header.
+      security:
+        - ApiKeyAuth: []
+components:
+  schemas:
+    Game:
+      type: object
+      description: >
+        Human-readable name/identifier pair for an ARC-AGI-3 game.  
+
+        Used when listing available titles or embedding game metadata in other
+        payloads.
+      properties:
+        game_id:
+          type: string
+          example: ls20-016295f7601e
+          description: Stable, globally unique ID combining slug and version/hash.
+        title:
+          type: string
+          example: LS20
+          description: Display title shown in UIs and scorecards.
+      required:
+        - game_id
+        - title
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+```
+
+---
+
+> To find navigation and other pages in this documentation, fetch the llms.txt file at: https://docs.arcprize.org/llms.txt
+
+# Open scorecard
+
+> Creates a new scorecard to aggregate statistics across one or more
+> plays. The server returns a `card_id`, which must be included in all
+> subsequent RESET commands and in the final **/scorecard/close** call.
+> You may attach optional metadata (URL, tags, opaque JSON) that will
+> be echoed back in summary responses.
+
+## OpenAPI
+
+```yaml arc3v1.yaml post /api/scorecard/open
+openapi: 3.0.3
+info:
+  title: ARC‑AGI‑3 REST API
+  version: 1.0.0
+  description: >
+    Programmatic interface for running agents against ARC‑AGI‑3 games,
+    opening/closing score‑cards and driving game state with actions.
+
+    All requests **require** an `X‑API‑Key` header issued from the ARC‑AGI‑3 web
+    console.
+servers:
+  - url: https://three.arcprize.org
+security: []
+tags:
+  - name: Games
+  - name: Scorecards
+  - name: Commands
+paths:
+  /api/scorecard/open:
+    post:
+      tags:
+        - Scorecards
+      summary: Open scorecard
+      description: |
+        Creates a new scorecard to aggregate statistics across one or more
+        plays. The server returns a `card_id`, which must be included in all
+        subsequent RESET commands and in the final **/scorecard/close** call.
+        You may attach optional metadata (URL, tags, opaque JSON) that will
+        be echoed back in summary responses.
+      operationId: openScorecard
+      requestBody:
+        description: Optional metadata to associate with the new scorecard.
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OpenScorecardRequest"
+            examples:
+              minimal:
+                summary: Minimal request
+                value: {}
+              full:
+                summary: With tags, link, and opaque blob
+                value:
+                  source_url: https://github.com/example/agent
+                  tags:
+                    - baseline
+                    - gpt-4o
+                  opaque:
+                    model: gpt-4o
+                    temperature: 0.25
+      responses:
+        "200":
+          description: scorecard successfully created.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OpenScorecardResponse"
+              examples:
+                success:
+                  value:
+                    card_id: 8bb3b1b8-4b46-4a29-a13b-ad7850a0f916
+        "401":
+          description: Missing or invalid **X-API-Key** header.
+      security:
+        - ApiKeyAuth: []
+components:
+  schemas:
+    OpenScorecardRequest:
+      type: object
+      description: |
+        Optional metadata sent when opening a scorecard.  
+        Every field is optional; omit any you don't need.  
+        Use this to attach provenance links, free-form tags, or an
+        “opaque” JSON blob describing the run (e.g. model settings,
+        hyper-parameters, experiment notes). The opaque payload must not
+        exceed 16 KB once serialized.
+      properties:
+        source_url:
+          type: string
+          format: uri
+          description: Link to code, notebook, or write-up associated with the run.
+        tags:
+          type: array
+          description: Arbitrary labels for later filtering and aggregation.
+          items:
+            type: string
+        opaque:
+          type: object
+          description: |
+            Free-form JSON data (≤ 16 KB). Stored verbatim; the service
+            does not inspect or validate its structure.
+          additionalProperties: true
+    OpenScorecardResponse:
+      type: object
+      description: |
+        Response returned after a successful “open scorecard” request.
+        Contains the server-generated identifier for this tracked run.
+      properties:
+        card_id:
+          type: string
+          description: Globally unique ID for the newly opened scorecard.
+      required:
+        - card_id
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+```
+
+---
+
+> To find navigation and other pages in this documentation, fetch the llms.txt file at: https://docs.arcprize.org/llms.txt
+
+# Close scorecard
+
+> Finalises a previously opened scorecard, locking its data and
+> returning the aggregate results.  
+> After a scorecard is closed, additional RESET or ACTION commands
+> using its `card_id` are rejected.  
+> You must supply the `card_id` obtained from **/scorecard/open**.
+
+## OpenAPI
+
+```yaml arc3v1.yaml post /api/scorecard/close
+openapi: 3.0.3
+info:
+  title: ARC‑AGI‑3 REST API
+  version: 1.0.0
+  description: >
+    Programmatic interface for running agents against ARC‑AGI‑3 games,
+    opening/closing score‑cards and driving game state with actions.
+
+    All requests **require** an `X‑API‑Key` header issued from the ARC‑AGI‑3 web
+    console.
+servers:
+  - url: https://three.arcprize.org
+security: []
+tags:
+  - name: Games
+  - name: Scorecards
+  - name: Commands
+paths:
+  /api/scorecard/close:
+    post:
+      tags:
+        - Scorecards
+      summary: Close scorecard
+      description: |
+        Finalises a previously opened scorecard, locking its data and
+        returning the aggregate results.  
+        After a scorecard is closed, additional RESET or ACTION commands
+        using its `card_id` are rejected.  
+        You must supply the `card_id` obtained from **/scorecard/open**.
+      operationId: closeScorecard
+      requestBody:
+        description: Identifier of the scorecard to close.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CloseScorecardRequest"
+            examples:
+              example:
+                value:
+                  card_id: 8bb3b1b8-4b46-4a29-a13b-ad7850a0f916
+      responses:
+        "200":
+          description: scorecard closed; final aggregate results returned.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ScorecardSummary"
+              examples:
+                success:
+                  value:
+                    card_id: 8bb3b1b8-4b46-4a29-a13b-ad7850a0f916
+                    won: 3
+                    played: 5
+                    total_actions: 1742
+                    score: 12
+                    source_url: https://github.com/example/agent
+                    tags:
+                      - baseline
+                      - gpt-4o
+                    opaque:
+                      model: gpt-4o
+                      temperature: 0.25
+                    api_key: YOUR-API-KEY-ID
+                    cards:
+                      ls20-016295f7601e:
+                        game_id: ls20-016295f7601e
+                        total_plays: 2
+                        total_actions: 148
+                        scores:
+                          - 2
+                          - 3
+                        states:
+                          - NOT_FINISHED
+                          - WIN
+                        actions:
+                          - 33
+                          - 115
+        "401":
+          description: Missing or invalid **X-API-Key** header.
+        "404":
+          description: Supplied `card_id` does not correspond to an open scorecard.
+      security:
+        - ApiKeyAuth: []
+components:
+  schemas:
+    CloseScorecardRequest:
+      type: object
+      description: |
+        Payload for closing a previously opened scorecard and finalising
+        its aggregated results.
+      properties:
+        card_id:
+          type: string
+          description: |
+            Identifier of the scorecard to close—use the `card_id`
+            returned by **OpenScorecardResponse**.
+      required:
+        - card_id
+    ScorecardSummary:
+      type: object
+      description: |
+        Aggregate results for an entire scorecard run.  
+        Includes cumulative counters, optional metadata echoed back from
+        the open request, the API key that authenticated the run, and a
+        per-game breakdown in `cards`.
+      properties:
+        api_key:
+          type: string
+          description: The API key that initiated and authenticated this run.
+        card_id:
+          type: string
+          description: >-
+            The Scorecard ID that was returned by returned by
+            **OpenScorecardResponse**.
+        won:
+          type: integer
+          description: Total number of games won in this scorecard.
+        played:
+          type: integer
+          description: Total number of games played (wins + losses + unfinished).
+        total_actions:
+          type: integer
+          description: Cumulative number of actions taken across all plays.
+        score:
+          type: integer
+          description: Sum of per-game scores (each 0-254) for this scorecard.
+        source_url:
+          type: string
+          format: uri
+          description: Link originally supplied in the **OpenScorecardRequest**.
+        tags:
+          type: array
+          description: Arbitrary labels echoed back from the open request.
+          items:
+            type: string
+        opaque:
+          type: object
+          description: |
+            Free-form JSON blob (≤ 16 KB) exactly as provided when the
+            scorecard was opened. Absent if none was supplied.
+          additionalProperties: true
+        cards:
+          type: object
+          description: Map keyed by `game_id`, each entry summarising a single game.
+          additionalProperties:
+            $ref: "#/components/schemas/PerGameCard"
+      required:
+        - api_key
+        - card_id
+        - won
+        - played
+        - total_actions
+        - score
+        - cards
+    PerGameCard:
+      type: object
+      description: >
+        Statistics for one game inside a score-card.  
+
+        All arrays align positionally: index *n* of `scores`, `states`, and
+        `actions`
+
+        describes the same play.
+      properties:
+        game_id:
+          type: string
+          description: Identifier of the game these stats refer to.
+        total_plays:
+          type: integer
+          description: Number of times this game was reset/played.
+        total_actions:
+          type: integer
+          description: Total actions taken across all plays of this game.
+        scores:
+          type: array
+          description: Score achieved in each play (0-254).
+          items:
+            type: integer
+        states:
+          type: array
+          description: >
+            Final state of each play:
+
+
+            • **NOT_FINISHED** - the play is active and hasn't reached an end
+            state.  
+
+            • **NOT_STARTED**  - the play has already ended (WIN or GAME_OVER)
+            and must be RESET to continue.  
+
+            • **WIN**          - the play ended in victory.  
+
+            • **GAME_OVER**    - the play ended in defeat.
+          items:
+            type: string
+            enum:
+              - NOT_FINISHED
+              - NOT_STARTED
+              - WIN
+              - GAME_OVER
+        actions:
+          type: array
+          description: Number of actions taken in each corresponding play.
+          items:
+            type: integer
+      required:
+        - game_id
+        - total_plays
+        - total_actions
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+```
+
+---
+
+> To find navigation and other pages in this documentation, fetch the llms.txt file at: https://docs.arcprize.org/llms.txt
+
+# Retrieve scorecard
+
+> Returns the current (or final) statistics for the specified
+> scorecard.  
+> This works for both open and already-closed scorecards, making it
+> useful for polling progress or fetching archived results.
+
+## OpenAPI
+
+```yaml arc3v1.yaml get /api/scorecard/{card_id}
+openapi: 3.0.3
+info:
+  title: ARC‑AGI‑3 REST API
+  version: 1.0.0
+  description: >
+    Programmatic interface for running agents against ARC‑AGI‑3 games,
+    opening/closing score‑cards and driving game state with actions.
+
+    All requests **require** an `X‑API‑Key` header issued from the ARC‑AGI‑3 web
+    console.
+servers:
+  - url: https://three.arcprize.org
+security: []
+tags:
+  - name: Games
+  - name: Scorecards
+  - name: Commands
+paths:
+  /api/scorecard/{card_id}:
+    get:
+      tags:
+        - Scorecards
+      summary: Retrieve scorecard
+      description: |
+        Returns the current (or final) statistics for the specified
+        scorecard.  
+        This works for both open and already-closed scorecards, making it
+        useful for polling progress or fetching archived results.
+      operationId: getScorecard
+      parameters:
+        - name: card_id
+          in: path
+          required: true
+          description: Identifier returned by **/scorecard/open**.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: scorecard found; summary returned.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ScorecardSummary"
+              examples:
+                example:
+                  value:
+                    card_id: 8bb3b1b8-4b46-4a29-a13b-ad7850a0f916
+                    won: 3
+                    played: 5
+                    total_actions: 142
+                    score: 612
+                    source_url: https://github.com/example/agent
+                    tags:
+                      - baseline
+                      - gpt-4o
+                    opaque:
+                      model: gpt-4o
+                      temperature: 0.25
+                    api_key: YOUR-API-KEY-ID
+                    cards:
+                      …: null
+        "401":
+          description: Missing or invalid **X-API-Key** header.
+        "404":
+          description: No open or closed scorecard found with the supplied `card_id`.
+      security:
+        - ApiKeyAuth: []
+components:
+  schemas:
+    ScorecardSummary:
+      type: object
+      description: |
+        Aggregate results for an entire scorecard run.  
+        Includes cumulative counters, optional metadata echoed back from
+        the open request, the API key that authenticated the run, and a
+        per-game breakdown in `cards`.
+      properties:
+        api_key:
+          type: string
+          description: The API key that initiated and authenticated this run.
+        card_id:
+          type: string
+          description: >-
+            The Scorecard ID that was returned by returned by
+            **OpenScorecardResponse**.
+        won:
+          type: integer
+          description: Total number of games won in this scorecard.
+        played:
+          type: integer
+          description: Total number of games played (wins + losses + unfinished).
+        total_actions:
+          type: integer
+          description: Cumulative number of actions taken across all plays.
+        score:
+          type: integer
+          description: Sum of per-game scores (each 0-254) for this scorecard.
+        source_url:
+          type: string
+          format: uri
+          description: Link originally supplied in the **OpenScorecardRequest**.
+        tags:
+          type: array
+          description: Arbitrary labels echoed back from the open request.
+          items:
+            type: string
+        opaque:
+          type: object
+          description: |
+            Free-form JSON blob (≤ 16 KB) exactly as provided when the
+            scorecard was opened. Absent if none was supplied.
+          additionalProperties: true
+        cards:
+          type: object
+          description: Map keyed by `game_id`, each entry summarising a single game.
+          additionalProperties:
+            $ref: "#/components/schemas/PerGameCard"
+      required:
+        - api_key
+        - card_id
+        - won
+        - played
+        - total_actions
+        - score
+        - cards
+    PerGameCard:
+      type: object
+      description: >
+        Statistics for one game inside a score-card.  
+
+        All arrays align positionally: index *n* of `scores`, `states`, and
+        `actions`
+
+        describes the same play.
+      properties:
+        game_id:
+          type: string
+          description: Identifier of the game these stats refer to.
+        total_plays:
+          type: integer
+          description: Number of times this game was reset/played.
+        total_actions:
+          type: integer
+          description: Total actions taken across all plays of this game.
+        scores:
+          type: array
+          description: Score achieved in each play (0-254).
+          items:
+            type: integer
+        states:
+          type: array
+          description: >
+            Final state of each play:
+
+
+            • **NOT_FINISHED** - the play is active and hasn't reached an end
+            state.  
+
+            • **NOT_STARTED**  - the play has already ended (WIN or GAME_OVER)
+            and must be RESET to continue.  
+
+            • **WIN**          - the play ended in victory.  
+
+            • **GAME_OVER**    - the play ended in defeat.
+          items:
+            type: string
+            enum:
+              - NOT_FINISHED
+              - NOT_STARTED
+              - WIN
+              - GAME_OVER
+        actions:
+          type: array
+          description: Number of actions taken in each corresponding play.
+          items:
+            type: integer
+      required:
+        - game_id
+        - total_plays
+        - total_actions
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+```
+
+---
+
+> To find navigation and other pages in this documentation, fetch the llms.txt file at: https://docs.arcprize.org/llms.txt
+
+# Retrieve scorecard (one game)
+
+> Returns the scorecard statistics **limited to a single game**.
+> Only the entry matching `game_id` is present in `cards`; all other
+> top-level counters (`won`, `played`, etc.) are recomputed for that
+> game alone.
+
+Useful for dashboards that present per-game progress without
+fetching the full scorecard payload.
+
+## OpenAPI
+
+```yaml arc3v1.yaml get /api/scorecard/{card_id}/{game_id}
+openapi: 3.0.3
+info:
+  title: ARC‑AGI‑3 REST API
+  version: 1.0.0
+  description: >
+    Programmatic interface for running agents against ARC‑AGI‑3 games,
+    opening/closing score‑cards and driving game state with actions.
+
+    All requests **require** an `X‑API‑Key` header issued from the ARC‑AGI‑3 web
+    console.
+servers:
+  - url: https://three.arcprize.org
+security: []
+tags:
+  - name: Games
+  - name: Scorecards
+  - name: Commands
+paths:
+  /api/scorecard/{card_id}/{game_id}:
+    get:
+      tags:
+        - Scorecards
+      summary: Retrieve scorecard (one game)
+      description: |
+        Returns the scorecard statistics **limited to a single game**.
+        Only the entry matching `game_id` is present in `cards`; all other
+        top-level counters (`won`, `played`, etc.) are recomputed for that
+        game alone.
+
+        Useful for dashboards that present per-game progress without
+        fetching the full scorecard payload.
+      operationId: getScorecardForGame
+      parameters:
+        - name: card_id
+          in: path
+          required: true
+          description: Identifier returned by **/scorecard/open**.
+          schema:
+            type: string
+        - name: game_id
+          in: path
+          required: true
+          description: Game identifier to filter by (e.g. `ls20-1d57d6daeb05`).
+          schema:
+            type: string
+      responses:
+        "200":
+          description: scorecard found; statistics for the requested game.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ScorecardSummary"
+              examples:
+                example:
+                  value:
+                    card_id: 8bb3b1b8-4b46-4a29-a13b-ad7850a0f916
+                    won: 1
+                    played: 2
+                    total_actions: 478
+                    score: 3
+                    source_url: https://github.com/example/agent
+                    tags:
+                      - baseline
+                      - gpt-4o
+                    opaque:
+                      model: gpt-4o
+                      temperature: 0.25
+                    api_key: YOUR-API-KEY-ID
+                    cards:
+                      ft09-1d57d6daeb05:
+                        game_id: ft09-1d57d6daeb05
+                        total_plays: 2
+                        total_actions: 478
+                        scores:
+                          - 2
+                          - 3
+                        states:
+                          - NOT_FINISHED
+                          - WIN
+                        actions:
+                          - 171
+                          - 307
+        "401":
+          description: Missing or invalid **X-API-Key** header.
+        "404":
+          description: |
+            Either the supplied `card_id` does not exist, or the
+            scorecard contains no entry for the specified `game_id`.
+      security:
+        - ApiKeyAuth: []
+components:
+  schemas:
+    ScorecardSummary:
+      type: object
+      description: |
+        Aggregate results for an entire scorecard run.  
+        Includes cumulative counters, optional metadata echoed back from
+        the open request, the API key that authenticated the run, and a
+        per-game breakdown in `cards`.
+      properties:
+        api_key:
+          type: string
+          description: The API key that initiated and authenticated this run.
+        card_id:
+          type: string
+          description: >-
+            The Scorecard ID that was returned by returned by
+            **OpenScorecardResponse**.
+        won:
+          type: integer
+          description: Total number of games won in this scorecard.
+        played:
+          type: integer
+          description: Total number of games played (wins + losses + unfinished).
+        total_actions:
+          type: integer
+          description: Cumulative number of actions taken across all plays.
+        score:
+          type: integer
+          description: Sum of per-game scores (each 0-254) for this scorecard.
+        source_url:
+          type: string
+          format: uri
+          description: Link originally supplied in the **OpenScorecardRequest**.
+        tags:
+          type: array
+          description: Arbitrary labels echoed back from the open request.
+          items:
+            type: string
+        opaque:
+          type: object
+          description: |
+            Free-form JSON blob (≤ 16 KB) exactly as provided when the
+            scorecard was opened. Absent if none was supplied.
+          additionalProperties: true
+        cards:
+          type: object
+          description: Map keyed by `game_id`, each entry summarising a single game.
+          additionalProperties:
+            $ref: "#/components/schemas/PerGameCard"
+      required:
+        - api_key
+        - card_id
+        - won
+        - played
+        - total_actions
+        - score
+        - cards
+    PerGameCard:
+      type: object
+      description: >
+        Statistics for one game inside a score-card.  
+
+        All arrays align positionally: index *n* of `scores`, `states`, and
+        `actions`
+
+        describes the same play.
+      properties:
+        game_id:
+          type: string
+          description: Identifier of the game these stats refer to.
+        total_plays:
+          type: integer
+          description: Number of times this game was reset/played.
+        total_actions:
+          type: integer
+          description: Total actions taken across all plays of this game.
+        scores:
+          type: array
+          description: Score achieved in each play (0-254).
+          items:
+            type: integer
+        states:
+          type: array
+          description: >
+            Final state of each play:
+
+
+            • **NOT_FINISHED** - the play is active and hasn't reached an end
+            state.  
+
+            • **NOT_STARTED**  - the play has already ended (WIN or GAME_OVER)
+            and must be RESET to continue.  
+
+            • **WIN**          - the play ended in victory.  
+
+            • **GAME_OVER**    - the play ended in defeat.
+          items:
+            type: string
+            enum:
+              - NOT_FINISHED
+              - NOT_STARTED
+              - WIN
+              - GAME_OVER
+        actions:
+          type: array
+          description: Number of actions taken in each corresponding play.
+          items:
+            type: integer
+      required:
+        - game_id
+        - total_plays
+        - total_actions
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+```
+
+---
+
+> To find navigation and other pages in this documentation, fetch the llms.txt file at: https://docs.arcprize.org/llms.txt
+
+# Start or reset game instance
+
+> Creates a new game session **or** resets an existing one,
+> depending on the presence of `guid` in the request body:
+
+• **Omit `guid` or set it to `null`** → start a brand-new game
+instance.  
+• **Provide an existing `guid`** → reset that session.
+
+- If at least one ACTION command has been issued since the last
+  level transition, only the **current level** is restarted.
+- If no ACTIONs have been issued, the entire game resets.  
+  Two consecutive RESETs therefore guarantee a completely fresh
+  game.
+
+The call always returns the first (or refreshed) frame of the
+game state, along with updated score and win condition.
+
+## OpenAPI
+
+```yaml arc3v1.yaml post /api/cmd/RESET
+openapi: 3.0.3
+info:
+  title: ARC‑AGI‑3 REST API
+  version: 1.0.0
+  description: >
+    Programmatic interface for running agents against ARC‑AGI‑3 games,
+    opening/closing score‑cards and driving game state with actions.
+
+    All requests **require** an `X‑API‑Key` header issued from the ARC‑AGI‑3 web
+    console.
+servers:
+  - url: https://three.arcprize.org
+security: []
+tags:
+  - name: Games
+  - name: Scorecards
+  - name: Commands
+paths:
+  /api/cmd/RESET:
+    post:
+      tags:
+        - Commands
+      summary: Start or reset game instance
+      description: |
+        Creates a new game session **or** resets an existing one,
+        depending on the presence of `guid` in the request body:
+
+        • **Omit `guid` or set it to `null`** → start a brand-new game
+          instance.  
+        • **Provide an existing `guid`** → reset that session.  
+          - If at least one ACTION command has been issued since the last
+            level transition, only the **current level** is restarted.  
+          - If no ACTIONs have been issued, the entire game resets.  
+          Two consecutive RESETs therefore guarantee a completely fresh
+          game.
+
+        The call always returns the first (or refreshed) frame of the
+        game state, along with updated score and win condition.
+      operationId: resetGame
+      requestBody:
+        description: Game identifier, scorecard ID, and (optionally) the session `guid`.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResetCommand"
+            examples:
+              newGame:
+                summary: Start a new session
+                value:
+                  game_id: ls20-016295f7601e
+                  card_id: 8bb3b1b8-4b46-4a29-a13b-ad7850a0f916
+              levelReset:
+                summary: Reset current level of an existing session
+                value:
+                  game_id: ls20-016295f7601e
+                  card_id: 8bb3b1b8-4b46-4a29-a13b-ad7850a0f916
+                  guid: 2fa5332c-2e55-4825-b5c5-df960d504470
+      responses:
+        "200":
+          description: First frame after starting or resetting the session.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FrameResponse"
+              examples:
+                frame:
+                  value:
+                    game_id: ls20-016295f7601e
+                    guid: 2fa5332c-2e55-4825-b5c5-df960d504470
+                    frame:
+                      - - - 0
+                          - 0
+                          - 0
+                          - …
+                        - - …
+                    state: NOT_FINISHED
+                    score: 0
+                    win_score: 254
+                    action_input:
+                      id: 0
+                      data: {}
+                    available_actions:
+                      - 1
+                      - 2
+                      - 3
+                      - 4
+        "400":
+          description: |
+            Bad request - possible causes:  
+            • Unknown `game_id`  
+            • Missing or unknown `card_id`  
+            • `guid` does not correspond to an active session
+        "401":
+          description: Missing or invalid **X-API-Key** header.
+      security:
+        - ApiKeyAuth: []
+components:
+  schemas:
+    ResetCommand:
+      type: object
+      description: |
+        Starts a new game session **or** resets an existing one, depending on
+        whether a `guid` is supplied.
+
+        • **No `guid` (null/empty)** → A brand-new game instance is created and
+          the response will include its freshly minted `guid`.
+
+        • **With `guid`** → The server issues a reset to that specific
+          instance:
+            - If at least one ACTION command has been executed in the **current
+              level**, only that level is reset (typical “try again” behaviour).
+            - If no ACTION commands have been executed since the last level
+              transition, the entire game is reset to its initial state.
+
+        Sending two RESET commands back-to-back therefore always yields a
+        completely fresh game.
+
+        All plays should be associated with an open scorecard via `card_id`
+        so aggregated results can be tracked.
+      properties:
+        game_id:
+          type: string
+          description: Identifier of the game to start or reset (e.g. `ls20`).
+        card_id:
+          type: string
+          description: |
+            scorecard identifier returned by **OpenScorecardResponse**. Required
+            to attribute this play to the correct scorecard.
+        guid:
+          type: string
+          nullable: true
+          description: |
+            Server-generated game session ID.  
+            • Omit or set to `null` to create a new game.  
+            • Provide an existing value to reset that game as described above.
+      required:
+        - game_id
+        - card_id
+    FrameResponse:
+      type: object
+      description: |
+        Snapshot returned after every RESET or ACTION command.  
+        Includes the latest visual frame(s), cumulative score details, the
+        current game state, and an echo of the triggering action.
+      properties:
+        game_id:
+          type: string
+          description: Game identifier for the running session.
+        guid:
+          type: string
+          description: Server-generated session ID; use this for all subsequent commands.
+        frame:
+          type: array
+          description: |
+            One or more consecutive visual frames. Each frame is a 64 × 64
+            grid of 4-bit colour indices (integers 0-15). Multiple frames
+            may be returned if the environment advances internally (e.g.,
+            animations) before settling.
+          items:
+            type: array
+            items:
+              type: array
+              items:
+                type: integer
+                minimum: 0
+                maximum: 15
+        state:
+          type: string
+          description: >
+            Current state of the session:
+
+
+            • **NOT_FINISHED** - game in progress, not yet WIN or GAME_OVER.  
+
+            • **NOT_STARTED**  - session has ended (WIN or GAME_OVER) and
+            requires RESET.  
+
+            • **WIN**          - session ended in victory.  
+
+            • **GAME_OVER**    - session ended in defeat.
+          enum:
+            - NOT_FINISHED
+            - NOT_STARTED
+            - WIN
+            - GAME_OVER
+        score:
+          type: integer
+          description: Current cumulative score for this run.
+          minimum: 0
+          maximum: 254
+        win_score:
+          type: integer
+          description: |
+            Score threshold required to reach the **WIN** state. Mirrors
+            the game's configured win condition so agents can adapt
+            dynamically without hard-coding values.
+          minimum: 0
+          maximum: 254
+        action_input:
+          type: object
+          description: Echo of the command that produced this frame.
+          properties:
+            id:
+              type: integer
+              description: Client-assigned or sequential action index.
+            data:
+              type: object
+              description: Additional parameters originally sent with the action.
+              additionalProperties: true
+        available_actions:
+          type: array
+          description: List of available actions for the current game.
+          items:
+            type: integer
+            enum:
+              - 1
+              - 2
+              - 3
+              - 4
+              - 5
+              - 6
+      required:
+        - game_id
+        - guid
+        - frame
+        - state
+        - score
+        - win_score
+        - action_input
+        - available_actions
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+```
+
+---
+
+> To find navigation and other pages in this documentation, fetch the llms.txt file at: https://docs.arcprize.org/llms.txt
+
+# Execute simple action 1
+
+> Issues **ACTION 1** to the specified game session.  
+> This is a single-parameter command (no X/Y coordinates): the exact
+> in-game effect depends on the title—for example, it might
+> represent “move up” or “select option A”.
+
+The request must include:
+• `game_id` — which game to act on  
+• `guid` — the active session identifier returned from RESET
+
+An optional `reasoning` JSON blob (≤ 16 KB) can be attached for
+audit or research purposes.
+
+A successful call returns the next visual frame(s) and updated
+score/state.
+
+## OpenAPI
+
+```yaml arc3v1.yaml post /api/cmd/ACTION1
+openapi: 3.0.3
+info:
+  title: ARC‑AGI‑3 REST API
+  version: 1.0.0
+  description: >
+    Programmatic interface for running agents against ARC‑AGI‑3 games,
+    opening/closing score‑cards and driving game state with actions.
+
+    All requests **require** an `X‑API‑Key` header issued from the ARC‑AGI‑3 web
+    console.
+servers:
+  - url: https://three.arcprize.org
+security: []
+tags:
+  - name: Games
+  - name: Scorecards
+  - name: Commands
+paths:
+  /api/cmd/ACTION1:
+    post:
+      tags:
+        - Commands
+      summary: Execute simple action 1
+      description: |
+        Issues **ACTION 1** to the specified game session.  
+        This is a single-parameter command (no X/Y coordinates): the exact
+        in-game effect depends on the title—for example, it might
+        represent “move up” or “select option A”.
+
+        The request must include:
+        • `game_id` — which game to act on  
+        • `guid` — the active session identifier returned from RESET  
+
+        An optional `reasoning` JSON blob (≤ 16 KB) can be attached for
+        audit or research purposes.
+
+        A successful call returns the next visual frame(s) and updated
+        score/state.
+      operationId: action1
+      requestBody:
+        description: Game/session identifiers plus optional reasoning data.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SimpleActionCommand"
+            examples:
+              action:
+                value:
+                  game_id: ls20-016295f7601e
+                  guid: 2fa5332c-2e55-4825-b5c5-df960d504470
+                  reasoning:
+                    policy: π_left
+      responses:
+        "200":
+          description: Frame returned after executing the action.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FrameResponse"
+              examples:
+                frame:
+                  value:
+                    game_id: ls20-016295f7601e
+                    guid: 2fa5332c-2e55-4825-b5c5-df960d504470
+                    frame:
+                      - - - 0
+                          - 0
+                          - 1
+                          - …
+                        - - …
+                    state: NOT_FINISHED
+                    score: 3
+                    win_score: 254
+                    action_input:
+                      id: 1
+                    available_actions:
+                      - 1
+                      - 2
+                      - 3
+                      - 4
+        "400":
+          description: |
+            Bad request - possible causes:  
+            • Unknown `game_id` or invalid format  
+            • `guid` not found or does not belong to `game_id`  
+            • `reasoning` field exceeds 16 KB or is malformed
+        "401":
+          description: Missing or invalid **X-API-Key** header.
+      security:
+        - ApiKeyAuth: []
+components:
+  schemas:
+    SimpleActionCommand:
+      type: object
+      description: |
+        Issues a one-parameter action (ACTION1 - ACTION5) to a running
+        game instance identified by `guid`.
+      properties:
+        game_id:
+          type: string
+          description: Game identifier this action targets.
+        guid:
+          type: string
+          description: Server-generated session ID obtained from a RESET response.
+        reasoning:
+          type: object
+          description: |
+            Optional, caller-defined JSON blob (≤ 16 KB) capturing the
+            agent's internal reasoning, model parameters, or any other
+            metadata you'd like to store alongside the action.
+          additionalProperties: true
+      required:
+        - game_id
+        - guid
+    FrameResponse:
+      type: object
+      description: |
+        Snapshot returned after every RESET or ACTION command.  
+        Includes the latest visual frame(s), cumulative score details, the
+        current game state, and an echo of the triggering action.
+      properties:
+        game_id:
+          type: string
+          description: Game identifier for the running session.
+        guid:
+          type: string
+          description: Server-generated session ID; use this for all subsequent commands.
+        frame:
+          type: array
+          description: |
+            One or more consecutive visual frames. Each frame is a 64 × 64
+            grid of 4-bit colour indices (integers 0-15). Multiple frames
+            may be returned if the environment advances internally (e.g.,
+            animations) before settling.
+          items:
+            type: array
+            items:
+              type: array
+              items:
+                type: integer
+                minimum: 0
+                maximum: 15
+        state:
+          type: string
+          description: >
+            Current state of the session:
+
+
+            • **NOT_FINISHED** - game in progress, not yet WIN or GAME_OVER.  
+
+            • **NOT_STARTED**  - session has ended (WIN or GAME_OVER) and
+            requires RESET.  
+
+            • **WIN**          - session ended in victory.  
+
+            • **GAME_OVER**    - session ended in defeat.
+          enum:
+            - NOT_FINISHED
+            - NOT_STARTED
+            - WIN
+            - GAME_OVER
+        score:
+          type: integer
+          description: Current cumulative score for this run.
+          minimum: 0
+          maximum: 254
+        win_score:
+          type: integer
+          description: |
+            Score threshold required to reach the **WIN** state. Mirrors
+            the game's configured win condition so agents can adapt
+            dynamically without hard-coding values.
+          minimum: 0
+          maximum: 254
+        action_input:
+          type: object
+          description: Echo of the command that produced this frame.
+          properties:
+            id:
+              type: integer
+              description: Client-assigned or sequential action index.
+            data:
+              type: object
+              description: Additional parameters originally sent with the action.
+              additionalProperties: true
+        available_actions:
+          type: array
+          description: List of available actions for the current game.
+          items:
+            type: integer
+            enum:
+              - 1
+              - 2
+              - 3
+              - 4
+              - 5
+              - 6
+      required:
+        - game_id
+        - guid
+        - frame
+        - state
+        - score
+        - win_score
+        - action_input
+        - available_actions
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+```
+
+---
+
+> To find navigation and other pages in this documentation, fetch the llms.txt file at: https://docs.arcprize.org/llms.txt
+
+# Execute simple action 2
+
+> Issues **ACTION 2** to the specified game session.  
+> This is a single-parameter command (no X/Y coordinates): the exact
+> in-game effect depends on the title—for example, it might
+> represent “move down" or “select option B”.
+
+The request must include:
+• `game_id` — which game to act on  
+• `guid` — the active session identifier returned from RESET
+
+An optional `reasoning` JSON blob (≤ 16 KB) can be attached for
+audit or research purposes.
+
+A successful call returns the next visual frame(s) and updated
+score/state.
+
+## OpenAPI
+
+```yaml arc3v1.yaml post /api/cmd/ACTION2
+openapi: 3.0.3
+info:
+  title: ARC‑AGI‑3 REST API
+  version: 1.0.0
+  description: >
+    Programmatic interface for running agents against ARC‑AGI‑3 games,
+    opening/closing score‑cards and driving game state with actions.
+
+    All requests **require** an `X‑API‑Key` header issued from the ARC‑AGI‑3 web
+    console.
+servers:
+  - url: https://three.arcprize.org
+security: []
+tags:
+  - name: Games
+  - name: Scorecards
+  - name: Commands
+paths:
+  /api/cmd/ACTION2:
+    post:
+      tags:
+        - Commands
+      summary: Execute simple action 2
+      description: |
+        Issues **ACTION 2** to the specified game session.  
+        This is a single-parameter command (no X/Y coordinates): the exact
+        in-game effect depends on the title—for example, it might
+        represent “move down" or “select option B”.
+
+        The request must include:
+        • `game_id` — which game to act on  
+        • `guid` — the active session identifier returned from RESET  
+
+        An optional `reasoning` JSON blob (≤ 16 KB) can be attached for
+        audit or research purposes.
+
+        A successful call returns the next visual frame(s) and updated
+        score/state.
+      operationId: action2
+      requestBody:
+        description: Game/session identifiers plus optional reasoning data.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SimpleActionCommand"
+            examples:
+              action:
+                value:
+                  game_id: ls20-016295f7601e
+                  guid: 2fa5332c-2e55-4825-b5c5-df960d504470
+                  reasoning:
+                    policy: π_left
+      responses:
+        "200":
+          description: Frame returned after executing the action.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FrameResponse"
+              examples:
+                frame:
+                  value:
+                    game_id: ls20-016295f7601e
+                    guid: 2fa5332c-2e55-4825-b5c5-df960d504470
+                    frame:
+                      - - - 0
+                          - 0
+                          - 1
+                          - …
+                        - - …
+                    state: NOT_FINISHED
+                    score: 3
+                    win_score: 254
+                    action_input:
+                      id: 2
+                    available_actions:
+                      - 1
+                      - 2
+                      - 3
+                      - 4
+        "400":
+          description: |
+            Bad request - possible causes:  
+            • Unknown `game_id` or invalid format  
+            • `guid` not found or does not belong to `game_id`  
+            • `reasoning` field exceeds 16 KB or is malformed
+        "401":
+          description: Missing or invalid **X-API-Key** header.
+      security:
+        - ApiKeyAuth: []
+components:
+  schemas:
+    SimpleActionCommand:
+      type: object
+      description: |
+        Issues a one-parameter action (ACTION1 - ACTION5) to a running
+        game instance identified by `guid`.
+      properties:
+        game_id:
+          type: string
+          description: Game identifier this action targets.
+        guid:
+          type: string
+          description: Server-generated session ID obtained from a RESET response.
+        reasoning:
+          type: object
+          description: |
+            Optional, caller-defined JSON blob (≤ 16 KB) capturing the
+            agent's internal reasoning, model parameters, or any other
+            metadata you'd like to store alongside the action.
+          additionalProperties: true
+      required:
+        - game_id
+        - guid
+    FrameResponse:
+      type: object
+      description: |
+        Snapshot returned after every RESET or ACTION command.  
+        Includes the latest visual frame(s), cumulative score details, the
+        current game state, and an echo of the triggering action.
+      properties:
+        game_id:
+          type: string
+          description: Game identifier for the running session.
+        guid:
+          type: string
+          description: Server-generated session ID; use this for all subsequent commands.
+        frame:
+          type: array
+          description: |
+            One or more consecutive visual frames. Each frame is a 64 × 64
+            grid of 4-bit colour indices (integers 0-15). Multiple frames
+            may be returned if the environment advances internally (e.g.,
+            animations) before settling.
+          items:
+            type: array
+            items:
+              type: array
+              items:
+                type: integer
+                minimum: 0
+                maximum: 15
+        state:
+          type: string
+          description: >
+            Current state of the session:
+
+
+            • **NOT_FINISHED** - game in progress, not yet WIN or GAME_OVER.  
+
+            • **NOT_STARTED**  - session has ended (WIN or GAME_OVER) and
+            requires RESET.  
+
+            • **WIN**          - session ended in victory.  
+
+            • **GAME_OVER**    - session ended in defeat.
+          enum:
+            - NOT_FINISHED
+            - NOT_STARTED
+            - WIN
+            - GAME_OVER
+        score:
+          type: integer
+          description: Current cumulative score for this run.
+          minimum: 0
+          maximum: 254
+        win_score:
+          type: integer
+          description: |
+            Score threshold required to reach the **WIN** state. Mirrors
+            the game's configured win condition so agents can adapt
+            dynamically without hard-coding values.
+          minimum: 0
+          maximum: 254
+        action_input:
+          type: object
+          description: Echo of the command that produced this frame.
+          properties:
+            id:
+              type: integer
+              description: Client-assigned or sequential action index.
+            data:
+              type: object
+              description: Additional parameters originally sent with the action.
+              additionalProperties: true
+        available_actions:
+          type: array
+          description: List of available actions for the current game.
+          items:
+            type: integer
+            enum:
+              - 1
+              - 2
+              - 3
+              - 4
+              - 5
+              - 6
+      required:
+        - game_id
+        - guid
+        - frame
+        - state
+        - score
+        - win_score
+        - action_input
+        - available_actions
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+```
+
+---
+
+> To find navigation and other pages in this documentation, fetch the llms.txt file at: https://docs.arcprize.org/llms.txt
+
+# Execute simple action 3
+
+> Issues **ACTION 3** to the specified game session.  
+> This is a single-parameter command (no X/Y coordinates): the exact
+> in-game effect depends on the title—for example, it might
+> represent “move left” or “select option C”.
+
+The request must include:
+• `game_id` — which game to act on  
+• `guid` — the active session identifier returned from RESET
+
+An optional `reasoning` JSON blob (≤ 16 KB) can be attached for
+audit or research purposes.
+
+A successful call returns the next visual frame(s) and updated
+score/state.
+
+## OpenAPI
+
+```yaml arc3v1.yaml post /api/cmd/ACTION3
+openapi: 3.0.3
+info:
+  title: ARC‑AGI‑3 REST API
+  version: 1.0.0
+  description: >
+    Programmatic interface for running agents against ARC‑AGI‑3 games,
+    opening/closing score‑cards and driving game state with actions.
+
+    All requests **require** an `X‑API‑Key` header issued from the ARC‑AGI‑3 web
+    console.
+servers:
+  - url: https://three.arcprize.org
+security: []
+tags:
+  - name: Games
+  - name: Scorecards
+  - name: Commands
+paths:
+  /api/cmd/ACTION3:
+    post:
+      tags:
+        - Commands
+      summary: Execute simple action 3
+      description: |
+        Issues **ACTION 3** to the specified game session.  
+        This is a single-parameter command (no X/Y coordinates): the exact
+        in-game effect depends on the title—for example, it might
+        represent “move left” or “select option C”.
+
+        The request must include:
+        • `game_id` — which game to act on  
+        • `guid` — the active session identifier returned from RESET  
+
+        An optional `reasoning` JSON blob (≤ 16 KB) can be attached for
+        audit or research purposes.
+
+        A successful call returns the next visual frame(s) and updated
+        score/state.
+      operationId: action3
+      requestBody:
+        description: Game/session identifiers plus optional reasoning data.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SimpleActionCommand"
+            examples:
+              action:
+                value:
+                  game_id: ls20-016295f7601e
+                  guid: 2fa5332c-2e55-4825-b5c5-df960d504470
+                  reasoning:
+                    policy: π_left
+      responses:
+        "200":
+          description: Frame returned after executing the action.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FrameResponse"
+              examples:
+                frame:
+                  value:
+                    game_id: ls20-016295f7601e
+                    guid: 2fa5332c-2e55-4825-b5c5-df960d504470
+                    frame:
+                      - - - 0
+                          - 0
+                          - 1
+                          - …
+                        - - …
+                    state: NOT_FINISHED
+                    score: 3
+                    win_score: 254
+                    action_input:
+                      id: 3
+                    available_actions:
+                      - 1
+                      - 2
+                      - 3
+                      - 4
+        "400":
+          description: |
+            Bad request - possible causes:  
+            • Unknown `game_id` or invalid format  
+            • `guid` not found or does not belong to `game_id`  
+            • `reasoning` field exceeds 16 KB or is malformed
+        "401":
+          description: Missing or invalid **X-API-Key** header.
+      security:
+        - ApiKeyAuth: []
+components:
+  schemas:
+    SimpleActionCommand:
+      type: object
+      description: |
+        Issues a one-parameter action (ACTION1 - ACTION5) to a running
+        game instance identified by `guid`.
+      properties:
+        game_id:
+          type: string
+          description: Game identifier this action targets.
+        guid:
+          type: string
+          description: Server-generated session ID obtained from a RESET response.
+        reasoning:
+          type: object
+          description: |
+            Optional, caller-defined JSON blob (≤ 16 KB) capturing the
+            agent's internal reasoning, model parameters, or any other
+            metadata you'd like to store alongside the action.
+          additionalProperties: true
+      required:
+        - game_id
+        - guid
+    FrameResponse:
+      type: object
+      description: |
+        Snapshot returned after every RESET or ACTION command.  
+        Includes the latest visual frame(s), cumulative score details, the
+        current game state, and an echo of the triggering action.
+      properties:
+        game_id:
+          type: string
+          description: Game identifier for the running session.
+        guid:
+          type: string
+          description: Server-generated session ID; use this for all subsequent commands.
+        frame:
+          type: array
+          description: |
+            One or more consecutive visual frames. Each frame is a 64 × 64
+            grid of 4-bit colour indices (integers 0-15). Multiple frames
+            may be returned if the environment advances internally (e.g.,
+            animations) before settling.
+          items:
+            type: array
+            items:
+              type: array
+              items:
+                type: integer
+                minimum: 0
+                maximum: 15
+        state:
+          type: string
+          description: >
+            Current state of the session:
+
+
+            • **NOT_FINISHED** - game in progress, not yet WIN or GAME_OVER.  
+
+            • **NOT_STARTED**  - session has ended (WIN or GAME_OVER) and
+            requires RESET.  
+
+            • **WIN**          - session ended in victory.  
+
+            • **GAME_OVER**    - session ended in defeat.
+          enum:
+            - NOT_FINISHED
+            - NOT_STARTED
+            - WIN
+            - GAME_OVER
+        score:
+          type: integer
+          description: Current cumulative score for this run.
+          minimum: 0
+          maximum: 254
+        win_score:
+          type: integer
+          description: |
+            Score threshold required to reach the **WIN** state. Mirrors
+            the game's configured win condition so agents can adapt
+            dynamically without hard-coding values.
+          minimum: 0
+          maximum: 254
+        action_input:
+          type: object
+          description: Echo of the command that produced this frame.
+          properties:
+            id:
+              type: integer
+              description: Client-assigned or sequential action index.
+            data:
+              type: object
+              description: Additional parameters originally sent with the action.
+              additionalProperties: true
+        available_actions:
+          type: array
+          description: List of available actions for the current game.
+          items:
+            type: integer
+            enum:
+              - 1
+              - 2
+              - 3
+              - 4
+              - 5
+              - 6
+      required:
+        - game_id
+        - guid
+        - frame
+        - state
+        - score
+        - win_score
+        - action_input
+        - available_actions
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+```
+
+---
+
+> To find navigation and other pages in this documentation, fetch the llms.txt file at: https://docs.arcprize.org/llms.txt
+
+# Execute simple action 4
+
+> Issues **ACTION 4** to the specified game session.  
+> This is a single-parameter command (no X/Y coordinates): the exact
+> in-game effect depends on the title—for example, it might
+> represent “move right" or “select option D”.
+
+The request must include:
+• `game_id` — which game to act on  
+• `guid` — the active session identifier returned from RESET
+
+An optional `reasoning` JSON blob (≤ 16 KB) can be attached for
+audit or research purposes.
+
+A successful call returns the next visual frame(s) and updated
+score/state.
+
+## OpenAPI
+
+```yaml arc3v1.yaml post /api/cmd/ACTION4
+openapi: 3.0.3
+info:
+  title: ARC‑AGI‑3 REST API
+  version: 1.0.0
+  description: >
+    Programmatic interface for running agents against ARC‑AGI‑3 games,
+    opening/closing score‑cards and driving game state with actions.
+
+    All requests **require** an `X‑API‑Key` header issued from the ARC‑AGI‑3 web
+    console.
+servers:
+  - url: https://three.arcprize.org
+security: []
+tags:
+  - name: Games
+  - name: Scorecards
+  - name: Commands
+paths:
+  /api/cmd/ACTION4:
+    post:
+      tags:
+        - Commands
+      summary: Execute simple action 4
+      description: |
+        Issues **ACTION 4** to the specified game session.  
+        This is a single-parameter command (no X/Y coordinates): the exact
+        in-game effect depends on the title—for example, it might
+        represent “move right" or “select option D”.
+
+        The request must include:
+        • `game_id` — which game to act on  
+        • `guid` — the active session identifier returned from RESET  
+
+        An optional `reasoning` JSON blob (≤ 16 KB) can be attached for
+        audit or research purposes.
+
+        A successful call returns the next visual frame(s) and updated
+        score/state.
+      operationId: action4
+      requestBody:
+        description: Game/session identifiers plus optional reasoning data.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SimpleActionCommand"
+            examples:
+              action:
+                value:
+                  game_id: ls20-016295f7601e
+                  guid: 2fa5332c-2e55-4825-b5c5-df960d504470
+                  reasoning:
+                    policy: π_left
+      responses:
+        "200":
+          description: Frame returned after executing the action.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FrameResponse"
+              examples:
+                frame:
+                  value:
+                    game_id: ls20-016295f7601e
+                    guid: 2fa5332c-2e55-4825-b5c5-df960d504470
+                    frame:
+                      - - - 0
+                          - 0
+                          - 1
+                          - …
+                        - - …
+                    state: NOT_FINISHED
+                    score: 3
+                    win_score: 254
+                    action_input:
+                      id: 4
+                    available_actions:
+                      - 1
+                      - 2
+                      - 3
+                      - 4
+        "400":
+          description: |
+            Bad request - possible causes:  
+            • Unknown `game_id` or invalid format  
+            • `guid` not found or does not belong to `game_id`  
+            • `reasoning` field exceeds 16 KB or is malformed
+        "401":
+          description: Missing or invalid **X-API-Key** header.
+      security:
+        - ApiKeyAuth: []
+components:
+  schemas:
+    SimpleActionCommand:
+      type: object
+      description: |
+        Issues a one-parameter action (ACTION1 - ACTION5) to a running
+        game instance identified by `guid`.
+      properties:
+        game_id:
+          type: string
+          description: Game identifier this action targets.
+        guid:
+          type: string
+          description: Server-generated session ID obtained from a RESET response.
+        reasoning:
+          type: object
+          description: |
+            Optional, caller-defined JSON blob (≤ 16 KB) capturing the
+            agent's internal reasoning, model parameters, or any other
+            metadata you'd like to store alongside the action.
+          additionalProperties: true
+      required:
+        - game_id
+        - guid
+    FrameResponse:
+      type: object
+      description: |
+        Snapshot returned after every RESET or ACTION command.  
+        Includes the latest visual frame(s), cumulative score details, the
+        current game state, and an echo of the triggering action.
+      properties:
+        game_id:
+          type: string
+          description: Game identifier for the running session.
+        guid:
+          type: string
+          description: Server-generated session ID; use this for all subsequent commands.
+        frame:
+          type: array
+          description: |
+            One or more consecutive visual frames. Each frame is a 64 × 64
+            grid of 4-bit colour indices (integers 0-15). Multiple frames
+            may be returned if the environment advances internally (e.g.,
+            animations) before settling.
+          items:
+            type: array
+            items:
+              type: array
+              items:
+                type: integer
+                minimum: 0
+                maximum: 15
+        state:
+          type: string
+          description: >
+            Current state of the session:
+
+
+            • **NOT_FINISHED** - game in progress, not yet WIN or GAME_OVER.  
+
+            • **NOT_STARTED**  - session has ended (WIN or GAME_OVER) and
+            requires RESET.  
+
+            • **WIN**          - session ended in victory.  
+
+            • **GAME_OVER**    - session ended in defeat.
+          enum:
+            - NOT_FINISHED
+            - NOT_STARTED
+            - WIN
+            - GAME_OVER
+        score:
+          type: integer
+          description: Current cumulative score for this run.
+          minimum: 0
+          maximum: 254
+        win_score:
+          type: integer
+          description: |
+            Score threshold required to reach the **WIN** state. Mirrors
+            the game's configured win condition so agents can adapt
+            dynamically without hard-coding values.
+          minimum: 0
+          maximum: 254
+        action_input:
+          type: object
+          description: Echo of the command that produced this frame.
+          properties:
+            id:
+              type: integer
+              description: Client-assigned or sequential action index.
+            data:
+              type: object
+              description: Additional parameters originally sent with the action.
+              additionalProperties: true
+        available_actions:
+          type: array
+          description: List of available actions for the current game.
+          items:
+            type: integer
+            enum:
+              - 1
+              - 2
+              - 3
+              - 4
+              - 5
+              - 6
+      required:
+        - game_id
+        - guid
+        - frame
+        - state
+        - score
+        - win_score
+        - action_input
+        - available_actions
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+```
+
+---
+
+> To find navigation and other pages in this documentation, fetch the llms.txt file at: https://docs.arcprize.org/llms.txt
+
+# Execute simple action 5
+
+> Issues **ACTION 5** to the specified game session.  
+> This is a single-parameter command (no X/Y coordinates): the exact
+> in-game effect depends on the title—for example, it might
+> represent “jump”, "rotate", "fire" or “select option E”.
+
+The request must include:
+• `game_id` — which game to act on  
+• `guid` — the active session identifier returned from RESET
+
+An optional `reasoning` JSON blob (≤ 16 KB) can be attached for
+audit or research purposes.
+
+A successful call returns the next visual frame(s) and updated
+score/state.
+
+## OpenAPI
+
+```yaml arc3v1.yaml post /api/cmd/ACTION5
+openapi: 3.0.3
+info:
+  title: ARC‑AGI‑3 REST API
+  version: 1.0.0
+  description: >
+    Programmatic interface for running agents against ARC‑AGI‑3 games,
+    opening/closing score‑cards and driving game state with actions.
+
+    All requests **require** an `X‑API‑Key` header issued from the ARC‑AGI‑3 web
+    console.
+servers:
+  - url: https://three.arcprize.org
+security: []
+tags:
+  - name: Games
+  - name: Scorecards
+  - name: Commands
+paths:
+  /api/cmd/ACTION5:
+    post:
+      tags:
+        - Commands
+      summary: Execute simple action 5
+      description: |
+        Issues **ACTION 5** to the specified game session.  
+        This is a single-parameter command (no X/Y coordinates): the exact
+        in-game effect depends on the title—for example, it might
+        represent “jump”, "rotate", "fire" or “select option E”.
+
+        The request must include:
+        • `game_id` — which game to act on  
+        • `guid` — the active session identifier returned from RESET  
+
+        An optional `reasoning` JSON blob (≤ 16 KB) can be attached for
+        audit or research purposes.
+
+        A successful call returns the next visual frame(s) and updated
+        score/state.
+      operationId: action5
+      requestBody:
+        description: Game/session identifiers plus optional reasoning data.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SimpleActionCommand"
+            examples:
+              action:
+                value:
+                  game_id: ls20-016295f7601e
+                  guid: 2fa5332c-2e55-4825-b5c5-df960d504470
+                  reasoning:
+                    policy: π_left
+      responses:
+        "200":
+          description: Frame returned after executing the action.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FrameResponse"
+              examples:
+                frame:
+                  value:
+                    game_id: ls20-016295f7601e
+                    guid: 2fa5332c-2e55-4825-b5c5-df960d504470
+                    frame:
+                      - - - 0
+                          - 0
+                          - 1
+                          - …
+                        - - …
+                    state: NOT_FINISHED
+                    score: 3
+                    win_score: 254
+                    action_input:
+                      id: 5
+                    available_actions:
+                      - 1
+                      - 2
+                      - 3
+                      - 4
+        "400":
+          description: |
+            Bad request - possible causes:  
+            • Unknown `game_id` or invalid format  
+            • `guid` not found or does not belong to `game_id`  
+            • `reasoning` field exceeds 16 KB or is malformed
+        "401":
+          description: Missing or invalid **X-API-Key** header.
+      security:
+        - ApiKeyAuth: []
+components:
+  schemas:
+    SimpleActionCommand:
+      type: object
+      description: |
+        Issues a one-parameter action (ACTION1 - ACTION5) to a running
+        game instance identified by `guid`.
+      properties:
+        game_id:
+          type: string
+          description: Game identifier this action targets.
+        guid:
+          type: string
+          description: Server-generated session ID obtained from a RESET response.
+        reasoning:
+          type: object
+          description: |
+            Optional, caller-defined JSON blob (≤ 16 KB) capturing the
+            agent's internal reasoning, model parameters, or any other
+            metadata you'd like to store alongside the action.
+          additionalProperties: true
+      required:
+        - game_id
+        - guid
+    FrameResponse:
+      type: object
+      description: |
+        Snapshot returned after every RESET or ACTION command.  
+        Includes the latest visual frame(s), cumulative score details, the
+        current game state, and an echo of the triggering action.
+      properties:
+        game_id:
+          type: string
+          description: Game identifier for the running session.
+        guid:
+          type: string
+          description: Server-generated session ID; use this for all subsequent commands.
+        frame:
+          type: array
+          description: |
+            One or more consecutive visual frames. Each frame is a 64 × 64
+            grid of 4-bit colour indices (integers 0-15). Multiple frames
+            may be returned if the environment advances internally (e.g.,
+            animations) before settling.
+          items:
+            type: array
+            items:
+              type: array
+              items:
+                type: integer
+                minimum: 0
+                maximum: 15
+        state:
+          type: string
+          description: >
+            Current state of the session:
+
+
+            • **NOT_FINISHED** - game in progress, not yet WIN or GAME_OVER.  
+
+            • **NOT_STARTED**  - session has ended (WIN or GAME_OVER) and
+            requires RESET.  
+
+            • **WIN**          - session ended in victory.  
+
+            • **GAME_OVER**    - session ended in defeat.
+          enum:
+            - NOT_FINISHED
+            - NOT_STARTED
+            - WIN
+            - GAME_OVER
+        score:
+          type: integer
+          description: Current cumulative score for this run.
+          minimum: 0
+          maximum: 254
+        win_score:
+          type: integer
+          description: |
+            Score threshold required to reach the **WIN** state. Mirrors
+            the game's configured win condition so agents can adapt
+            dynamically without hard-coding values.
+          minimum: 0
+          maximum: 254
+        action_input:
+          type: object
+          description: Echo of the command that produced this frame.
+          properties:
+            id:
+              type: integer
+              description: Client-assigned or sequential action index.
+            data:
+              type: object
+              description: Additional parameters originally sent with the action.
+              additionalProperties: true
+        available_actions:
+          type: array
+          description: List of available actions for the current game.
+          items:
+            type: integer
+            enum:
+              - 1
+              - 2
+              - 3
+              - 4
+              - 5
+              - 6
+      required:
+        - game_id
+        - guid
+        - frame
+        - state
+        - score
+        - win_score
+        - action_input
+        - available_actions
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+```
+
+---
+
+> To find navigation and other pages in this documentation, fetch the llms.txt file at: https://docs.arcprize.org/llms.txt
+
+# Execute complex action (requires x,y)
+
+> Issues **ACTION 6**—a two-parameter command that supplies explicit
+> X/Y coordinates—to an active game session. Common use-cases
+> include “click/tap at (x,y)”, “place a tile”, or “shoot a
+> projectile,” depending on the game's mechanics.
+
+Required fields  
+• `game_id` — the game to act in  
+• `guid` — session identifier obtained from RESET  
+• `x`,`y` — zero-based grid coordinates (0-63 inclusive)
+
+On success the server applies the action, advances game logic to
+the next stable frame, and returns that frame together with the
+updated score, state, and win condition.
+
+## OpenAPI
+
+```yaml arc3v1.yaml post /api/cmd/ACTION6
+openapi: 3.0.3
+info:
+  title: ARC‑AGI‑3 REST API
+  version: 1.0.0
+  description: >
+    Programmatic interface for running agents against ARC‑AGI‑3 games,
+    opening/closing score‑cards and driving game state with actions.
+
+    All requests **require** an `X‑API‑Key` header issued from the ARC‑AGI‑3 web
+    console.
+servers:
+  - url: https://three.arcprize.org
+security: []
+tags:
+  - name: Games
+  - name: Scorecards
+  - name: Commands
+paths:
+  /api/cmd/ACTION6:
+    post:
+      tags:
+        - Commands
+      summary: Execute complex action (requires x,y)
+      description: |
+        Issues **ACTION 6**—a two-parameter command that supplies explicit
+        X/Y coordinates—to an active game session.  Common use-cases
+        include “click/tap at (x,y)”, “place a tile”, or “shoot a
+        projectile,” depending on the game's mechanics.
+
+        Required fields  
+        • `game_id` — the game to act in  
+        • `guid`    — session identifier obtained from RESET  
+        • `x`,`y`   — zero-based grid coordinates (0-63 inclusive)
+
+        On success the server applies the action, advances game logic to
+        the next stable frame, and returns that frame together with the
+        updated score, state, and win condition.
+      operationId: action6
+      requestBody:
+        description: Game/session identifiers plus the coordinate payload.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ComplexActionCommand"
+            examples:
+              placeTile:
+                summary: Place at (12, 34)
+                value:
+                  game_id: ls20-016295f7601e
+                  guid: 2fa5332c-2e55-4825-b5c5-df960d504470
+                  x: 12
+                  "y": 34
+      responses:
+        "200":
+          description: Frame returned after executing the action.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FrameResponse"
+              examples:
+                frame:
+                  value:
+                    game_id: ls20-016295f7601e
+                    guid: 2fa5332c-2e55-4825-b5c5-df960d504470
+                    frame:
+                      - - - …
+                    state: NOT_FINISHED
+                    score: 17
+                    win_score: 254
+                    action_input:
+                      id: 6
+                      data:
+                        x: 12
+                        "y": 34
+                    available_actions:
+                      - 1
+                      - 2
+                      - 3
+                      - 4
+        "400":
+          description: |
+            Bad request - possible causes:  
+            • Unknown `game_id`  
+            • `guid` not found or does not belong to the supplied `game_id`  
+            • `x` or `y` outside the 0-63 range
+        "401":
+          description: Missing or invalid **X-API-Key** header.
+      security:
+        - ApiKeyAuth: []
+components:
+  schemas:
+    ComplexActionCommand:
+      type: object
+      description: |
+        Payload for coordinate-based actions (e.g. `/api/cmd/ACTION6`).
+        Supplies an `(x, y)` location on the 64 × 64 game grid along with
+        the game/session identifiers so the engine can apply the action
+        to the correct running instance.
+      properties:
+        game_id:
+          type: string
+          description: Identifier of the game receiving this action.
+        guid:
+          type: string
+          description: Server-generated session ID obtained from the RESET call.
+        x:
+          type: integer
+          minimum: 0
+          maximum: 63
+          description: Horizontal coordinate on the game grid (0 = left, 63 = right).
+        "y":
+          type: integer
+          minimum: 0
+          maximum: 63
+          description: Vertical coordinate on the game grid (0 = top, 63 = bottom).
+        reasoning:
+          type: object
+          description: |
+            Optional, caller-defined JSON blob (≤ 16 KB) capturing the
+            agent's internal reasoning, model parameters, or any other
+            metadata you'd like to store alongside the action.
+          additionalProperties: true
+      required:
+        - game_id
+        - guid
+        - x
+        - "y"
+    FrameResponse:
+      type: object
+      description: |
+        Snapshot returned after every RESET or ACTION command.  
+        Includes the latest visual frame(s), cumulative score details, the
+        current game state, and an echo of the triggering action.
+      properties:
+        game_id:
+          type: string
+          description: Game identifier for the running session.
+        guid:
+          type: string
+          description: Server-generated session ID; use this for all subsequent commands.
+        frame:
+          type: array
+          description: |
+            One or more consecutive visual frames. Each frame is a 64 × 64
+            grid of 4-bit colour indices (integers 0-15). Multiple frames
+            may be returned if the environment advances internally (e.g.,
+            animations) before settling.
+          items:
+            type: array
+            items:
+              type: array
+              items:
+                type: integer
+                minimum: 0
+                maximum: 15
+        state:
+          type: string
+          description: >
+            Current state of the session:
+
+
+            • **NOT_FINISHED** - game in progress, not yet WIN or GAME_OVER.  
+
+            • **NOT_STARTED**  - session has ended (WIN or GAME_OVER) and
+            requires RESET.  
+
+            • **WIN**          - session ended in victory.  
+
+            • **GAME_OVER**    - session ended in defeat.
+          enum:
+            - NOT_FINISHED
+            - NOT_STARTED
+            - WIN
+            - GAME_OVER
+        score:
+          type: integer
+          description: Current cumulative score for this run.
+          minimum: 0
+          maximum: 254
+        win_score:
+          type: integer
+          description: |
+            Score threshold required to reach the **WIN** state. Mirrors
+            the game's configured win condition so agents can adapt
+            dynamically without hard-coding values.
+          minimum: 0
+          maximum: 254
+        action_input:
+          type: object
+          description: Echo of the command that produced this frame.
+          properties:
+            id:
+              type: integer
+              description: Client-assigned or sequential action index.
+            data:
+              type: object
+              description: Additional parameters originally sent with the action.
+              additionalProperties: true
+        available_actions:
+          type: array
+          description: List of available actions for the current game.
+          items:
+            type: integer
+            enum:
+              - 1
+              - 2
+              - 3
+              - 4
+              - 5
+              - 6
+      required:
+        - game_id
+        - guid
+        - frame
+        - state
+        - score
+        - win_score
+        - action_input
+        - available_actions
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+```
+
+---
+
+> To find navigation and other pages in this documentation, fetch the llms.txt file at: https://docs.arcprize.org/llms.txt
+
+# Execute simple action 7
+
+> Issues **ACTION 7** to the specified game session.  
+> This is a single-parameter command (no X/Y coordinates):
+> ACTION7 will always be an undo action for games that support it.
+
+The request must include:
+• `game_id` — which game to act on  
+• `guid` — the active session identifier returned from RESET
+
+An optional `reasoning` JSON blob (≤ 16 KB) can be attached for
+audit or research purposes.
+
+A successful call returns the next visual frame(s) and updated
+score/state.
+
+## OpenAPI
+
+```yaml arc3v1.yaml post /api/cmd/ACTION7
+openapi: 3.0.3
+info:
+  title: ARC‑AGI‑3 REST API
+  version: 1.0.0
+  description: >
+    Programmatic interface for running agents against ARC‑AGI‑3 games,
+    opening/closing score‑cards and driving game state with actions.
+
+    All requests **require** an `X‑API‑Key` header issued from the ARC‑AGI‑3 web
+    console.
+servers:
+  - url: https://three.arcprize.org
+security: []
+tags:
+  - name: Games
+  - name: Scorecards
+  - name: Commands
+paths:
+  /api/cmd/ACTION7:
+    post:
+      tags:
+        - Commands
+      summary: Execute simple action 7
+      description: |
+        Issues **ACTION 7** to the specified game session.  
+        This is a single-parameter command (no X/Y coordinates): 
+        ACTION7 will always be an undo action for games that support it.
+
+        The request must include:
+        • `game_id` — which game to act on  
+        • `guid` — the active session identifier returned from RESET  
+
+        An optional `reasoning` JSON blob (≤ 16 KB) can be attached for
+        audit or research purposes.
+
+        A successful call returns the next visual frame(s) and updated
+        score/state.
+      operationId: action7
+      requestBody:
+        description: Game/session identifiers plus optional reasoning data.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SimpleActionCommand"
+            examples:
+              action:
+                value:
+                  game_id: ls20-016295f7601e
+                  guid: 2fa5332c-2e55-4825-b5c5-df960d504470
+                  reasoning:
+                    policy: π_left
+      responses:
+        "200":
+          description: Frame returned after executing the action.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FrameResponse"
+              examples:
+                frame:
+                  value:
+                    game_id: ls20-016295f7601e
+                    guid: 2fa5332c-2e55-4825-b5c5-df960d504470
+                    frame:
+                      - - - 0
+                          - 0
+                          - 1
+                          - …
+                        - - …
+                    state: NOT_FINISHED
+                    score: 3
+                    win_score: 254
+                    action_input:
+                      id: 7
+                    available_actions:
+                      - 1
+                      - 2
+                      - 3
+                      - 4
+                      - 7
+        "400":
+          description: |
+            Bad request - possible causes:  
+            • Unknown `game_id` or invalid format  
+            • `guid` not found or does not belong to `game_id`  
+            • `reasoning` field exceeds 16 KB or is malformed
+        "401":
+          description: Missing or invalid **X-API-Key** header.
+      security:
+        - ApiKeyAuth: []
+components:
+  schemas:
+    SimpleActionCommand:
+      type: object
+      description: |
+        Issues a one-parameter action (ACTION1 - ACTION5) to a running
+        game instance identified by `guid`.
+      properties:
+        game_id:
+          type: string
+          description: Game identifier this action targets.
+        guid:
+          type: string
+          description: Server-generated session ID obtained from a RESET response.
+        reasoning:
+          type: object
+          description: |
+            Optional, caller-defined JSON blob (≤ 16 KB) capturing the
+            agent's internal reasoning, model parameters, or any other
+            metadata you'd like to store alongside the action.
+          additionalProperties: true
+      required:
+        - game_id
+        - guid
+    FrameResponse:
+      type: object
+      description: |
+        Snapshot returned after every RESET or ACTION command.  
+        Includes the latest visual frame(s), cumulative score details, the
+        current game state, and an echo of the triggering action.
+      properties:
+        game_id:
+          type: string
+          description: Game identifier for the running session.
+        guid:
+          type: string
+          description: Server-generated session ID; use this for all subsequent commands.
+        frame:
+          type: array
+          description: |
+            One or more consecutive visual frames. Each frame is a 64 × 64
+            grid of 4-bit colour indices (integers 0-15). Multiple frames
+            may be returned if the environment advances internally (e.g.,
+            animations) before settling.
+          items:
+            type: array
+            items:
+              type: array
+              items:
+                type: integer
+                minimum: 0
+                maximum: 15
+        state:
+          type: string
+          description: >
+            Current state of the session:
+
+
+            • **NOT_FINISHED** - game in progress, not yet WIN or GAME_OVER.  
+
+            • **NOT_STARTED**  - session has ended (WIN or GAME_OVER) and
+            requires RESET.  
+
+            • **WIN**          - session ended in victory.  
+
+            • **GAME_OVER**    - session ended in defeat.
+          enum:
+            - NOT_FINISHED
+            - NOT_STARTED
+            - WIN
+            - GAME_OVER
+        score:
+          type: integer
+          description: Current cumulative score for this run.
+          minimum: 0
+          maximum: 254
+        win_score:
+          type: integer
+          description: |
+            Score threshold required to reach the **WIN** state. Mirrors
+            the game's configured win condition so agents can adapt
+            dynamically without hard-coding values.
+          minimum: 0
+          maximum: 254
+        action_input:
+          type: object
+          description: Echo of the command that produced this frame.
+          properties:
+            id:
+              type: integer
+              description: Client-assigned or sequential action index.
+            data:
+              type: object
+              description: Additional parameters originally sent with the action.
+              additionalProperties: true
+        available_actions:
+          type: array
+          description: List of available actions for the current game.
+          items:
+            type: integer
+            enum:
+              - 1
+              - 2
+              - 3
+              - 4
+              - 5
+              - 6
+      required:
+        - game_id
+        - guid
+        - frame
+        - state
+        - score
+        - win_score
+        - action_input
+        - available_actions
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+```
+
+---
+
+> To find navigation and other pages in this documentation, fetch the llms.txt file at: https://docs.arcprize.org/llms.txt
