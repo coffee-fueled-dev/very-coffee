@@ -21,36 +21,37 @@ import {
   SessionIdArg,
   runSessionFunctions,
 } from "convex-helpers/server/sessions";
-import { internal } from "./_generated/api";
+// import { internal } from "./_generated/api";
 
 // enable children files to register triggers receiving the triggers instance
 
 // Register Triggers.
 const triggers = new Triggers<DataModel>();
 
-triggers.register("ports", async (ctx, change) => {
-  if (
-    (change.newDoc?.predicate.then.value &&
-      !change.newDoc?.predicate.then.embedding) ||
-    (change.newDoc?.predicate.when.value &&
-      !change.newDoc?.predicate.when.embedding)
-  ) {
-    await ctx.scheduler.runAfter(0, internal.tam.coreLoop.embedPredicate, {
-      port: change.newDoc._id,
-      when: change.newDoc?.predicate.when.value,
-      then: change.newDoc?.predicate.then.value,
-    });
-  }
-});
+// triggers.register("ports", async (ctx, change) => {
+//   if (
+//     (change.newDoc?.predicate.then.value &&
+//       !change.newDoc?.predicate.then.embedding) ||
+//     (change.newDoc?.predicate.when.value &&
+//       !change.newDoc?.predicate.when.embedding)
+//   ) {
+//     await ctx.scheduler.runAfter(0, internal.tam.port.embedPredicate, {
+//       port: change.newDoc._id,
+//       behavior: change.newDoc?.predicate.behavior.value,
+//       when: change.newDoc?.predicate.when.value,
+//       then: change.newDoc?.predicate.then.value,
+//     });
+//   }
+// });
 
-triggers.register("situations", async (ctx, change) => {
-  if (change.newDoc?.state.value && !change.newDoc?.state.embedding) {
-    await ctx.scheduler.runAfter(0, internal.tam.coreLoop.embedState, {
-      situation: change.newDoc._id,
-      state: change.newDoc?.state.value,
-    });
-  }
-});
+// triggers.register("situations", async (ctx, change) => {
+//   if (change.newDoc?.state.value && !change.newDoc?.state.embedding) {
+//     await ctx.scheduler.runAfter(0, internal.tam.situation.embedState, {
+//       situation: change.newDoc._id,
+//       state: change.newDoc?.state.value,
+//     });
+//   }
+// });
 
 // Create custom functions that include triggers and other middleware
 export const mutation = customMutation(rawMutation, customCtx(triggers.wrapDB));

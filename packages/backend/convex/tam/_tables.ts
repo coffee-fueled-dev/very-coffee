@@ -45,19 +45,8 @@ export const tamTables = {
     }),
   })
     .index("by_external_status", ["external", "status"])
-    .index("by_actor_status", ["actor", "status"]),
-
-  actions: defineTable({
-    world: v.id("worlds"),
-    key: v.string(),
-    description: v.string(),
-    schema: v.optional(v.record(v.string(), v.any())),
-  })
-    .index("by_world", ["world"])
-    .index("by_key", ["key"])
-    .searchIndex("by_fulltextDescription", {
-      searchField: "description",
-    }),
+    .index("by_actor_status", ["actor", "status"])
+    .index("by_world_status", ["world", "status"]),
 
   actors: defineTable({
     name: v.string(),
@@ -65,9 +54,12 @@ export const tamTables = {
 
   ports: defineTable({
     actor: v.id("actors"),
-    action: v.id("actions"),
+    world: v.id("worlds"),
+    parentPort: v.optional(v.id("ports")),
     currentIteration: v.optional(v.id("portIterations")),
+    schema: v.optional(v.record(v.string(), v.any())),
     predicate: v.object({
+      behavior: vEmbeddedValue,
       when: vEmbeddedValue,
       then: vEmbeddedValue,
     }),
@@ -79,7 +71,7 @@ export const tamTables = {
     agencyScore: v.optional(v.float64()),
   })
     .index("by_currentIteration", ["currentIteration"])
-    .index("by_action", ["action"])
+    .index("by_world", ["world"])
     .vectorIndex("by_embeddedWhen", {
       vectorField: "predicate.when.embedding",
       dimensions: 1536,
@@ -117,7 +109,7 @@ export const tamTables = {
     port: v.id("ports"),
     situation: v.id("situations"),
     session: v.id("sessions"),
-    arguments: v.record(v.string(), v.any()),
+    arguments: v.optional(v.record(v.string(), v.any())),
     justification: v.string(),
     success: v.union(v.null(), v.boolean()),
     status: v.union(
@@ -126,7 +118,7 @@ export const tamTables = {
       v.literal("resolved")
     ),
   })
-    .index("by_situation", ["situation"])
-    .index("by_session", ["session"])
+    .index("by_situation_status", ["situation", "status"])
+    .index("by_session_status", ["session", "status"])
     .index("by_port", ["port"]),
 };

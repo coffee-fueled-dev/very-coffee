@@ -1,96 +1,96 @@
-import { WithoutSystemFields } from "convex/server";
-import { Doc } from "../_generated/dataModel";
 import { z } from "zod/v4";
-import { ArcGameAction } from "./_types";
+import { type ArcGameAction, arcGameActions } from "./_api";
+
+export const ArcAGI3Action6Schema = z.object({
+  x: z
+    .number()
+    .min(0)
+    .max(63)
+    .describe(
+      "The x coordinate to locate the action's effect on the game board"
+    ),
+  y: z
+    .number()
+    .min(0)
+    .max(63)
+    .describe(
+      "The x coordinate to locate the action's effect on the game board"
+    ),
+});
+
+export const ArcAGI3ActionSchema = z.object({
+  key: z.enum(arcGameActions),
+  args: ArcAGI3Action6Schema.optional(),
+});
 
 export const arcAGI3Actions = [
   {
     key: "RESET",
-    description: "Initialize or restarts the game/level state",
     predicate: {
+      behavior: "Initialize or restarts the game/level state",
       when: "The game is in some state",
       then: "The game will be reset to the initial state",
     },
   },
   {
     key: "ACTION1",
-    description: "Simple action - varies by game (semantically mapped to up)",
     predicate: {
+      behavior: "Simple action - varies by game",
       when: "The game is in some state",
       then: "The game will be in a new state",
     },
   },
   {
     key: "ACTION2",
-    description: "Simple action - varies by game (semantically mapped to down)",
     predicate: {
+      behavior: "Simple action - varies by game",
       when: "The game is in some state",
       then: "The game will be in a new state",
     },
   },
   {
     key: "ACTION3",
-    description: "Simple action - varies by game (semantically mapped to left)",
     predicate: {
+      behavior: "Simple action - varies by game",
       when: "The game is in some state",
       then: "The game will be in a new state",
     },
   },
   {
     key: "ACTION4",
-    description:
-      "Simple action - varies by game (semantically mapped to right)",
     predicate: {
+      behavior: "Simple action - varies by game",
       when: "The game is in some state",
       then: "The game will be in a new state",
     },
   },
   {
     key: "ACTION5",
-    description:
-      "Simple action - varies by game (e.g., interact, select, rotate, attach/detach, execute, etc.)",
     predicate: {
+      behavior: "Simple action - varies by game",
       when: "The game is in some state",
       then: "The game will be in a new state",
     },
   },
   {
     key: "ACTION6",
-    description: "Complex action requiring x,y coordinates (0-63 range)",
-    schema: z.toJSONSchema(
-      z.object({
-        x: z
-          .number()
-          .min(0)
-          .max(63)
-          .describe(
-            "The x coordinate to locate the action's effect on the game board"
-          ),
-        y: z
-          .number()
-          .min(0)
-          .max(63)
-          .describe(
-            "The x coordinate to locate the action's effect on the game board"
-          ),
-      })
-    ),
+    schema: z.toJSONSchema(ArcAGI3Action6Schema),
     predicate: {
+      behavior: "Complex action requiring x,y coordinates (0-63 range)",
       when: "The game is in some state",
       then: "The game will be in a new state",
     },
   },
   {
     key: "ACTION7",
-    description: "Simple action - Undo (e.g., interact, select)",
     predicate: {
+      behavior: "Simple action - Undo (e.g., interact, select)",
       when: "The game is in some state",
       then: "The game will be at the previous state",
     },
   },
 ] as const satisfies {
   key: ArcGameAction;
-  description: string;
   schema?: Record<string, any>;
-  predicate: { when: string; then: string };
+  predicate: { behavior: string; when: string; then: string };
 }[];
